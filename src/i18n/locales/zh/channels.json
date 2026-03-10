@@ -1,6 +1,6 @@
 {
     "title": "消息频道",
-    "subtitle": "管理您的消息频道和连接",
+    "subtitle": "连接到消息平台。",
     "refresh": "刷新",
     "addChannel": "添加频道",
     "stats": {
@@ -8,7 +8,10 @@
         "connected": "已连接",
         "disconnected": "未连接"
     },
-    "gatewayWarning": "网关服务未运行，频道无法连接。",
+    "gatewayWarning": "网关未运行。未启用网关时无法管理频道。",
+    "availableChannels": "可用频道",
+    "supportedChannels": "支持的频道",
+    "pluginBadge": "插件",
     "available": "可用频道",
     "availableDesc": "连接一个新的频道",
     "configured": "已配置频道",
@@ -16,7 +19,6 @@
     "configuredBadge": "已配置",
     "deleteConfirm": "确定要删除此频道吗？",
     "showAll": "显示全部",
-    "pluginBadge": "插件",
     "toast": {
         "whatsappConnected": "WhatsApp 连接成功",
         "whatsappFailed": "WhatsApp 连接失败: {{error}}",

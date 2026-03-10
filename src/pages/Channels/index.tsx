@@ -121,10 +121,10 @@ export function Channels() {
         <div className="flex flex-col md:flex-row md:items-start justify-between mb-8 shrink-0 gap-4">
           <div>
             <h1 className="text-5xl md:text-6xl font-serif text-foreground mb-3 font-normal tracking-tight" style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}>
-              {t('title') || 'Channels'}
+              {t('title')}
             </h1>
             <p className="text-[17px] text-foreground/80 font-medium">
-              {t('subtitle') || 'Connect to messaging platforms.'}
+              {t('subtitle')}
             </p>
           </div>
 
@@ -170,7 +170,7 @@ export function Channels() {
           {safeChannels.length > 0 && (
             <div className="mb-12">
               <h2 className="text-3xl font-serif text-foreground mb-6 font-normal tracking-tight" style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}>
-                Available Channels
+                {t('availableChannels')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {safeChannels.map((channel) => (
@@ -187,7 +187,7 @@ export function Channels() {
           {/* Supported Channels (Not yet configured) */}
           <div className="mb-8">
             <h2 className="text-3xl font-serif text-foreground mb-6 font-normal tracking-tight" style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}>
-              Supported Channels
+              {t('supportedChannels')}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -217,7 +217,7 @@ export function Channels() {
                         <h3 className="text-[16px] font-semibold text-foreground truncate">{meta.name}</h3>
                         {meta.isPlugin && (
                           <Badge variant="secondary" className="font-mono text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] border-0 shadow-none text-foreground/70">
-                            {t('pluginBadge', 'Plugin')}
+                            {t('pluginBadge')}
                           </Badge>
                         )}
                       </div>

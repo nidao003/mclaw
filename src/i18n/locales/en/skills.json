@@ -48,7 +48,10 @@
         "saveConfig": "Save Configuration",
         "configSaved": "Configuration saved",
         "openManual": "Open Manual",
-        "configurable": "Configurable"
+        "configurable": "Configurable",
+        "uninstall": "Uninstall",
+        "enable": "Enable",
+        "disable": "Disable"
     },
     "toast": {
         "enabled": "Skill enabled",

@@ -48,7 +48,10 @@
         "saveConfig": "保存配置",
         "configSaved": "配置已保存",
         "openManual": "打开手册",
-        "configurable": "可配置"
+        "configurable": "可配置",
+        "uninstall": "卸载",
+        "enable": "启用",
+        "disable": "禁用"
     },
     "toast": {
         "enabled": "技能已启用",

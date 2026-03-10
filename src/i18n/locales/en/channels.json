@@ -9,6 +9,8 @@
         "disconnected": "Disconnected"
     },
     "gatewayWarning": "Gateway service is not running. Channels cannot connect.",
+    "availableChannels": "Available Channels",
+    "supportedChannels": "Supported Channels",
     "available": "Available Channels",
     "availableDesc": "Connect a new channel",
     "configured": "Configured Channels",

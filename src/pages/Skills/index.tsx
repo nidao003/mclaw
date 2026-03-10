@@ -197,7 +197,7 @@ function SkillDetailDialog({ skill, isOpen, onClose, onToggle, onUninstall }: Sk
               <div className="space-y-2">
                 <h3 className="text-[13px] font-bold flex items-center gap-2 text-foreground/80">
                   <Key className="h-3.5 w-3.5 text-blue-500" />
-                  API Key
+                  {t('detail.apiKey')}
                 </h3>
                 <Input
                   placeholder={t('detail.apiKeyPlaceholder', 'Enter API Key (optional)')}
@@ -218,7 +218,7 @@ function SkillDetailDialog({ skill, isOpen, onClose, onToggle, onUninstall }: Sk
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2">
                     <h3 className="text-[13px] font-bold text-foreground/80">
-                      Environment Variables
+                      {t('detail.envVars')}
                       {envVars.length > 0 && (
                         <Badge variant="secondary" className="ml-2 px-1.5 py-0 text-[10px] h-5 bg-black/10 dark:bg-white/10 text-foreground">
                           {envVars.length}
@@ -298,7 +298,7 @@ function SkillDetailDialog({ skill, isOpen, onClose, onToggle, onUninstall }: Sk
                 )}
                 disabled={isSaving}
               >
-                {isSaving ? t('detail.saving', 'Saving...') : 'Save Configuration'}
+                {isSaving ? t('detail.saving') : t('detail.saveConfig')}
               </Button>
             )}
 
@@ -316,8 +316,8 @@ function SkillDetailDialog({ skill, isOpen, onClose, onToggle, onUninstall }: Sk
                 }}
               >
                 {!skill.isBundled && onUninstall
-                  ? 'Uninstall'
-                  : (skill.enabled ? t('detail.disable', 'Disable') : t('detail.enable', 'Enable'))}
+                  ? t('detail.uninstall')
+                  : (skill.enabled ? t('detail.disable') : t('detail.enable'))}
               </Button>
             )}
           </div>
@@ -554,10 +554,10 @@ export function Skills() {
         <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 shrink-0 gap-4">
           <div>
             <h1 className="text-5xl md:text-6xl font-serif text-foreground mb-3 font-normal tracking-tight" style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}>
-              {t('title') || 'Skills'}
+              {t('title')}
             </h1>
             <p className="text-[17px] text-foreground/80 font-medium">
-              {t('subtitle') || 'Browse and manage AI capabilities.'}
+              {t('subtitle')}
             </p>
           </div>
 
@@ -568,7 +568,7 @@ export function Skills() {
                 className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0 text-[13px] font-medium px-4 h-8 rounded-full border border-black/10 dark:border-white/10 flex items-center justify-center text-foreground/80 hover:text-foreground"
               >
                 <FolderOpen className="h-4 w-4 mr-2" />
-                Open Skills Folder
+                {t('openFolder')}
               </button>
             )}
           </div>
@@ -611,22 +611,19 @@ export function Skills() {
                 onClick={() => { setActiveTab('all'); setSelectedSource('all'); }}
                 className={cn("font-medium transition-colors flex items-center gap-1.5", activeTab === 'all' && selectedSource === 'all' ? "text-foreground" : "text-muted-foreground hover:text-foreground")}
               >
-                All Skills
-                <span className="text-[12px] font-normal opacity-70">{sourceStats.all}</span>
+                {t('filter.all', { count: sourceStats.all })}
               </button>
               <button
                 onClick={() => { setActiveTab('all'); setSelectedSource('built-in'); }}
                 className={cn("font-medium transition-colors flex items-center gap-1.5", activeTab === 'all' && selectedSource === 'built-in' ? "text-foreground" : "text-muted-foreground hover:text-foreground")}
               >
-                Built-in
-                <span className="text-[12px] font-normal opacity-70">{sourceStats.builtIn}</span>
+                {t('filter.builtIn', { count: sourceStats.builtIn })}
               </button>
               <button
                 onClick={() => setActiveTab('marketplace')}
                 className={cn("font-medium transition-colors flex items-center gap-1.5", activeTab === 'marketplace' ? "text-foreground" : "text-muted-foreground hover:text-foreground")}
               >
-                Marketplace
-                <span className="text-[12px] font-normal opacity-70">{sourceStats.marketplace}</span>
+                {t('filter.marketplace', { count: sourceStats.marketplace })}
               </button>
             </div>
           </div>
@@ -640,7 +637,7 @@ export function Skills() {
                   onClick={() => bulkToggleVisible(true)}
                   className="h-8 text-[13px] font-medium rounded-md px-3 border-black/10 dark:border-white/10 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 shadow-none"
                 >
-                  Enable All
+                  {t('actions.enableVisible')}
                 </Button>
                 <Button
                   variant="outline"
@@ -648,7 +645,7 @@ export function Skills() {
                   onClick={() => bulkToggleVisible(false)}
                   className="h-8 text-[13px] font-medium rounded-md px-3 border-black/10 dark:border-white/10 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 shadow-none"
                 >
-                  Disable All
+                  {t('actions.disableVisible')}
                 </Button>
               </>
             )}

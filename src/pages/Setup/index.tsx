@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { useGatewayStore } from '@/stores/gateway';
 import { useSettingsStore } from '@/stores/settings';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { SUPPORTED_LANGUAGES } from '@/i18n';
 import { toast } from 'sonner';
 import { invokeIpc } from '@/lib/api-client';
@@ -48,31 +49,31 @@ const STEP = {
   COMPLETE: 4,
 } as const;
 
-const steps: SetupStep[] = [
+const getSteps = (t: TFunction): SetupStep[] => [
   {
     id: 'welcome',
-    title: 'Welcome to ClawX',
-    description: 'Your AI assistant is ready to be configured',
+    title: t('steps.welcome.title'),
+    description: t('steps.welcome.description'),
   },
   {
     id: 'runtime',
-    title: 'Environment Check',
-    description: 'Verifying system requirements',
+    title: t('steps.runtime.title'),
+    description: t('steps.runtime.description'),
   },
   {
     id: 'provider',
-    title: 'AI Provider',
-    description: 'Configure your AI service',
+    title: t('steps.provider.title'),
+    description: t('steps.provider.description'),
   },
   {
     id: 'installing',
-    title: 'Setting Up',
-    description: 'Installing essential components',
+    title: t('steps.installing.title'),
+    description: t('steps.installing.description'),
   },
   {
     id: 'complete',
-    title: 'All Set!',
-    description: 'ClawX is ready to use',
+    title: t('steps.complete.title'),
+    description: t('steps.complete.description'),
   },
 ];
 
@@ -83,12 +84,12 @@ interface DefaultSkill {
   description: string;
 }
 
-const defaultSkills: DefaultSkill[] = [
-  { id: 'opencode', name: 'OpenCode', description: 'AI coding assistant backend' },
-  { id: 'python-env', name: 'Python Environment', description: 'Python runtime for skills' },
-  { id: 'code-assist', name: 'Code Assist', description: 'Code analysis and suggestions' },
-  { id: 'file-tools', name: 'File Tools', description: 'File operations and management' },
-  { id: 'terminal', name: 'Terminal', description: 'Shell command execution' },
+const getDefaultSkills = (t: TFunction): DefaultSkill[] => [
+  { id: 'opencode', name: t('defaultSkills.opencode.name'), description: t('defaultSkills.opencode.description') },
+  { id: 'python-env', name: t('defaultSkills.python-env.name'), description: t('defaultSkills.python-env.description') },
+  { id: 'code-assist', name: t('defaultSkills.code-assist.name'), description: t('defaultSkills.code-assist.description') },
+  { id: 'file-tools', name: t('defaultSkills.file-tools.name'), description: t('defaultSkills.file-tools.description') },
+  { id: 'terminal', name: t('defaultSkills.terminal.name'), description: t('defaultSkills.terminal.description') },
 ];
 
 import {
@@ -130,6 +131,7 @@ export function Setup() {
   // Runtime check status
   const [runtimeChecksPassed, setRuntimeChecksPassed] = useState(false);
 
+  const steps = getSteps(t);
   const safeStepIndex = Number.isInteger(currentStep)
     ? Math.min(Math.max(currentStep, STEP.WELCOME), steps.length - 1)
     : STEP.WELCOME;
@@ -255,7 +257,7 @@ export function Setup() {
               )}
               {safeStepIndex === STEP.INSTALLING && (
                 <InstallingContent
-                  skills={defaultSkills}
+                  skills={getDefaultSkills(t)}
                   onComplete={handleInstallationComplete}
                   onSkip={() => setCurrentStep((i) => i + 1)}
                 />
@@ -634,10 +636,10 @@ function RuntimeContent({ onStatusChange }: RuntimeContentProps) {
         </div>
         <div className="grid grid-cols-[1fr_auto] items-center gap-4 p-3 rounded-lg bg-muted/50">
           <div className="flex items-center gap-2 text-left">
-            <span>Gateway Service</span>
+            <span>{t('runtime.gateway')}</span>
             {checks.gateway.status === 'error' && (
               <Button variant="outline" size="sm" onClick={handleStartGateway}>
-                Start Gateway
+                {t('runtime.startGateway')}
               </Button>
             )}
           </div>
@@ -665,19 +667,19 @@ function RuntimeContent({ onStatusChange }: RuntimeContentProps) {
       {showLogs && (
         <div className="mt-4 p-4 rounded-lg bg-black/40 border border-border">
           <div className="flex items-center justify-between mb-2">
-            <p className="font-medium text-foreground text-sm">Application Logs</p>
+            <p className="font-medium text-foreground text-sm">{t('runtime.logs.title')}</p>
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleOpenLogDir}>
                 <ExternalLink className="h-3 w-3 mr-1" />
-                Open Log Folder
+                {t('runtime.logs.openFolder')}
               </Button>
               <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowLogs(false)}>
-                Close
+                {t('runtime.logs.close')}
               </Button>
             </div>
           </div>
           <pre className="text-xs text-slate-300 bg-black/50 p-3 rounded max-h-60 overflow-auto whitespace-pre-wrap font-mono">
-            {logContent || '(No logs available yet)'}
+            {logContent || t('runtime.logs.noLogs')}
           </pre>
         </div>
       )}
@@ -1574,9 +1576,9 @@ function CompleteContent({ selectedProvider, installedSkills }: CompleteContentP
   const gatewayStatus = useGatewayStore((state) => state.status);
 
   const providerData = providers.find((p) => p.id === selectedProvider);
-  const installedSkillNames = defaultSkills
-    .filter((s) => installedSkills.includes(s.id))
-    .map((s) => s.name)
+  const installedSkillNames = getDefaultSkills(t)
+    .filter((s: DefaultSkill) => installedSkills.includes(s.id))
+    .map((s: DefaultSkill) => s.name)
     .join(', ');
 
   return (

@@ -115,5 +115,27 @@
         "skipStep": "この手順をスキップ",
         "skipSetup": "セットアップをスキップ",
         "getStarted": "始める"
+    },
+    "defaultSkills": {
+        "opencode": {
+            "name": "OpenCode",
+            "description": "AI コーディングアシスタントのバックエンド"
+        },
+        "python-env": {
+            "name": "Python 環境",
+            "description": "スキルのための Python ランタイム"
+        },
+        "code-assist": {
+            "name": "コードアシスト",
+            "description": "コードの分析と提案"
+        },
+        "file-tools": {
+            "name": "ファイルツール",
+            "description": "ファイルの操作と管理"
+        },
+        "terminal": {
+            "name": "ターミナル",
+            "description": "シェルコマンドの実行"
+        }
     }
 }

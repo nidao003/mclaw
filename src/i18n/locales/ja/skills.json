@@ -48,7 +48,10 @@
         "saveConfig": "設定を保存",
         "configSaved": "設定を保存しました",
         "openManual": "マニュアルを開く",
-        "configurable": "設定可能"
+        "configurable": "設定可能",
+        "uninstall": "アンインストール",
+        "enable": "有効化",
+        "disable": "無効化"
     },
     "toast": {
         "enabled": "スキルを有効にしました",

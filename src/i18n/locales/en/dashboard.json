@@ -9,6 +9,10 @@
     "enabledOf": "{{enabled}} of {{total}} enabled",
     "sinceRestart": "Since last restart",
     "gatewayNotRunning": "Gateway not running",
+    "models": {
+        "title": "Models",
+        "subtitle": "Manage your AI providers and monitor token usage."
+    },
     "quickActions": {
         "title": "Quick Actions",
         "description": "Common tasks and shortcuts",

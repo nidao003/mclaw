@@ -115,5 +115,27 @@
         "skipStep": "跳过此步骤",
         "skipSetup": "跳过设置",
         "getStarted": "开始使用"
+    },
+    "defaultSkills": {
+        "opencode": {
+            "name": "OpenCode",
+            "description": "AI 编程助手后端"
+        },
+        "python-env": {
+            "name": "Python 环境",
+            "description": "技能所需的 Python 运行时"
+        },
+        "code-assist": {
+            "name": "代码辅助",
+            "description": "代码分析与建议"
+        },
+        "file-tools": {
+            "name": "文件工具",
+            "description": "文件操作与管理"
+        },
+        "terminal": {
+            "name": "终端",
+            "description": "Shell 命令执行"
+        }
     }
 }

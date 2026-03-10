@@ -9,6 +9,10 @@
     "enabledOf": "{{enabled}} / {{total}} 已启用",
     "sinceRestart": "自上次重启",
     "gatewayNotRunning": "网关未运行",
+    "models": {
+        "title": "模型",
+        "subtitle": "管理您的 AI 提供商并监控 Token 用量。"
+    },
     "quickActions": {
         "title": "快捷操作",
         "description": "常用任务和快捷方式",

@@ -167,7 +167,7 @@ export function Sidebar() {
   }
 
   const navItems = [
-    { to: '/models', icon: <Cpu className="h-[18px] w-[18px]" strokeWidth={2} />, label: t('sidebar.models', 'Models') },
+    { to: '/models', icon: <Cpu className="h-[18px] w-[18px]" strokeWidth={2} />, label: t('sidebar.models') },
     { to: '/channels', icon: <Network className="h-[18px] w-[18px]" strokeWidth={2} />, label: t('sidebar.channels') },
     { to: '/skills', icon: <Puzzle className="h-[18px] w-[18px]" strokeWidth={2} />, label: t('sidebar.skills') },
     { to: '/cron', icon: <Clock className="h-[18px] w-[18px]" strokeWidth={2} />, label: t('sidebar.cronTasks') },
@@ -318,7 +318,7 @@ export function Sidebar() {
           </div>
           {!sidebarCollapsed && (
             <>
-              <span className="flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap">OpenClaw Page</span>
+              <span className="flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap">{t('common:sidebar.openClawPage')}</span>
               <ExternalLink className="h-3 w-3 shrink-0 ml-auto opacity-50 text-muted-foreground" />
             </>
           )}
@@ -327,10 +327,10 @@ export function Sidebar() {
 
       <ConfirmDialog
         open={!!sessionToDelete}
-        title={t('common.confirm', 'Confirm')}
-        message={sessionToDelete ? t('sidebar.deleteSessionConfirm', `Delete "${sessionToDelete.label}"?`) : ''}
-        confirmLabel={t('common.delete', 'Delete')}
-        cancelLabel={t('common.cancel', 'Cancel')}
+        title={t('common:actions.confirm')}
+        message={t('common:sidebar.deleteSessionConfirm', { label: sessionToDelete?.label })}
+        confirmLabel={t('common:actions.delete')}
+        cancelLabel={t('common:actions.cancel')}
         variant="destructive"
         onConfirm={async () => {
           if (!sessionToDelete) return;
