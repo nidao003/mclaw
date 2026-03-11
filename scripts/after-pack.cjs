@@ -340,6 +340,7 @@ exports.default = async function afterPack(context) {
     { npmName: '@soimy/dingtalk', pluginId: 'dingtalk' },
     { npmName: '@wecom/wecom-openclaw-plugin', pluginId: 'wecom' },
     { npmName: '@sliverp/qqbot', pluginId: 'qqbot' },
+    { npmName: '@larksuite/openclaw-lark', pluginId: 'feishu-openclaw-plugin' },
   ];
 
   mkdirSync(pluginsDestRoot, { recursive: true });
