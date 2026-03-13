@@ -85,6 +85,7 @@ export function ChannelConfigModal({
   } | null>(null);
 
   const meta: ChannelMeta | null = selectedType ? CHANNEL_META[selectedType] : null;
+  const shouldUseCredentialValidation = selectedType !== 'feishu';
 
   useEffect(() => {
     setSelectedType(initialSelectedType);
@@ -224,7 +225,7 @@ export function ChannelConfigModal({
   }, [selectedType, finishSave, onClose, t]);
 
   const handleValidate = async () => {
-    if (!selectedType) return;
+    if (!selectedType || !shouldUseCredentialValidation) return;
 
     setValidating(true);
     setValidationResult(null);
@@ -280,7 +281,7 @@ export function ChannelConfigModal({
         return;
       }
 
-      if (meta.connectionType === 'token') {
+      if (meta.connectionType === 'token' && shouldUseCredentialValidation) {
         const validationResponse = await hostApiFetch<{
           success: boolean;
           valid?: boolean;
@@ -598,7 +599,7 @@ export function ChannelConfigModal({
 
               <div className="flex flex-col sm:flex-row sm:justify-end gap-3 pt-2">
                 <div className="flex flex-col sm:flex-row gap-2">
-                  {meta?.connectionType === 'token' && (
+                  {meta?.connectionType === 'token' && shouldUseCredentialValidation && (
                     <Button
                       variant="outline"
                       onClick={handleValidate}
