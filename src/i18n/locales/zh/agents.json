@@ -41,6 +41,7 @@
         "agentCreated": "Agent 已创建",
         "agentCreateFailed": "创建 Agent 失败：{{error}}",
         "agentDeleted": "Agent 已删除",
+        "agentDeleteFailed": "删除 Agent 失败：{{error}}",
         "agentUpdated": "Agent 已更新",
         "agentUpdateFailed": "更新 Agent 失败：{{error}}",
         "channelAssigned": "{{channel}} 已分配给 Agent",

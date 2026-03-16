@@ -41,6 +41,7 @@
         "agentCreated": "Agent を作成しました",
         "agentCreateFailed": "Agent の作成に失敗しました: {{error}}",
         "agentDeleted": "Agent を削除しました",
+        "agentDeleteFailed": "Agent の削除に失敗しました: {{error}}",
         "agentUpdated": "Agent を更新しました",
         "agentUpdateFailed": "Agent の更新に失敗しました: {{error}}",
         "channelAssigned": "{{channel}} を Agent に割り当てました",
