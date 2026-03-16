@@ -464,10 +464,15 @@ export async function saveChannelConfig(
         // Most OpenClaw channel plugins read the default account's credentials
         // from the top level of `channels.<type>` (e.g. channels.feishu.appId),
         // not from `accounts.default`.  Mirror them there so plugins can discover
-        // the credentials correctly.  We use the final account entry (not
-        // transformedConfig) because `enabled` is only added at the account level.
-        if (resolvedAccountId === DEFAULT_ACCOUNT_ID) {
-            for (const [key, value] of Object.entries(accounts[resolvedAccountId])) {
+        // the credentials correctly.
+        // This MUST run unconditionally (not just when saving the default account)
+        // because migrateLegacyChannelConfigToAccounts() above strips top-level
+        // credential keys on every invocation.  Without this, saving a non-default
+        // account (e.g. a sub-agent's Feishu bot) leaves the top-level credentials
+        // missing, breaking plugins that only read from the top level.
+        const defaultAccountData = accounts[DEFAULT_ACCOUNT_ID];
+        if (defaultAccountData) {
+            for (const [key, value] of Object.entries(defaultAccountData)) {
                 channelSection[key] = value;
             }
         }
@@ -567,6 +572,15 @@ export async function deleteChannelAccountConfig(channelType: string, accountId:
 
         if (Object.keys(accounts).length === 0) {
             delete currentConfig.channels![channelType];
+        } else {
+            // Re-mirror default account credentials to top level after migration
+            // stripped them (same rationale as saveChannelConfig).
+            const defaultAccountData = accounts[DEFAULT_ACCOUNT_ID];
+            if (defaultAccountData) {
+                for (const [key, value] of Object.entries(defaultAccountData)) {
+                    channelSection[key] = value;
+                }
+            }
         }
 
         await writeOpenClawConfig(currentConfig);
@@ -675,6 +689,15 @@ export async function deleteAgentChannelAccounts(agentId: string): Promise<void>
             delete accounts[accountId];
             if (Object.keys(accounts).length === 0) {
                 delete currentConfig.channels[channelType];
+            } else {
+                // Re-mirror default account credentials to top level after migration
+                // stripped them (same rationale as saveChannelConfig).
+                const defaultAccountData = accounts[DEFAULT_ACCOUNT_ID];
+                if (defaultAccountData) {
+                    for (const [key, value] of Object.entries(defaultAccountData)) {
+                        section[key] = value;
+                    }
+                }
             }
             modified = true;
         }
