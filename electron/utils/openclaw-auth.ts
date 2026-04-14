@@ -1767,13 +1767,14 @@ export async function sanitizeOpenClawConfig(): Promise<void> {
           console.log('[sanitize] Removed bare "feishu" from plugins.allow (openclaw-lark plugin is configured)');
           modified = true;
         }
-        // Delete the built-in feishu entry entirely instead of setting enabled:false.
-        // Setting enabled:false causes the Gateway to report the channel as "disabled"
-        // which shows as an error in the UI.  Since 'feishu' is removed from
-        // plugins.allow above, the built-in extension won't auto-load.
-        if (pEntries.feishu) {
-          delete pEntries.feishu;
-          console.log('[sanitize] Removed built-in feishu plugin entry (openclaw-lark plugin is configured)');
+        // Explicitly disable the built-in feishu extension so it doesn't
+        // conflict with the official openclaw-lark plugin at runtime.
+        // Simply deleting the entry is NOT sufficient — the built-in
+        // extension in dist/extensions/feishu/ (enabledByDefault: true) will
+        // still load unless explicitly marked as disabled.
+        if (!pEntries.feishu || (pEntries.feishu as Record<string, unknown>).enabled !== false) {
+          pEntries.feishu = { enabled: false };
+          console.log('[sanitize] Disabled built-in feishu plugin (openclaw-lark plugin is configured)');
           modified = true;
         }
       }
@@ -1828,6 +1829,14 @@ export async function sanitizeOpenClawConfig(): Promise<void> {
       // allowlist because they were excluded from externalPluginIds above.
       if (nextAllow.length > 0) {
         for (const pluginId of bundled.enabledByDefault) {
+          // When the official openclaw-lark (or similar) plugin replaces the
+          // built-in 'feishu' extension, skip re-adding 'feishu' here —
+          // otherwise the enabledByDefault logic undoes the conflict
+          // resolution performed above and the built-in extension keeps
+          // reappearing in plugins.allow on every gateway restart.
+          if (pluginId === 'feishu' && canonicalFeishuId !== 'feishu') {
+            continue;
+          }
           if (!nextAllow.includes(pluginId)) {
             nextAllow.push(pluginId);
           }
