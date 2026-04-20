@@ -258,8 +258,21 @@ export function Chat() {
       return builtSteps;
     };
 
+    // Show the streaming response as a separate bubble (not inside the
+    // execution graph) once all tool calls have finished.
+    //
+    // Three signals indicate "tools finished, now streaming the reply":
+    //   1. `pendingFinal`        — set by tool-result final events
+    //   2. `allToolsCompleted`   — all entries in streamingTools are completed
+    //   3. `hasCompletedToolPhase` — historical messages (loaded by the poll)
+    //      contain tool_use blocks, meaning the Gateway executed tools
+    //      server-side without sending streaming tool events to the client
+    const allToolsCompleted = streamingTools.length > 0 && !hasRunningStreamToolStatus;
+    const hasCompletedToolPhase = segmentMessages.some((msg) =>
+      msg.role === 'assistant' && extractToolUse(msg).length > 0,
+    );
     const rawStreamingReplyCandidate = isLatestOpenRun
-      && pendingFinal
+      && (pendingFinal || allToolsCompleted || hasCompletedToolPhase)
       && (hasStreamText || hasStreamImages)
       && streamTools.length === 0
       && !hasRunningStreamToolStatus;
@@ -365,8 +378,12 @@ export function Chat() {
   const autoCollapsedRunKeys = useMemo(() => {
     const keys = new Set<string>();
     for (const card of userRunCards) {
-      const shouldCollapse = card.streamingReplyText != null
-        || (card.replyIndex != null && replyTextOverrides.has(card.replyIndex));
+      // Auto-collapse once the reply is visible — either the streaming
+      // reply bubble is already rendering (streamingReplyText != null)
+      // or the run finished and we have a reply text override.
+      const hasStreamingReply = card.streamingReplyText != null;
+      const hasHistoricalReply = card.replyIndex != null && replyTextOverrides.has(card.replyIndex);
+      const shouldCollapse = hasStreamingReply || hasHistoricalReply;
       if (!shouldCollapse) continue;
       const triggerMsg = messages[card.triggerIndex];
       const runKey = triggerMsg?.id
