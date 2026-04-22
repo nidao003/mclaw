@@ -39,6 +39,9 @@ importers:
       posthog-node:
         specifier: ^5.28.0
         version: 5.28.5
+      tar:
+        specifier: ^6.2.1
+        version: 6.2.1
       rehype-katex:
         specifier: ^7.0.1
         version: 7.0.1
