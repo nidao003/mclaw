@@ -2070,6 +2070,14 @@ function registerProviderHandlers(gatewayManager: GatewayManager): void {
 /**
  * Shell-related IPC handlers
  */
+function expandShellPath(input: string): string {
+  if (input === '~') return homedir();
+  if (input.startsWith(`~${sep}`) || input.startsWith('~/') || input.startsWith('~\\')) {
+    return join(homedir(), input.slice(2));
+  }
+  return input;
+}
+
 function registerShellHandlers(): void {
   // Open external URL
   ipcMain.handle('shell:openExternal', async (_, url: string) => {
@@ -2078,12 +2086,12 @@ function registerShellHandlers(): void {
 
   // Open path in file explorer
   ipcMain.handle('shell:showItemInFolder', async (_, path: string) => {
-    shell.showItemInFolder(path);
+    shell.showItemInFolder(expandShellPath(path));
   });
 
   // Open path
   ipcMain.handle('shell:openPath', async (_, path: string) => {
-    return await shell.openPath(path);
+    return await shell.openPath(expandShellPath(path));
   });
 }
 
@@ -2653,6 +2661,12 @@ function registerSessionHandlers(): void {
 // (defence in depth on top of contextIsolation).
 
 const FILE_PREVIEW_MAX_TEXT_BYTES = 2 * 1024 * 1024; // 2 MB
+// Binary preview ceiling for inline PDF / spreadsheet rendering.  Anything
+// over this still falls back to "open with system app" via the existing
+// confirmAndOpenFile flow so we never balloon the renderer with huge
+// buffers, but typical work-product PDFs / XLSX files (a few MB) sail
+// through.
+const FILE_PREVIEW_MAX_BINARY_BYTES = 50 * 1024 * 1024; // 50 MB
 const FILE_PREVIEW_TREE_MAX_DEPTH = 6;
 const FILE_PREVIEW_TREE_MAX_NODES = 5000;
 const FILE_PREVIEW_DIR_BLACKLIST = new Set([
@@ -2717,27 +2731,6 @@ function getFilePreviewWriteRoots(): string[] {
   return roots;
 }
 
-/**
- * Additional roots inside which the file preview pipeline can READ ONLY.
- * Bundled skills, app resources and the dev-mode project root live here:
- * the user has a legitimate reason to peek at SKILL.md / scripts shipped
- * with the app, but writing to them would corrupt the install.
- */
-function getFilePreviewReadOnlyRoots(): string[] {
-  const roots: string[] = [];
-  try {
-    // In dev this is the project root (covers `node_modules/.pnpm/...`),
-    // in prod it points at the asar / app dir.
-    roots.push(resolve(app.getAppPath()));
-  } catch {
-    // app.getAppPath() can throw before the app is ready; ignore.
-  }
-  if (typeof process.resourcesPath === 'string' && process.resourcesPath) {
-    roots.push(resolve(process.resourcesPath));
-  }
-  return roots;
-}
-
 interface ResolvedSandboxedPath {
   realPath: string;
   /** True when the resolved path lives in a read-only-only root (e.g. bundled skill). */
@@ -2769,19 +2762,19 @@ async function resolveSandboxedPath(
     return { realPath: real, readOnly: false };
   }
   if (mode === 'write') {
-    // Caller wants to mutate. If the path is inside a read-only root we can
-    // surface a more informative error; otherwise it's a true sandbox miss.
-    const roRoots = getFilePreviewReadOnlyRoots();
-    if (roRoots.some((root) => isPathInside(real, root))) {
-      throw new Error('readOnlyRoot');
-    }
-    throw new Error('outsideSandbox');
+    // Preview is broadly read-only, but mutations stay confined to the
+    // app-owned write roots. This avoids path-specific allowlists (which
+    // are fragile on Windows, OneDrive, localized folders, Chinese user
+    // names, etc.) while preserving a strict write boundary.
+    throw new Error('readOnlyRoot');
   }
-  const roRoots = getFilePreviewReadOnlyRoots();
-  if (roRoots.some((root) => isPathInside(real, root))) {
-    return { realPath: real, readOnly: true };
-  }
-  throw new Error('outsideSandbox');
+
+  // Read-only preview should work for any real local path surfaced by the
+  // desktop app/runtime. `realpath()` above canonicalizes Windows casing,
+  // Unicode path segments and symlinks; individual handlers still enforce
+  // file-vs-directory checks, size caps, hidden directory skips and binary
+  // detection where appropriate.
+  return { realPath: real, readOnly: true };
 }
 
 function looksLikeBinary(buf: Buffer): boolean {
@@ -2824,6 +2817,45 @@ function registerFilePreviewHandlers(): void {
       return {
         ok: true,
         content: buf.toString('utf8'),
+        mimeType: getMimeType(extname(real)),
+        size: stat.size,
+        readOnly,
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message === 'outsideSandbox') {
+        return { ok: false, error: 'outsideSandbox' };
+      }
+      if (message.includes('ENOENT')) {
+        return { ok: false, error: 'notFound' };
+      }
+      return { ok: false, error: message };
+    }
+  });
+
+  ipcMain.handle('file:readBinary', async (_, inputPath: string, opts?: { maxBytes?: number }) => {
+    try {
+      const { realPath: real, readOnly } = await resolveSandboxedPath(inputPath, 'read');
+      const fsP = await import('fs/promises');
+      const stat = await fsP.stat(real);
+      if (!stat.isFile()) {
+        return { ok: false, error: 'notFound' };
+      }
+      const cap = Math.max(
+        1,
+        Math.min(opts?.maxBytes ?? FILE_PREVIEW_MAX_BINARY_BYTES, FILE_PREVIEW_MAX_BINARY_BYTES),
+      );
+      if (stat.size > cap) {
+        return { ok: false, error: 'tooLarge', size: stat.size };
+      }
+      const buf = await fsP.readFile(real);
+      // Electron serialises Node Buffers as ArrayBuffer-backed Uint8Arrays
+      // through structured clone, so the renderer receives a Uint8Array
+      // without the heavyweight base64 round-trip.
+      const view = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+      return {
+        ok: true,
+        data: view,
         mimeType: getMimeType(extname(real)),
         size: stat.size,
         readOnly,
