@@ -1,6 +1,6 @@
 {
     "name": "clawx",
-    "version": "0.4.2-alpha.0",
+    "version": "0.4.2-beta.2",
     "pnpm": {
         "onlyBuiltDependencies": [
             "@discordjs/opus",
@@ -65,6 +65,7 @@
         "package:win": "pnpm run prep:win-binaries && pnpm run package && node scripts/run-electron-builder.mjs --win --publish never",
         "package:linux": "pnpm run package && node scripts/run-electron-builder.mjs --linux --publish never",
         "release": "pnpm run uv:download && pnpm run package && node scripts/run-electron-builder.mjs --publish always",
+        "preversion": "node scripts/pre-version-fetch-tags.mjs",
         "version": "node scripts/assert-release-version.mjs",
         "version:patch": "pnpm version patch",
         "version:minor": "pnpm version minor",
@@ -73,7 +74,7 @@
         "version:prerelease-alpha": "pnpm version prerelease --preid=alpha",
         "version:prerelease-beta": "pnpm version prerelease --preid=beta",
         "release:validate": "node scripts/assert-tag-matches-package.mjs",
-        "postversion": "git push && git push --tags"
+        "postversion": "node scripts/post-version-push.mjs"
     },
     "dependencies": {
         "@monaco-editor/react": "^4.7.0",
