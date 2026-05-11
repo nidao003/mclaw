@@ -48,7 +48,10 @@ export function createHistoryActions(
   return {
     loadHistory: async (quiet = false) => {
       const { currentSessionKey } = get();
-      const isInitialForegroundLoad = !quiet && !foregroundHistoryLoadSeen.has(currentSessionKey);
+      const gatewayState = useGatewayStore.getState?.() as { status?: { pid?: number; connectedAt?: number; port?: number } } | undefined;
+      const gatewayStatus = gatewayState?.status;
+      const foregroundLoadKey = `${gatewayStatus?.pid ?? 'none'}:${gatewayStatus?.connectedAt ?? 'none'}:${gatewayStatus?.port ?? 'none'}|${currentSessionKey}`;
+      const isInitialForegroundLoad = !quiet && !foregroundHistoryLoadSeen.has(foregroundLoadKey);
       const historyTimeoutOverride = getStartupHistoryTimeoutOverride(isInitialForegroundLoad);
       if (!quiet) set({ loading: true, error: null });
 
@@ -278,7 +281,7 @@ export function createHistoryActions(
           }
           const applied = applyLoadedMessages(rawMessages, thinkingLevel);
           if (applied && isInitialForegroundLoad) {
-            foregroundHistoryLoadSeen.add(currentSessionKey);
+            foregroundHistoryLoadSeen.add(foregroundLoadKey);
           }
           return;
         }
@@ -297,7 +300,7 @@ export function createHistoryActions(
         if (fallbackMessages.length > 0) {
           const applied = applyLoadedMessages(fallbackMessages, null);
           if (applied && isInitialForegroundLoad) {
-            foregroundHistoryLoadSeen.add(currentSessionKey);
+            foregroundHistoryLoadSeen.add(foregroundLoadKey);
           }
         } else if (errorKind === 'gateway_startup') {
           // Suppress error UI for gateway startup -- the history will load
@@ -317,7 +320,7 @@ export function createHistoryActions(
         if (fallbackMessages.length > 0) {
           const applied = applyLoadedMessages(fallbackMessages, null);
           if (applied && isInitialForegroundLoad) {
-            foregroundHistoryLoadSeen.add(currentSessionKey);
+            foregroundHistoryLoadSeen.add(foregroundLoadKey);
           }
         } else {
           applyLoadFailure(String(err));
