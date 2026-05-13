@@ -113,15 +113,21 @@ export function Sidebar() {
   const isGatewayReady = isGatewayRunning && gatewayStatus.gatewayReady !== false;
   const gatewayRuntimeKey = `${gatewayStatus.pid ?? 'none'}:${gatewayStatus.connectedAt ?? 'none'}:${gatewayStatus.port}`;
 
+  const hasLoadedCurrentRuntimeRef = useRef(false);
+
+  useEffect(() => {
+    hasLoadedCurrentRuntimeRef.current = false;
+  }, [gatewayRuntimeKey]);
+
   useEffect(() => {
     if (!isGatewayReady) return;
     let cancelled = false;
     (async () => {
-      await Promise.allSettled([
-        loadSessions(),
-        loadHistory(false),
-      ]);
+      await loadSessions();
       if (cancelled) return;
+      if (hasLoadedCurrentRuntimeRef.current) return;
+      hasLoadedCurrentRuntimeRef.current = true;
+      await loadHistory(false);
     })();
     return () => {
       cancelled = true;
