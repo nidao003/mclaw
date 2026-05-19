@@ -1280,6 +1280,10 @@ describe('assertValidApiProtocol guard at write sites', () => {
     await rm(testUserData, { recursive: true, force: true });
   });
 
+  afterEach(() => {
+    vi.doUnmock('@electron/utils/provider-registry');
+  });
+
   it('setOpenClawDefaultModel throws InvalidApiProtocolError and leaves openclaw.json untouched when registry api is invalid', async () => {
     const initialConfig = {
       agents: {
@@ -1631,7 +1635,7 @@ describe('openai agentRuntime pin', () => {
     expect(openai.baseUrl).toBe('https://api.openai.com/v1');
   });
 
-  it('does not pin agentRuntime for the OAuth openai-codex provider entry', async () => {
+  it('pins agentRuntime to the embedded "pi" runtime for the OAuth openai-codex provider entry', async () => {
     await writeOpenClawJson({
       models: { providers: {} },
     });
@@ -1648,7 +1652,8 @@ describe('openai agentRuntime pin', () => {
     const codex = providers['openai-codex'] as Record<string, unknown>;
 
     expect(codex).toBeDefined();
-    expect(codex.agentRuntime).toBeUndefined();
+    expect(codex.agentRuntime).toEqual({ id: 'pi' });
+    expect(codex.api).toBe('openai-codex-responses');
   });
 
   it('preserves a user-provided agentRuntime override on the openai entry', async () => {
@@ -1679,6 +1684,34 @@ describe('openai agentRuntime pin', () => {
     const openai = providers.openai as Record<string, unknown>;
 
     expect(openai.agentRuntime).toEqual({ id: 'custom-harness' });
+  });
+});
+
+describe('setOpenClawDefaultModel for openai-codex OAuth', () => {
+  beforeEach(async () => {
+    vi.doUnmock('@electron/utils/provider-registry');
+    vi.resetModules();
+    vi.restoreAllMocks();
+    await rm(testHome, { recursive: true, force: true });
+    await rm(testUserData, { recursive: true, force: true });
+  });
+
+  it('writes models.providers.openai-codex with a pinned pi runtime', async () => {
+    await writeOpenClawJson({
+      models: { providers: {} },
+    });
+
+    const { setOpenClawDefaultModel } = await import('@electron/utils/openclaw-auth');
+    await setOpenClawDefaultModel('openai-codex', 'openai-codex/gpt-5.5');
+
+    const result = await readOpenClawJson();
+    const providers = (result.models as Record<string, unknown>).providers as Record<string, unknown>;
+    const codex = providers['openai-codex'] as Record<string, unknown>;
+    const defaults = ((result.agents as Record<string, unknown>).defaults as Record<string, unknown>).model as Record<string, unknown>;
+
+    expect(defaults.primary).toBe('openai-codex/gpt-5.5');
+    expect(codex.agentRuntime).toEqual({ id: 'pi' });
+    expect(codex.api).toBe('openai-codex-responses');
   });
 });
 
@@ -1713,6 +1746,29 @@ describe('ensureOpenClawProviderAgentRuntimePins', () => {
     const openai = providers.openai as Record<string, unknown>;
     expect(openai.agentRuntime).toEqual({ id: 'pi' });
     expect(openai.api).toBe('openai-responses');
+  });
+
+  it('pins agentRuntime:{id:"pi"} on legacy openai-codex OAuth entries that lack it', async () => {
+    await writeOpenClawJson({
+      models: {
+        providers: {
+          'openai-codex': {
+            baseUrl: 'https://api.openai.com/v1',
+            api: 'openai-codex-responses',
+            models: [{ id: 'gpt-5.5', name: 'gpt-5.5' }],
+          },
+        },
+      },
+    });
+
+    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/openclaw-auth');
+    const pinned = await ensureOpenClawProviderAgentRuntimePins();
+
+    expect(pinned).toEqual(['openai-codex']);
+    const result = await readOpenClawJson();
+    const providers = (result.models as Record<string, unknown>).providers as Record<string, unknown>;
+    const codex = providers['openai-codex'] as Record<string, unknown>;
+    expect(codex.agentRuntime).toEqual({ id: 'pi' });
   });
 
   it('leaves entries untouched when the openai entry already has any agentRuntime.id', async () => {
