@@ -61,5 +61,48 @@
         "close": "閉じる",
         "noUsage": "使用量なし",
         "usageParseError": "使用量解析エラー"
+    },
+    "imageGeneration": {
+        "title": "画像生成",
+        "description": "image_generate ツール用に、チャットプロバイダーとは独立した OpenAI Images 互換エンドポイントを 1 つ設定します。",
+        "timeout": "タイムアウト（ms）",
+        "agentAuthTitle": "エージェントごとの認証",
+        "agentAuthDesc": "画像生成は、各エージェントの auth-profiles.json に保存されたこのカスタム画像エンドポイント用 API キーを使用します。",
+        "agentColumn": "エージェント",
+        "authColumn": "カスタム画像エンドポイント認証",
+        "defaultAgent": "デフォルト",
+        "authConfigured": "準備完了",
+        "authMissing": "キー未設定",
+        "testAgent": "テスト用エージェント",
+        "testButton": "テスト生成",
+        "testing": "生成中…",
+        "save": "保存",
+        "saving": "保存中…",
+        "testPrompt": "白背景に小さな赤い円、ミニマルなフラットイラスト。",
+        "toast": {
+            "saved": "画像生成設定を保存しました",
+            "saveBeforeTest": "テスト前に設定を保存してください",
+            "testSuccess": "テスト画像を生成しました（{{ms}} ms）",
+            "testSuccessWithPath": "テスト画像を生成しました（{{ms}} ms）：{{path}}",
+            "testFailed": "画像生成テストに失敗しました"
+        },
+        "openAiRelay": {
+            "title": "カスタム画像エンドポイント",
+            "description": "画像生成を専用の OpenAI Images 互換エンドポイント（/v1/images/generations）へ送ります。チャットプロバイダーは変更しません。",
+            "baseUrl": "画像 Base URL",
+            "baseUrlHint": "例: https://taolat.com/v1 — /v1 が無い場合は自動付与します。",
+            "apiKey": "API キー",
+            "apiKeyPlaceholder": "sk-...",
+            "apiKeyPlaceholderConfigured": "設定済み — 空欄のままなら変更しません",
+            "model": "モデル名",
+            "modelHint": "gpt-image-2 のようなモデル ID のみを入力してください。provider/model は入力しないでください。"
+        },
+        "errors": {
+            "invalidTimeout": "タイムアウトは正の数である必要があります",
+            "relayBaseUrlRequired": "画像生成 Base URL を入力してください",
+            "relayApiKeyRequired": "API キーを入力してください",
+            "relayModelRequired": "モデル名が必要です",
+            "relayModelInvalid": "gpt-image-2 のようなモデル名のみを入力してください。provider/model は入力しないでください。"
+        }
     }
 }

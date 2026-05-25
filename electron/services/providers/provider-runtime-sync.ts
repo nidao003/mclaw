@@ -211,7 +211,6 @@ export async function syncProviderApiKeyToRuntime(
 
 export async function syncAllProviderAuthToRuntime(): Promise<void> {
   const accounts = await listProviderAccounts();
-
   for (const account of accounts) {
     const runtimeProviderKey = await resolveRuntimeProviderKey({
       id: account.id,
@@ -516,7 +515,8 @@ export async function syncUpdatedProviderToRuntime(
   const fallbackModels = await getProviderFallbackModelRefs(config);
 
   const defaultProviderId = await getDefaultProvider();
-  if (defaultProviderId === config.id) {
+  const isDefaultProvider = defaultProviderId === config.id;
+  if (isDefaultProvider) {
     const modelOverride = config.model ? `${ock}/${config.model}` : undefined;
     if (!isUnregisteredProviderType(config.type)) {
       if (shouldUseExplicitDefaultOverride(config, ock)) {

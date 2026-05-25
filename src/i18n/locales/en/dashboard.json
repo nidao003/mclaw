@@ -61,5 +61,48 @@
         "close": "Close",
         "noUsage": "No usage",
         "usageParseError": "Usage parse error"
+    },
+    "imageGeneration": {
+        "title": "Image Generation",
+        "description": "Configure one custom OpenAI Images-compatible endpoint for the image_generate tool. It is independent from chat providers.",
+        "timeout": "Timeout (ms)",
+        "agentAuthTitle": "Per-agent authentication",
+        "agentAuthDesc": "Image generation uses the API key saved for this custom image endpoint in each agent's auth-profiles.json.",
+        "agentColumn": "Agent",
+        "authColumn": "Custom image endpoint auth",
+        "defaultAgent": "default",
+        "authConfigured": "Ready",
+        "authMissing": "Missing key",
+        "testAgent": "Test as agent",
+        "testButton": "Test generate",
+        "testing": "Generating…",
+        "save": "Save",
+        "saving": "Saving…",
+        "testPrompt": "A small red circle on a white background, minimal flat illustration.",
+        "toast": {
+            "saved": "Image generation settings saved",
+            "saveBeforeTest": "Save settings before running a test",
+            "testSuccess": "Test image generated ({{ms}} ms)",
+            "testSuccessWithPath": "Test image generated ({{ms}} ms): {{path}}",
+            "testFailed": "Image generation test failed"
+        },
+        "openAiRelay": {
+            "title": "Custom image endpoint",
+            "description": "Send image generation to a dedicated OpenAI Images-compatible endpoint (/v1/images/generations). This does not change any chat provider.",
+            "baseUrl": "Image Base URL",
+            "baseUrlHint": "e.g. https://taolat.com/v1 — /v1 is appended automatically when omitted.",
+            "apiKey": "API key",
+            "apiKeyPlaceholder": "sk-...",
+            "apiKeyPlaceholderConfigured": "Already configured — leave blank to keep",
+            "model": "Model name",
+            "modelHint": "Enter only the model id, for example gpt-image-2. Do not include provider/model."
+        },
+        "errors": {
+            "invalidTimeout": "Timeout must be a positive number",
+            "relayBaseUrlRequired": "Image Base URL is required",
+            "relayApiKeyRequired": "API key is required",
+            "relayModelRequired": "Model name is required",
+            "relayModelInvalid": "Enter only the model name, for example gpt-image-2. Do not include provider/model."
+        }
     }
 }
