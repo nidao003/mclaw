@@ -3,14 +3,14 @@ import { hostApiFetch } from '@/lib/host-api';
 import { useGatewayStore } from '@/stores/gateway';
 import {
   clearHistoryPoll,
+  enrichWithToolCallAttachments,
   enrichWithCachedImages,
   enrichWithToolResultFiles,
   getLatestOptimisticUserMessage,
   getMessageErrorMessage,
   getMessageStopReason,
   getMessageText,
-  isInternalMessage,
-  isToolResultRole,
+  shouldDropMessageFromHistory,
   loadMissingPreviews,
   mergePendingOptimisticUserMessages,
   dropRedundantOptimisticUserMessages,
@@ -112,7 +112,8 @@ export function createHistoryActions(
         if (!isCurrentSession()) return false;
         // Before filtering: attach images/files from tool_result messages to the next assistant message
         const messagesWithToolImages = enrichWithToolResultFiles(rawMessages);
-        const filteredMessages = messagesWithToolImages.filter((msg) => !isToolResultRole(msg.role) && !isInternalMessage(msg));
+        const messagesWithToolAttachments = enrichWithToolCallAttachments(messagesWithToolImages);
+        const filteredMessages = messagesWithToolAttachments.filter((msg) => !shouldDropMessageFromHistory(msg));
         // Restore file attachments for user/assistant messages (from cache + text patterns)
         const enrichedMessages = enrichWithCachedImages(filteredMessages);
 

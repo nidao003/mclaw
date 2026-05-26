@@ -1,4 +1,9 @@
 import { invokeIpc } from '@/lib/api-client';
+import {
+  isGeneratingStatusNarration,
+  isInternalAssistantReplyText,
+  isOpenClawRuntimeEventPrompt,
+} from '@/pages/Chat/message-utils';
 import type { AttachedFileMeta, ChatSession, ContentBlock, RawMessage, ToolStatus } from './types';
 
 // Module-level timestamp tracking the last chat event received.
@@ -186,8 +191,25 @@ function normalizeStreamingMessage(message: unknown): unknown {
  * `[media attached:` instead — leaving the timestamp in the normalized
  * comparison text and breaking optimistic-vs-echo dedupe.
  */
+function stripInboundMediaVisionEnvelope(text: string): string {
+  if (!/\[Image\]/i.test(text) && !/^User text:/im.test(text) && !/\nDescription:\s*\n/i.test(text)) {
+    return text;
+  }
+
+  let result = text.replace(/^\s*\[Image\]\s*\n?/i, '');
+
+  const userTextBlock = result.match(/^User text:\s*\n([\s\S]*?)(?:\n\s*Description:\s*\n[\s\S]*)?\s*$/i);
+  if (userTextBlock) {
+    const userText = userTextBlock[1].trim();
+    return /^Process the attached file\(s\)\.\s*$/i.test(userText) ? '' : userText;
+  }
+
+  return result.replace(/\n\s*Description:\s*\n[\s\S]*$/i, '').trim();
+}
+
 function stripGatewayUserMetadata(text: string): string {
-  return text
+  return stripInboundMediaVisionEnvelope(
+    text
     .replace(/\s*\[media attached:[^\]]*\]/g, '')
     .replace(/\s*\[message_id:\s*[^\]]+\]/g, '')
     .replace(/^Sender\s*\([^)]*\)\s*:\s*```[a-z]*\n[\s\S]*?```\s*/i, '')
@@ -198,13 +220,16 @@ function stripGatewayUserMetadata(text: string): string {
     .replace(/^Sender\s*:\s*[^\n]*(?:\n\s*)*/i, '')
     .replace(/^Conversation info\s*\([^)]*\):\s*```[a-z]*\n[\s\S]*?```\s*/i, '')
     .replace(/^Conversation info\s*\([^)]*\):\s*\{[\s\S]*?\}\s*/i, '')
-    .replace(/^\s*\[(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+[^\]]+\]\s*/i, '');
+    .replace(/^\s*\[(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+[^\]]+\]\s*/i, ''),
+  );
 }
 
 function normalizeComparableUserText(content: unknown): string {
-  return stripGatewayUserMetadata(getMessageText(content))
+  const text = stripGatewayUserMetadata(getMessageText(content))
     .replace(/\s+/g, ' ')
     .trim();
+  if (/^\(file attached\)$/i.test(text)) return '';
+  return text;
 }
 
 function getComparableAttachmentSignature(message: Pick<RawMessage, '_attachedFiles'>): string {
@@ -239,6 +264,13 @@ function matchesOptimisticUserMessage(
   if (sameText && sameAttachments) return true;
   if (sameText && (!optimisticAttachments || !candidateAttachments) && (timestampMatches || !hasCandidateTimestamp)) return true;
   if (sameAttachments && (!optimisticText || !candidateText) && (timestampMatches || !hasCandidateTimestamp)) return true;
+
+  const optimisticHadAttachmentsOnly = optimisticAttachments.length > 0 && !optimisticText;
+  const candidateIsAttachmentEcho = !candidateText
+    && /\[(?:media attached:|\s*Image\s*\])/i.test(getMessageText(candidate.content));
+  if (optimisticHadAttachmentsOnly && candidateIsAttachmentEcho && (timestampMatches || !hasCandidateTimestamp)) {
+    return true;
+  }
   return false;
 }
 
@@ -399,6 +431,13 @@ function getMessageText(content: unknown): string {
   return '';
 }
 
+function getMessageTextForFilter(msg: { content?: unknown; text?: unknown }): string {
+  const fromContent = getMessageText(msg.content);
+  if (fromContent.trim()) return fromContent;
+  if (typeof msg.text === 'string') return msg.text;
+  return '';
+}
+
 function getMessageStopReason(message: RawMessage | unknown): string | null {
   if (!message || typeof message !== 'object') return null;
   const msg = message as Record<string, unknown>;
@@ -486,10 +525,129 @@ function mimeFromExtension(filePath: string): string {
   return map[ext] || 'application/octet-stream';
 }
 
+/** Extract local file paths declared in tool call arguments. */
+function extractFilePathsFromToolArgs(args: Record<string, unknown>): string[] {
+  const paths: string[] = [];
+  const direct = args.file_path ?? args.filePath ?? args.path ?? args.file;
+  if (typeof direct === 'string' && direct.trim()) paths.push(direct.trim());
+
+  const attachments = args.attachments;
+  if (Array.isArray(attachments)) {
+    for (const item of attachments) {
+      if (!item || typeof item !== 'object') continue;
+      const att = item as Record<string, unknown>;
+      const filePath = att.filePath ?? att.file_path ?? att.path ?? att.file;
+      if (typeof filePath === 'string' && filePath.trim()) {
+        paths.push(filePath.trim());
+      }
+    }
+  }
+
+  return paths;
+}
+
+/**
+ * Surface user-facing attachments declared in assistant tool calls (e.g.
+ * `message` tool `attachments: [{ filePath }]`) on the calling turn itself.
+ */
+function enrichWithToolCallAttachments(messages: RawMessage[]): RawMessage[] {
+  return messages.map((msg) => {
+    if (msg.role !== 'assistant') return msg;
+
+    const attachmentPaths = new Set<string>();
+    const content = msg.content;
+    if (Array.isArray(content)) {
+      for (const block of content as ContentBlock[]) {
+        if (block.type !== 'tool_use' && block.type !== 'toolCall') continue;
+        const args = (block.input ?? block.arguments) as Record<string, unknown> | undefined;
+        if (!args) continue;
+        for (const filePath of extractFilePathsFromToolArgs(args)) {
+          attachmentPaths.add(filePath);
+        }
+      }
+    }
+
+    const msgAny = msg as unknown as Record<string, unknown>;
+    const toolCalls = msgAny.tool_calls ?? msgAny.toolCalls;
+    if (Array.isArray(toolCalls)) {
+      for (const tc of toolCalls as Array<Record<string, unknown>>) {
+        const fn = (tc.function ?? tc) as Record<string, unknown>;
+        let args: Record<string, unknown> | undefined;
+        try {
+          args = typeof fn.arguments === 'string'
+            ? JSON.parse(fn.arguments)
+            : (fn.arguments ?? fn.input) as Record<string, unknown>;
+        } catch { /* ignore */ }
+        if (!args) continue;
+        for (const filePath of extractFilePathsFromToolArgs(args)) {
+          attachmentPaths.add(filePath);
+        }
+      }
+    }
+
+    if (attachmentPaths.size === 0) return msg;
+
+    const existingPaths = new Set(
+      (msg._attachedFiles || []).map((file) => file.filePath).filter(Boolean),
+    );
+    const newFiles = [...attachmentPaths]
+      .filter((filePath) => !existingPaths.has(filePath))
+      .map((filePath) => makeAttachedFile({ filePath, mimeType: mimeFromExtension(filePath) }, 'tool-result'));
+
+    if (newFiles.length === 0) return msg;
+    return {
+      ...msg,
+      _attachedFiles: [...(msg._attachedFiles || []), ...newFiles],
+    };
+  });
+}
+
 const DIRECTORY_MIME_TYPE = 'application/x-directory';
 
 function trimPathTerminators(filePath: string): string {
   return filePath.replace(/[，。；;,.!?]+$/u, '');
+}
+
+type MarkdownImageRef =
+  | { filePath: string; mimeType: string; fileName: string }
+  | { gatewayUrl: string; mimeType: string; fileName: string; source: 'gateway-media' };
+
+/** Extract image targets from markdown `![alt](target)` in assistant text. */
+function extractMarkdownImageRefs(text: string): MarkdownImageRef[] {
+  if (!text) return [];
+  const refs: MarkdownImageRef[] = [];
+  const seen = new Set<string>();
+  const markdownImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = markdownImageRegex.exec(text)) !== null) {
+    const alt = match[1]?.trim() || 'image';
+    let target = match[2]?.trim() ?? '';
+    if (!target) continue;
+    if (target.startsWith('file://')) {
+      target = decodeURIComponent(target.replace(/^file:\/\//, ''));
+    }
+    if (target.startsWith('/api/chat/media/')) {
+      if (seen.has(target)) continue;
+      seen.add(target);
+      refs.push({
+        gatewayUrl: target,
+        mimeType: 'image/png',
+        fileName: alt,
+        source: 'gateway-media',
+      });
+      continue;
+    }
+    const normalizedPath = trimPathTerminators(target);
+    if (!normalizedPath.startsWith('/') && !normalizedPath.startsWith('~/')) continue;
+    if (seen.has(normalizedPath)) continue;
+    seen.add(normalizedPath);
+    refs.push({
+      filePath: normalizedPath,
+      mimeType: mimeFromExtension(normalizedPath),
+      fileName: alt,
+    });
+  }
+  return refs;
 }
 
 /**
@@ -661,8 +819,8 @@ function getToolCallFilePath(msg: RawMessage, toolCallId: string): string | unde
       if ((block.type === 'tool_use' || block.type === 'toolCall') && block.id === toolCallId) {
         const args = (block.input ?? block.arguments) as Record<string, unknown> | undefined;
         if (args) {
-          const fp = args.file_path ?? args.filePath ?? args.path ?? args.file;
-          if (typeof fp === 'string') return fp;
+          const paths = extractFilePathsFromToolArgs(args);
+          if (paths[0]) return paths[0];
         }
       }
     }
@@ -680,8 +838,8 @@ function getToolCallFilePath(msg: RawMessage, toolCallId: string): string | unde
         args = typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : (fn.arguments ?? fn.input) as Record<string, unknown>;
       } catch { /* ignore */ }
       if (args) {
-        const fp = args.file_path ?? args.filePath ?? args.path ?? args.file;
-        if (typeof fp === 'string') return fp;
+        const paths = extractFilePathsFromToolArgs(args);
+        if (paths[0]) return paths[0];
       }
     }
   }
@@ -699,8 +857,8 @@ function collectToolCallPaths(msg: RawMessage, paths: Map<string, string>): void
       if ((block.type === 'tool_use' || block.type === 'toolCall') && block.id) {
         const args = (block.input ?? block.arguments) as Record<string, unknown> | undefined;
         if (args) {
-          const fp = args.file_path ?? args.filePath ?? args.path ?? args.file;
-          if (typeof fp === 'string') paths.set(block.id, fp);
+          const filePaths = extractFilePathsFromToolArgs(args);
+          if (filePaths[0]) paths.set(block.id, filePaths[0]);
         }
       }
     }
@@ -717,8 +875,8 @@ function collectToolCallPaths(msg: RawMessage, paths: Map<string, string>): void
         args = typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : (fn.arguments ?? fn.input) as Record<string, unknown>;
       } catch { /* ignore */ }
       if (args) {
-        const fp = args.file_path ?? args.filePath ?? args.path ?? args.file;
-        if (typeof fp === 'string') paths.set(id, fp);
+        const filePaths = extractFilePathsFromToolArgs(args);
+        if (filePaths[0]) paths.set(id, filePaths[0]);
       }
     }
   }
@@ -744,7 +902,6 @@ function enrichWithToolResultFiles(messages: RawMessage[]): RawMessage[] {
     }
 
     if (isToolResultRole(msg.role)) {
-      // Resolve file path from the matching tool call
       const matchedPath = msg.toolCallId ? toolCallPaths.get(msg.toolCallId) : undefined;
 
       // 1. Image/file content blocks in the structured content array.
@@ -788,6 +945,11 @@ function enrichWithToolResultFiles(messages: RawMessage[]): RawMessage[] {
     }
 
     if (msg.role === 'assistant' && pending.length > 0) {
+      // Internal-only turns (NO_REPLY, interim narration, ...) must not consume
+      // pending attachments — the next visible assistant reply should get them.
+      if (isInternalMessage(msg) && !messageHasToolUse(msg)) {
+        return msg;
+      }
       const toAttach = pending.splice(0);
       // Deduplicate against files already on the assistant message
       const existingPaths = new Set(
@@ -857,6 +1019,13 @@ function enrichWithCachedImages(messages: RawMessage[]): RawMessage[] {
     if (msg.role === 'assistant' && !isToolOnlyMessage(msg)) {
       // Own text
       rawRefs = extractRawFilePaths(text).filter(r => !mediaRefPaths.has(r.filePath));
+      const rawPathSet = new Set(rawRefs.map((ref) => ref.filePath));
+      for (const ref of extractMarkdownImageRefs(text)) {
+        if ('filePath' in ref && !mediaRefPaths.has(ref.filePath) && !rawPathSet.has(ref.filePath)) {
+          rawPathSet.add(ref.filePath);
+          rawRefs.push({ filePath: ref.filePath, mimeType: ref.mimeType });
+        }
+      }
 
       // Nearest preceding user message text (look back up to 5 messages)
       const seenPaths = new Set(rawRefs.map(r => r.filePath));
@@ -884,7 +1053,16 @@ function enrichWithCachedImages(messages: RawMessage[]): RawMessage[] {
     }
 
     const allRefs = [...mediaRefs, ...rawRefs];
-    if (allRefs.length === 0 && gatewayMediaFiles.length === 0) return msg;
+    const markdownImageRefs = msg.role === 'assistant' && !isToolOnlyMessage(msg)
+      ? extractMarkdownImageRefs(text)
+      : [];
+    if (
+      allRefs.length === 0
+      && gatewayMediaFiles.length === 0
+      && markdownImageRefs.length === 0
+    ) {
+      return msg;
+    }
 
     const existingFiles = msg._attachedFiles || [];
     const existingPaths = new Set(existingFiles.map(file => file.filePath).filter(Boolean));
@@ -902,8 +1080,19 @@ function enrichWithCachedImages(messages: RawMessage[]): RawMessage[] {
     const dedupedGatewayMedia = gatewayMediaFiles.filter(
       file => file.gatewayUrl && !existingGatewayUrls.has(file.gatewayUrl),
     );
-    if (files.length === 0 && dedupedGatewayMedia.length === 0) return msg;
-    return { ...msg, _attachedFiles: [...existingFiles, ...files, ...dedupedGatewayMedia] };
+    const markdownGatewayMedia: AttachedFileMeta[] = markdownImageRefs
+      .filter((ref): ref is Extract<MarkdownImageRef, { gatewayUrl: string }> => 'gatewayUrl' in ref)
+      .filter((ref) => ref.gatewayUrl && !existingGatewayUrls.has(ref.gatewayUrl))
+      .map((ref) => ({
+        fileName: ref.fileName,
+        mimeType: ref.mimeType,
+        fileSize: 0,
+        preview: null,
+        gatewayUrl: ref.gatewayUrl,
+        source: 'gateway-media' as const,
+      }));
+    if (files.length === 0 && dedupedGatewayMedia.length === 0 && markdownGatewayMedia.length === 0) return msg;
+    return { ...msg, _attachedFiles: [...existingFiles, ...files, ...dedupedGatewayMedia, ...markdownGatewayMedia] };
   });
 }
 
@@ -1077,18 +1266,48 @@ function isToolResultRole(role: unknown): boolean {
   return normalized === 'toolresult' || normalized === 'tool_result';
 }
 
+function messageHasToolUse(msg: { role?: unknown; content?: unknown; tool_calls?: unknown; toolCalls?: unknown }): boolean {
+  if (msg.role !== 'assistant') return false;
+  if (Array.isArray(msg.content)) {
+    const blocks = msg.content as ContentBlock[];
+    if (blocks.some((block) => block.type === 'tool_use' || block.type === 'toolCall')) {
+      return true;
+    }
+  }
+  const toolCalls = msg.tool_calls ?? msg.toolCalls;
+  return Array.isArray(toolCalls) && toolCalls.length > 0;
+}
+
 /** True for internal plumbing messages that should never be shown in the UI. */
-function isInternalMessage(msg: { role?: unknown; content?: unknown }): boolean {
+function isInternalMessage(msg: { role?: unknown; content?: unknown; text?: unknown }): boolean {
   if (msg.role === 'system') return true;
-  const text = getMessageText(msg.content);
+  const text = getMessageTextForFilter(msg);
   if (msg.role === 'assistant') {
-    if (/^(HEARTBEAT_OK|NO_REPLY)\s*$/.test(text)) return true;
+    if (isInternalAssistantReplyText(text)) return true;
+    if (isGeneratingStatusNarration(text)) return true;
+    if (!text.trim() && Array.isArray(msg.content)) {
+      const blocks = msg.content as ContentBlock[];
+      const hasThinking = blocks.some((block) => block.type === 'thinking' && block.thinking?.trim());
+      const hasVisibleText = blocks.some((block) => block.type === 'text' && block.text?.trim());
+      if (hasThinking && !hasVisibleText) return true;
+    }
   }
   if (msg.role === 'user' && /^\[OpenClaw heartbeat poll\]\s*$/i.test(text.trim())) return true;
   // Runtime system injections: these arrive as user or assistant-role messages
   // but are internal plumbing (exec results, async-command notices, time pings, etc.)
   if ((msg.role === 'user' || msg.role === 'assistant') && isRuntimeSystemInjection(text)) return true;
   return false;
+}
+
+/**
+ * History filtering must keep assistant tool-call turns even when their visible
+ * text is internal narration (e.g. "生成中，稍等" + `image_generate`). Those
+ * turns power the execution graph and run lifecycle detection.
+ */
+function shouldDropMessageFromHistory(msg: { role?: unknown; content?: unknown; text?: unknown; tool_calls?: unknown; toolCalls?: unknown }): boolean {
+  if (isToolResultRole(msg.role)) return true;
+  if (messageHasToolUse(msg)) return false;
+  return isInternalMessage(msg);
 }
 
 /**
@@ -1114,8 +1333,11 @@ function isRuntimeSystemInjection(text: string): boolean {
     return true;
   }
 
-  // Standalone time injection (e.g. "Current time: Wednesday, April 22nd, 2026 - 10:06 (Asia/Shanghai) / 2026-04-22 02:06 UTC")
-  // Only match when the full message is the time announcement.
+  if (/^\[Inter-session message\]/i.test(normalized)) return true;
+
+  if (isOpenClawRuntimeEventPrompt(normalized)) return true;
+
+  // Standalone time injection
   if (
     /^\s*Current time\s*:/i.test(normalized)
     && /^\s*Current time\s*:[^\n]*\/\s*\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+UTC\s*$/i.test(normalized)
@@ -1439,7 +1661,9 @@ export {
   extractRawFilePaths,
   makeAttachedFile,
   enrichWithToolResultFiles,
+  enrichWithToolCallAttachments,
   isInternalMessage,
+  shouldDropMessageFromHistory,
   isToolResultRole,
   enrichWithCachedImages,
   loadMissingPreviews,

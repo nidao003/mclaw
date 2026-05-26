@@ -45,6 +45,12 @@ import {
   type ToolStatus,
 } from './chat/types';
 import type { ChatGet, ChatSet } from './chat/store-api';
+import { enrichWithToolCallAttachments, shouldDropMessageFromHistory } from './chat/helpers';
+import {
+  isGeneratingStatusNarration,
+  isInternalAssistantReplyText,
+  isOpenClawRuntimeEventPrompt,
+} from '@/pages/Chat/message-utils';
 
 export type {
   AttachedFileMeta,
@@ -567,8 +573,25 @@ function normalizeStreamingMessage(message: unknown): unknown {
  * `[media attached:` instead — leaving the timestamp in the normalized
  * comparison text and breaking optimistic-vs-echo dedupe.
  */
+function stripInboundMediaVisionEnvelope(text: string): string {
+  if (!/\[Image\]/i.test(text) && !/^User text:/im.test(text) && !/\nDescription:\s*\n/i.test(text)) {
+    return text;
+  }
+
+  let result = text.replace(/^\s*\[Image\]\s*\n?/i, '');
+
+  const userTextBlock = result.match(/^User text:\s*\n([\s\S]*?)(?:\n\s*Description:\s*\n[\s\S]*)?\s*$/i);
+  if (userTextBlock) {
+    const userText = userTextBlock[1].trim();
+    return /^Process the attached file\(s\)\.\s*$/i.test(userText) ? '' : userText;
+  }
+
+  return result.replace(/\n\s*Description:\s*\n[\s\S]*$/i, '').trim();
+}
+
 function stripGatewayUserMetadata(text: string): string {
-  return text
+  return stripInboundMediaVisionEnvelope(
+    text
     .replace(/\s*\[media attached:[^\]]*\]/g, '')
     .replace(/\s*\[message_id:\s*[^\]]+\]/g, '')
     .replace(/^Sender\s*\([^)]*\)\s*:\s*```[a-z]*\n[\s\S]*?```\s*/i, '')
@@ -579,13 +602,16 @@ function stripGatewayUserMetadata(text: string): string {
     .replace(/^Sender\s*:\s*[^\n]*(?:\n\s*)*/i, '')
     .replace(/^Conversation info\s*\([^)]*\):\s*```[a-z]*\n[\s\S]*?```\s*/i, '')
     .replace(/^Conversation info\s*\([^)]*\):\s*\{[\s\S]*?\}\s*/i, '')
-    .replace(/^\s*\[(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+[^\]]+\]\s*/i, '');
+    .replace(/^\s*\[(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+[^\]]+\]\s*/i, ''),
+  );
 }
 
 function normalizeComparableUserText(content: unknown): string {
-  return stripGatewayUserMetadata(getMessageText(content))
+  const text = stripGatewayUserMetadata(getMessageText(content))
     .replace(/\s+/g, ' ')
     .trim();
+  if (/^\(file attached\)$/i.test(text)) return '';
+  return text;
 }
 
 function getComparableAttachmentSignature(message: Pick<RawMessage, '_attachedFiles'>): string {
@@ -620,6 +646,13 @@ function matchesOptimisticUserMessage(
   if (sameText && sameAttachments) return true;
   if (sameText && (!optimisticAttachments || !candidateAttachments) && (timestampMatches || !hasCandidateTimestamp)) return true;
   if (sameAttachments && (!optimisticText || !candidateText) && (timestampMatches || !hasCandidateTimestamp)) return true;
+
+  const optimisticHadAttachmentsOnly = optimisticAttachments.length > 0 && !optimisticText;
+  const candidateIsAttachmentEcho = !candidateText
+    && /\[(?:media attached:|\s*Image\s*\])/i.test(getMessageText(candidate.content));
+  if (optimisticHadAttachmentsOnly && candidateIsAttachmentEcho && (timestampMatches || !hasCandidateTimestamp)) {
+    return true;
+  }
   return false;
 }
 
@@ -768,6 +801,13 @@ function getMessageText(content: unknown): string {
   return '';
 }
 
+function getMessageTextForFilter(msg: { content?: unknown; text?: unknown }): string {
+  const fromContent = getMessageText(msg.content);
+  if (fromContent.trim()) return fromContent;
+  if (typeof msg.text === 'string') return msg.text;
+  return '';
+}
+
 function getMessageStopReason(message: RawMessage | unknown): string | null {
   if (!message || typeof message !== 'object') return null;
   const msg = message as Record<string, unknown>;
@@ -851,6 +891,26 @@ function mimeFromExtension(filePath: string): string {
     'm4v': 'video/mp4',
   };
   return map[ext] || 'application/octet-stream';
+}
+
+function extractFilePathsFromToolArgs(args: Record<string, unknown>): string[] {
+  const paths: string[] = [];
+  const direct = args.file_path ?? args.filePath ?? args.path ?? args.file;
+  if (typeof direct === 'string' && direct.trim()) paths.push(direct.trim());
+
+  const attachments = args.attachments;
+  if (Array.isArray(attachments)) {
+    for (const item of attachments) {
+      if (!item || typeof item !== 'object') continue;
+      const att = item as Record<string, unknown>;
+      const filePath = att.filePath ?? att.file_path ?? att.path ?? att.file;
+      if (typeof filePath === 'string' && filePath.trim()) {
+        paths.push(filePath.trim());
+      }
+    }
+  }
+
+  return paths;
 }
 
 const DIRECTORY_MIME_TYPE = 'application/x-directory';
@@ -1018,8 +1078,8 @@ function getToolCallFilePath(msg: RawMessage, toolCallId: string): string | unde
       if ((block.type === 'tool_use' || block.type === 'toolCall') && block.id === toolCallId) {
         const args = (block.input ?? block.arguments) as Record<string, unknown> | undefined;
         if (args) {
-          const fp = args.file_path ?? args.filePath ?? args.path ?? args.file;
-          if (typeof fp === 'string') return fp;
+          const paths = extractFilePathsFromToolArgs(args);
+          if (paths[0]) return paths[0];
         }
       }
     }
@@ -1037,8 +1097,8 @@ function getToolCallFilePath(msg: RawMessage, toolCallId: string): string | unde
         args = typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : (fn.arguments ?? fn.input) as Record<string, unknown>;
       } catch { /* ignore */ }
       if (args) {
-        const fp = args.file_path ?? args.filePath ?? args.path ?? args.file;
-        if (typeof fp === 'string') return fp;
+        const paths = extractFilePathsFromToolArgs(args);
+        if (paths[0]) return paths[0];
       }
     }
   }
@@ -1056,8 +1116,8 @@ function collectToolCallPaths(msg: RawMessage, paths: Map<string, string>): void
       if ((block.type === 'tool_use' || block.type === 'toolCall') && block.id) {
         const args = (block.input ?? block.arguments) as Record<string, unknown> | undefined;
         if (args) {
-          const fp = args.file_path ?? args.filePath ?? args.path ?? args.file;
-          if (typeof fp === 'string') paths.set(block.id, fp);
+          const filePaths = extractFilePathsFromToolArgs(args);
+          if (filePaths[0]) paths.set(block.id, filePaths[0]);
         }
       }
     }
@@ -1074,8 +1134,8 @@ function collectToolCallPaths(msg: RawMessage, paths: Map<string, string>): void
         args = typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : (fn.arguments ?? fn.input) as Record<string, unknown>;
       } catch { /* ignore */ }
       if (args) {
-        const fp = args.file_path ?? args.filePath ?? args.path ?? args.file;
-        if (typeof fp === 'string') paths.set(id, fp);
+        const filePaths = extractFilePathsFromToolArgs(args);
+        if (filePaths[0]) paths.set(id, filePaths[0]);
       }
     }
   }
@@ -1613,11 +1673,12 @@ function isToolResultRole(role: unknown): boolean {
 }
 
 /** True for internal plumbing messages that should never be shown in the UI. */
-function isInternalMessage(msg: { role?: unknown; content?: unknown; idempotencyKey?: unknown; model?: unknown }): boolean {
+function isInternalMessage(msg: { role?: unknown; content?: unknown; idempotencyKey?: unknown; model?: unknown; text?: unknown }): boolean {
   if (msg.role === 'system') return true;
-  const text = getMessageText(msg.content);
+  const text = getMessageTextForFilter(msg);
   if (msg.role === 'assistant') {
-    if (/^(HEARTBEAT_OK|NO_REPLY)\s*$/.test(text)) return true;
+    if (isInternalAssistantReplyText(text)) return true;
+    if (isGeneratingStatusNarration(text)) return true;
     // OpenClaw's gateway writes a fallback `assistant-media` transcript
     // message when its `createManagedOutgoingImageBlocks` pipeline fails
     // ("could not be prepared" warning in stderr). The fallback has:
@@ -1641,6 +1702,12 @@ function isInternalMessage(msg: { role?: unknown; content?: unknown; idempotency
       // Real gateway-media bubbles (with an image-url block) ARE the
       // canonical render — keep them. Only hide the text-only fallback.
       if (!hasImageUrlBlock) return true;
+    }
+    if (!text.trim() && Array.isArray(msg.content)) {
+      const blocks = msg.content as ContentBlock[];
+      const hasThinking = blocks.some((block) => block.type === 'thinking' && block.thinking?.trim());
+      const hasVisibleText = blocks.some((block) => block.type === 'text' && block.text?.trim());
+      if (hasThinking && !hasVisibleText) return true;
     }
   }
   if (msg.role === 'user' && /^\[OpenClaw heartbeat poll\]\s*$/i.test(text.trim())) return true;
@@ -1668,6 +1735,9 @@ function isRuntimeSystemInjection(text: string): boolean {
   ) {
     return true;
   }
+  if (/^\[Inter-session message\]/i.test(normalized)) return true;
+  if (isOpenClawRuntimeEventPrompt(normalized)) return true;
+
   if (
     /^\s*Current time\s*:/i.test(normalized)
     && /^\s*Current time\s*:[^\n]*\/\s*\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+UTC\s*$/i.test(normalized)
@@ -2631,7 +2701,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       // Before filtering: attach images/files from tool_result messages to the next assistant message
       const messagesWithToolImages = enrichWithToolResultFiles(rawMessages);
-      const filteredMessages = messagesWithToolImages.filter((msg) => !isToolResultRole(msg.role) && !isInternalMessage(msg));
+      const messagesWithToolAttachments = enrichWithToolCallAttachments(messagesWithToolImages);
+      const filteredMessages = messagesWithToolAttachments.filter((msg) => !shouldDropMessageFromHistory(msg));
       // Restore file attachments for user/assistant messages (from cache + text patterns)
       const enrichedMessages = enrichWithCachedImages(filteredMessages);
 
@@ -3024,7 +3095,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // window with a larger suffix from the transcript.  This keeps render
       // cost bounded while allowing long conversations to page backwards.
       const messagesWithToolImages = enrichWithToolResultFiles(rawMessages);
-      const filteredMessages = messagesWithToolImages.filter((msg) => !isToolResultRole(msg.role) && !isInternalMessage(msg));
+      const messagesWithToolAttachments = enrichWithToolCallAttachments(messagesWithToolImages);
+      const filteredMessages = messagesWithToolAttachments.filter((msg) => !shouldDropMessageFromHistory(msg));
       const enrichedMessages = enrichWithCachedImages(filteredMessages);
       set({
         messages: enrichedMessages,

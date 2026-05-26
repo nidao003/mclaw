@@ -16,7 +16,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { invokeIpc, statFile } from '@/lib/api-client';
 import type { RawMessage, AttachedFileMeta } from '@/stores/chat';
-import { extractText, extractImages, extractToolUse, formatTimestamp } from './message-utils';
+import { extractText, extractImages, extractToolUse, formatTimestamp, isUnresolvableImageUrl } from './message-utils';
+import { copyImageToClipboard, type ImageCopyTarget } from './copy-image';
 
 interface ChatMessageProps {
   message: RawMessage;
@@ -222,7 +223,7 @@ function normalizeLatexDelimiters(input: string): string {
 
 /** Resolve an ExtractedImage to a displayable src string, or null if not possible. */
 function imageSrc(img: ExtractedImage): string | null {
-  if (img.url) return img.url;
+  if (img.url) return isUnresolvableImageUrl(img.url) ? null : img.url;
   if (img.data) return `data:${img.mimeType};base64,${img.data}`;
   return null;
 }
@@ -248,6 +249,7 @@ export const ChatMessage = memo(function ChatMessage({
   const hideAssistantText = suppressAssistantText && !isUser;
   const hasText = !hideAssistantText && text.trim().length > 0;
   const images = extractImages(message);
+  const resolvableContentImages = images.filter((img) => imageSrc(img) != null);
   const tools = extractToolUse(message);
   const visibleTools = suppressToolCards ? [] : tools;
   const [validatedPaths, setValidatedPaths] = useState<Record<string, boolean>>({});
@@ -321,16 +323,18 @@ export const ChatMessage = memo(function ChatMessage({
     if (!kind || !file.filePath) return true;
     return validatedPaths[file.filePath] === true;
   });
-  const attachedFiles = suppressProcessAttachments && (hasText || images.length > 0 || visibleTools.length > 0)
+  const attachedFiles = suppressProcessAttachments && (hasText || resolvableContentImages.length > 0 || visibleTools.length > 0)
     ? processVisibleAttachments
     : existingDerivedAttachedFiles;
+  const imageCopyTarget = resolvePrimaryImageCopyTarget(resolvableContentImages, attachedFiles);
+  const showAssistantHoverBar = !isUser && (hasText || imageCopyTarget != null);
   const [lightboxImg, setLightboxImg] = useState<{ src: string; fileName: string; filePath?: string; base64?: string; mimeType?: string } | null>(null);
 
   // Never render tool result messages in chat UI
   if (isToolResult) return null;
 
   const hasStreamingToolStatus = isStreaming && streamingTools.length > 0;
-  if (!hasText && images.length === 0 && visibleTools.length === 0 && attachedFiles.length === 0 && !hasStreamingToolStatus) return null;
+  if (!hasText && resolvableContentImages.length === 0 && visibleTools.length === 0 && attachedFiles.length === 0 && !hasStreamingToolStatus) return null;
 
   return (
     <div
@@ -359,9 +363,9 @@ export const ChatMessage = memo(function ChatMessage({
 
         {/* Images — rendered ABOVE text bubble for user messages */}
         {/* Images from content blocks (Gateway session data / channel push photos) */}
-        {isUser && images.length > 0 && (
+        {isUser && resolvableContentImages.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {images.map((img, i) => {
+            {resolvableContentImages.map((img, i) => {
               const src = imageSrc(img);
               if (!src) return null;
               return (
@@ -384,7 +388,7 @@ export const ChatMessage = memo(function ChatMessage({
             {attachedFiles.map((file, i) => {
               const isImage = file.mimeType.startsWith('image/');
               // Skip image attachments if we already have images from content blocks
-              if (isImage && images.length > 0) return null;
+              if (isImage && resolvableContentImages.length > 0) return null;
               if (isImage) {
                 return file.preview ? (
                   <ImageThumbnail
@@ -420,9 +424,9 @@ export const ChatMessage = memo(function ChatMessage({
         )}
 
         {/* Images from content blocks — assistant messages (below text) */}
-        {!isUser && images.length > 0 && (
+        {!isUser && resolvableContentImages.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {images.map((img, i) => {
+            {resolvableContentImages.map((img, i) => {
               const src = imageSrc(img);
               if (!src) return null;
               return (
@@ -444,7 +448,7 @@ export const ChatMessage = memo(function ChatMessage({
           <div className="flex flex-wrap gap-2">
             {attachedFiles.map((file, i) => {
               const isImage = file.mimeType.startsWith('image/');
-              if (isImage && images.length > 0) return null;
+              if (isImage && resolvableContentImages.length > 0) return null;
               if (isImage && file.preview) {
                 return (
                   <ImagePreviewCard
@@ -476,9 +480,9 @@ export const ChatMessage = memo(function ChatMessage({
           </span>
         )}
 
-        {/* Hover row for assistant messages — only when there is real text content */}
-        {!isUser && hasText && (
-          <AssistantHoverBar text={text} timestamp={message.timestamp} />
+        {/* Hover row for assistant messages */}
+        {showAssistantHoverBar && (
+          <AssistantHoverBar text={text} timestamp={message.timestamp} imageCopyTarget={imageCopyTarget} />
         )}
       </div>
 
@@ -547,16 +551,60 @@ function ToolStatusBar({
   );
 }
 
+function resolvePrimaryImageCopyTarget(
+  images: Array<{ mimeType: string; data?: string; url?: string }>,
+  attachedFiles: AttachedFileMeta[],
+): ImageCopyTarget | null {
+  for (const file of attachedFiles) {
+    if (!file.mimeType.startsWith('image/')) continue;
+    if (file.filePath || file.preview?.startsWith('data:')) {
+      return {
+        filePath: file.filePath,
+        preview: file.preview,
+        mimeType: file.mimeType,
+      };
+    }
+  }
+
+  for (const image of images) {
+    if (image.data) {
+      return { base64: image.data, mimeType: image.mimeType };
+    }
+    if (image.url?.startsWith('data:')) {
+      return { preview: image.url, mimeType: image.mimeType };
+    }
+  }
+
+  return null;
+}
+
 // ── Assistant hover bar (timestamp + copy, shown on group hover) ─
 
-function AssistantHoverBar({ text, timestamp }: { text: string; timestamp?: number }) {
+function AssistantHoverBar({
+  text,
+  timestamp,
+  imageCopyTarget,
+}: {
+  text: string;
+  timestamp?: number;
+  imageCopyTarget?: ImageCopyTarget | null;
+}) {
   const [copied, setCopied] = useState(false);
 
-  const copyContent = useCallback(() => {
-    navigator.clipboard.writeText(text);
+  const copyContent = useCallback(async () => {
+    if (imageCopyTarget) {
+      const copiedImage = await copyImageToClipboard(imageCopyTarget);
+      if (copiedImage) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        return;
+      }
+    }
+    if (!text.trim()) return;
+    await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [text]);
+  }, [text, imageCopyTarget]);
 
   return (
     <div className="flex items-center justify-between w-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 select-none px-1">
@@ -627,6 +675,12 @@ function AssistantMarkdown({
               <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-words break-all">
                 {children}
               </a>
+            );
+          },
+          img({ src, alt }) {
+            if (!src || isUnresolvableImageUrl(String(src))) return null;
+            return (
+              <img src={String(src)} alt={typeof alt === 'string' ? alt : 'image'} className="max-w-full rounded-lg" />
             );
           },
         }}
