@@ -341,6 +341,14 @@ export function Chat() {
   const hasStreamToolStatus = streamingTools.length > 0;
   const hasRunningStreamToolStatus = streamingTools.some((tool) => tool.status === 'running');
   const currentRuntimeRun = activeRunId ? runtimeRuns[activeRunId] ?? null : null;
+  const currentRuntimeHasToolActivity = Boolean(currentRuntimeRun?.events.some((event) =>
+    event.type === 'tool.started'
+    || event.type === 'tool.updated'
+    || event.type === 'tool.completed'
+    || event.type === 'command.output'
+    || event.type === 'patch.completed'
+    || event.type === 'approval.updated',
+  ));
   const hasRunningRuntimeToolStatus = hasRunningRuntimeTool(currentRuntimeRun);
   const shouldRenderStreaming = sending && (hasStreamText || hasStreamTools || hasStreamImages || hasStreamToolStatus);
   const hasAnyStreamContent = hasStreamText || hasStreamThinking || hasStreamTools || hasStreamImages || hasStreamToolStatus;
@@ -710,8 +718,35 @@ export function Chat() {
   const streamBlocksHistoryCompletion = hasHistoryCompletionBlockingStream && !imageGenerationSettledInHistory;
   const runSettledInHistory = latestRunSegmentCompletion.hasFinalReply
     && !streamBlocksHistoryCompletion
-    && (latestRunSegmentCompletion.hasToolActivity || !sending);
-  const inputRunActive = (sending || hasActiveExecutionGraph) && !runSettledInHistory;
+    && (
+      latestRunSegmentCompletion.hasToolActivity
+      || currentRuntimeHasToolActivity
+      || imageGenerationSettledInHistory
+      || !sending
+    );
+  const shouldClearStoreLifecycleFromHistory = sending
+    && runSettledInHistory
+    && (
+      imageGenerationSettledInHistory
+      || (!hasRunningRuntimeToolStatus && !hasRunningStreamToolStatus)
+    );
+  const inputRunActive = sending || (hasActiveExecutionGraph && !runSettledInHistory);
+
+  useEffect(() => {
+    if (!shouldClearStoreLifecycleFromHistory) return;
+    useChatStore.setState({
+      sending: false,
+      activeRunId: null,
+      pendingFinal: false,
+      lastUserMessageAt: null,
+      streamingText: '',
+      streamingMessage: null,
+      streamingTools: [],
+      pendingToolImages: [],
+      runError: null,
+    });
+  }, [shouldClearStoreLifecycleFromHistory]);
+
   const replyTextOverrides = useMemo(() => {
     const map = new Map<number, string>();
     for (const card of userRunCards) {

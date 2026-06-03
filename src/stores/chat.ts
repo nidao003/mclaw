@@ -117,6 +117,8 @@ const DEFAULT_SESSION_RUN_STATE: SessionRunState = {
 };
 
 const _sessionRunStateCache = new Map<string, SessionRunState>();
+let _sendGenerationCounter = 0;
+const _activeSendGenerationBySession = new Map<string, number>();
 const SESSION_LOAD_MIN_INTERVAL_MS = 1_200;
 const HISTORY_LOAD_MIN_INTERVAL_MS = 800;
 const CHAT_EVENT_DEDUPE_TTL_MS = 30_000;
@@ -396,6 +398,49 @@ function getCachedSessionRunState(sessionKey: string): SessionRunState {
 
 function clearCachedSessionRunState(sessionKey: string): void {
   _sessionRunStateCache.delete(sessionKey);
+}
+
+function cloneSessionRunState(state: SessionRunState): SessionRunState {
+  return {
+    sending: state.sending,
+    activeRunId: state.activeRunId,
+    pendingFinal: state.pendingFinal,
+    lastUserMessageAt: state.lastUserMessageAt,
+    streamingText: state.streamingText,
+    streamingMessage: state.streamingMessage,
+    streamingTools: [...state.streamingTools],
+    pendingToolImages: state.pendingToolImages.map((file) => ({ ...file })),
+  };
+}
+
+function updateCachedSessionRunStateFromRuntimeEvent(event: ChatRuntimeEvent): void {
+  const sessionKey = event.sessionKey;
+  if (!sessionKey) return;
+  const cached = _sessionRunStateCache.get(sessionKey);
+  if (!cached) return;
+
+  const next = cloneSessionRunState(cached);
+  const matchesCachedRun = next.activeRunId != null && event.runId === next.activeRunId;
+  const isCurrentUntrackedSend = next.activeRunId == null
+    && next.sending
+    && (
+      typeof event.ts !== 'number'
+      || next.lastUserMessageAt == null
+      || event.ts >= next.lastUserMessageAt - 1_000
+    );
+
+  if (event.type === 'run.started') {
+    if (next.activeRunId == null || matchesCachedRun) {
+      next.activeRunId = event.runId;
+      next.sending = true;
+    }
+    _sessionRunStateCache.set(sessionKey, next);
+    return;
+  }
+
+  if (event.type === 'run.ended' && (matchesCachedRun || isCurrentUntrackedSend)) {
+    _sessionRunStateCache.set(sessionKey, DEFAULT_SESSION_RUN_STATE);
+  }
 }
 
 function getHistoryForegroundLoadKey(sessionKey: string): string {
@@ -2158,6 +2203,13 @@ function collectToolUpdates(message: unknown, eventState: string): ToolStatus[] 
  * which prematurely tears down the `sending` / `activeRunId` / `pendingFinal`
  * lifecycle flags and makes the Thinking… indicator vanish mid-tool-chain.
  */
+function messageHasImageContent(message: RawMessage | undefined): boolean {
+  if (!message) return false;
+  if ((message._attachedFiles ?? []).some((file) => file.mimeType.startsWith('image/'))) return true;
+  const content = message.content;
+  return Array.isArray(content) && (content as ContentBlock[]).some((block) => block.type === 'image');
+}
+
 function hasNonToolAssistantContent(message: RawMessage | undefined): boolean {
   if (!message) return false;
   if (typeof message.content === 'string' && message.content.trim()) return true;
@@ -2169,6 +2221,7 @@ function hasNonToolAssistantContent(message: RawMessage | undefined): boolean {
       if (block.type === 'image') return true;
     }
   }
+  if (messageHasImageContent(message)) return true;
 
   const msg = message as unknown as Record<string, unknown>;
   if (typeof msg.text === 'string' && msg.text.trim()) return true;
@@ -2714,41 +2767,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
     // NOTE: We intentionally do NOT call sessions.reset on the old session.
     // sessions.reset archives (renames) the session JSONL file, making old
     // conversation history inaccessible when the user switches back to it.
-    const { currentSessionKey, messages, sessions, sessionLastActivity, sessionLabels } = get();
-    // Only treat sessions with no history records and no activity timestamp as empty
-    const leavingEmpty = !currentSessionKey.endsWith(':main')
-      && messages.length === 0
-      && !sessionLastActivity[currentSessionKey]
-      && !sessionLabels[currentSessionKey];
+    const { currentSessionKey, sessions } = get();
     const prefix = getCanonicalPrefixFromSessionKey(currentSessionKey)
       ?? getCanonicalPrefixFromSessions(sessions)
       ?? DEFAULT_CANONICAL_PREFIX;
     const newKey = `${prefix}:session-${Date.now()}`;
-    const newSessionEntry: ChatSession = { key: newKey, displayName: newKey };
-    set((s) => ({
-      currentSessionKey: newKey,
-      currentAgentId: getAgentIdFromSessionKey(newKey),
-      sessions: [
-        ...(leavingEmpty ? s.sessions.filter((sess) => sess.key !== currentSessionKey) : s.sessions),
-        newSessionEntry,
-      ],
-      sessionLabels: leavingEmpty
-        ? Object.fromEntries(Object.entries(s.sessionLabels).filter(([k]) => k !== currentSessionKey))
-        : s.sessionLabels,
-      sessionLastActivity: leavingEmpty
-        ? Object.fromEntries(Object.entries(s.sessionLastActivity).filter(([k]) => k !== currentSessionKey))
-        : s.sessionLastActivity,
-      messages: [],
-      streamingText: '',
-      streamingMessage: null,
-      streamingTools: [],
-      activeRunId: null,
-      error: null,
-      runError: null,
-      pendingFinal: false,
-      lastUserMessageAt: null,
-      pendingToolImages: [],
-    }));
+
+    // Use the same switch patch as explicit sidebar switching so a running
+    // source session keeps its cached lifecycle. Without this, New Chat clears
+    // the active run globally; switching back to the still-running session then
+    // shows only the local transcript snapshot and loses the live execution UI.
+    clearHistoryPoll();
+    clearBaselines();
+    set((s) => buildSessionSwitchPatch(s, newKey));
   },
 
   // ── Rename session ──
@@ -3138,7 +3169,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
           if (hasPendingToolUse(message)) return false;
           return hasNonToolAssistantContent(message);
         });
-        if (hasConclusiveReply && !segmentHasOpenToolRun(openSegment)) {
+        const hasDeliveredImageReply = openSegment.some((message) => message.role === 'assistant' && messageHasImageContent(message));
+        if (hasDeliveredImageReply && !segmentHasOpenToolRun(openSegment)) {
+          clearHistoryPoll();
+          set({
+            sending: false,
+            activeRunId: null,
+            pendingFinal: false,
+            lastUserMessageAt: null,
+            runError: null,
+            streamingMessage: null,
+            streamingText: '',
+            streamingTools: [],
+            pendingToolImages: [],
+          });
+          captureSessionRunState(currentSessionKey, DEFAULT_SESSION_RUN_STATE);
+        } else if (hasConclusiveReply && !segmentHasOpenToolRun(openSegment)) {
           clearHistoryPoll();
           set({
             sending: false,
@@ -3481,6 +3527,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
 
     const currentSessionKey = targetSessionKey;
+    const sendGeneration = ++_sendGenerationCounter;
+    _activeSendGenerationBySession.set(currentSessionKey, sendGeneration);
 
     // Add user message optimistically (with local file metadata for UI display)
     const nowMs = Date.now();
@@ -3596,6 +3644,40 @@ export const useChatStore = create<ChatState>((set, get) => ({
     };
     setTimeout(checkStuck, 30_000);
 
+    const clearSendGenerationIfCurrent = () => {
+      if (_activeSendGenerationBySession.get(currentSessionKey) === sendGeneration) {
+        _activeSendGenerationBySession.delete(currentSessionKey);
+      }
+    };
+
+    const applySendFailure = (errorMsg: string) => {
+      const latest = get();
+      const sendStillCurrent = _activeSendGenerationBySession.get(currentSessionKey) === sendGeneration;
+      const canApplyToCurrentSession = latest.currentSessionKey === currentSessionKey
+        && latest.lastUserMessageAt === nowMs;
+
+      if (sendStillCurrent && canApplyToCurrentSession) {
+        clearSendGenerationIfCurrent();
+        clearHistoryPoll();
+        set({ error: errorMsg, sending: false });
+        return;
+      }
+
+      if (sendStillCurrent && latest.currentSessionKey !== currentSessionKey) {
+        const cached = _sessionRunStateCache.get(currentSessionKey);
+        if (cached?.lastUserMessageAt === nowMs) {
+          clearSendGenerationIfCurrent();
+          _sessionRunStateCache.set(currentSessionKey, DEFAULT_SESSION_RUN_STATE);
+          return;
+        }
+      }
+
+      console.warn('[sendMessage] Ignoring stale chat.send failure', {
+        error: errorMsg,
+        sessionKey: currentSessionKey,
+      });
+    };
+
     try {
       const idempotencyKey = crypto.randomUUID();
       const hasMedia = attachments && attachments.length > 0;
@@ -3655,19 +3737,39 @@ export const useChatStore = create<ChatState>((set, get) => ({
         if (isRecoverableChatSendTimeout(errorMsg)) {
           console.warn(`[sendMessage] Recoverable chat.send timeout, keeping poll alive: ${errorMsg}`);
         } else {
-          clearHistoryPoll();
-          set({ error: errorMsg, sending: false });
+          applySendFailure(errorMsg);
         }
       } else if (result.result?.runId) {
-        set({ activeRunId: result.result.runId });
+        const returnedRunId = result.result.runId;
+        const latest = get();
+        const sendStillCurrent = _activeSendGenerationBySession.get(currentSessionKey) === sendGeneration;
+        const canAttachToCurrentSession = latest.currentSessionKey === currentSessionKey
+          && latest.sending
+          && latest.lastUserMessageAt === nowMs
+          && (latest.activeRunId == null || latest.activeRunId === returnedRunId);
+
+        if (sendStillCurrent && canAttachToCurrentSession) {
+          set({ activeRunId: returnedRunId });
+        } else if (sendStillCurrent && latest.currentSessionKey !== currentSessionKey) {
+          const cached = _sessionRunStateCache.get(currentSessionKey);
+          if (cached?.sending
+            && cached.lastUserMessageAt === nowMs
+            && (cached.activeRunId == null || cached.activeRunId === returnedRunId)) {
+            captureSessionRunState(currentSessionKey, { ...cached, activeRunId: returnedRunId });
+          }
+        } else {
+          console.warn('[sendMessage] Ignoring stale chat.send runId', {
+            runId: returnedRunId,
+            sessionKey: currentSessionKey,
+          });
+        }
       }
     } catch (err) {
       const errStr = String(err);
       if (isRecoverableChatSendTimeout(errStr)) {
         console.warn(`[sendMessage] Recoverable chat.send timeout, keeping poll alive: ${errStr}`);
       } else {
-        clearHistoryPoll();
-        set({ error: errStr, sending: false });
+        applySendFailure(errStr);
       }
     }
   },
@@ -4121,17 +4223,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const matchesCurrentSession = eventSessionKey != null && eventSessionKey === currentSessionKey;
     const matchesActiveRun = activeRunId != null && event.runId === activeRunId;
 
-    // Session-less runtime events are only safe to apply when they match the
-    // active run. Treating them as "current session" lets stale/background run
-    // terminals clear the composer for an unrelated in-flight send.
+    const runtimeRuns = applyRuntimeEventToRuns(initialState.runtimeRuns, event);
+    const nextPatch: Partial<ChatState> = { runtimeRuns };
+
+    // Always retain structured runtime events, even for inactive sessions.
+    // When the user switches away during a run and returns later, the Chat page
+    // must be able to reconstruct the live execution graph from runtimeRuns
+    // instead of relying only on the on-disk transcript snapshot.
+    // Session-less runtime events are only safe to apply to active UI when they
+    // match the active run; otherwise they are stored but do not affect the
+    // current composer/graph state.
     if (!matchesCurrentSession && !matchesActiveRun) {
+      updateCachedSessionRunStateFromRuntimeEvent(event);
+      set(nextPatch);
       return;
     }
 
     _lastChatEventAt = Date.now();
-
-    const runtimeRuns = applyRuntimeEventToRuns(initialState.runtimeRuns, event);
-    const nextPatch: Partial<ChatState> = { runtimeRuns };
     const appliesToActiveUi = matchesActiveRun || (activeRunId == null && matchesCurrentSession);
 
     if (event.type === 'run.started') {
