@@ -31,16 +31,10 @@ jobs:
 
           git remote add nexu https://github.com/nexu-io/nexu.git 2>/dev/null || true
           echo "拉取 nexu 仓库..."
-          git fetch nexu main --depth=1
+          git fetch nexu main
 
-          if git show-ref --verify --quiet refs/remotes/origin/nexu-main; then
-            echo "nexu-main 分支已存在，合并更新..."
-            git checkout nexu-main
-            git merge nexu/main --allow-unrelated-histories -m "mirror: nexu-io/nexu main → nexu-main [skip ci]"
-          else
-            echo "首次运行，创建 nexu-main 分支..."
-            git checkout -b nexu-main nexu/main
-          fi
+          echo "重置 nexu-main 为 nexu/main 的精确镜像..."
+          git checkout -B nexu-main nexu/main
 
-          git push --force-with-lease origin nexu-main
+          git push origin nexu-main --force
           echo "镜像完成！"
