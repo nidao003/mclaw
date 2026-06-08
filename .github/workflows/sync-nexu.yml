@@ -1,0 +1,50 @@
+name: Sync Nexu Main
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'    # 每6小时运行一次
+  workflow_dispatch:           # 允许手动触发
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+jobs:
+  sync-nexu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.MCLAW }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Sync nexu-io/nexu main → nexu-main
+        run: |
+          # 检查 nexu-main 分支是否存在
+          if git show-ref --verify --quiet refs/remotes/origin/nexu-main; then
+            echo "切换到 nexu-main 分支..."
+            git checkout nexu-main
+          else
+            echo "首次运行，添加 nexu remote 并创建 nexu-main 分支..."
+            git remote add nexu https://github.com/nexu-io/nexu.git
+            git fetch nexu
+            git checkout -b nexu-main nexu/main
+            git push -u origin nexu-main --force
+          fi
+
+          # 拉取 nexu 最新代码
+          git remote add nexu https://github.com/nexu-io/nexu.git 2>/dev/null || true
+          git fetch nexu
+
+          # 合并 nexu/main
+          git merge nexu/main --allow-unrelated-histories -m "sync: merge nexu-io/nexu main into nexu-main [skip ci]"
+
+          # 推送
+          git push --force-with-lease origin nexu-main
