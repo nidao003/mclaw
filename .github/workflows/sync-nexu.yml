@@ -2,8 +2,8 @@ name: Sync Nexu Main
 
 on:
   schedule:
-    - cron: '0 */6 * * *'    # 每6小时运行一次
-  workflow_dispatch:           # 允许手动触发
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -27,24 +27,23 @@ jobs:
 
       - name: Sync nexu-io/nexu main → nexu-main
         run: |
-          # 检查 nexu-main 分支是否存在
-          if git show-ref --verify --quiet refs/remotes/origin/nexu-main; then
-            echo "切换到 nexu-main 分支..."
-            git checkout nexu-main
-          else
-            echo "首次运行，添加 nexu remote 并创建 nexu-main 分支..."
-            git remote add nexu https://github.com/nexu-io/nexu.git
-            git fetch nexu
-            git checkout -b nexu-main nexu/main
-            git push -u origin nexu-main --force
-          fi
+          set -e
 
-          # 拉取 nexu 最新代码
+          # 添加 nexu remote
           git remote add nexu https://github.com/nexu-io/nexu.git 2>/dev/null || true
-          git fetch nexu
+          echo "拉取 nexu 仓库..."
+          git fetch nexu main --depth=1
 
-          # 合并 nexu/main
-          git merge nexu/main --allow-unrelated-histories -m "sync: merge nexu-io/nexu main into nexu-main [skip ci]"
+          # 检查 nexu-main 分支是否已存在
+          if git show-ref --verify --quiet refs/remotes/origin/nexu-main; then
+            echo "nexu-main 分支已存在，切换并合并更新..."
+            git checkout nexu-main
+            git merge nexu/main --allow-unrelated-histories -m "sync: merge nexu-io/nexu main into nexu-main [skip ci]"
+          else
+            echo "首次运行，创建 nexu-main 分支..."
+            git checkout -b nexu-main nexu/main
+          fi
 
           # 推送
           git push --force-with-lease origin nexu-main
+          echo "同步完成！"
