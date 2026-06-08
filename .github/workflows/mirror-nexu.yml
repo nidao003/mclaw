@@ -1,4 +1,4 @@
-name: Sync Nexu Main
+name: Mirror Nexu
 
 on:
   schedule:
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  sync-nexu:
+  mirror-nexu:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,25 +25,22 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Sync nexu-io/nexu main → nexu-main
+      - name: Mirror nexu-io/nexu main → nexu-main
         run: |
           set -e
 
-          # 添加 nexu remote
           git remote add nexu https://github.com/nexu-io/nexu.git 2>/dev/null || true
           echo "拉取 nexu 仓库..."
           git fetch nexu main --depth=1
 
-          # 检查 nexu-main 分支是否已存在
           if git show-ref --verify --quiet refs/remotes/origin/nexu-main; then
-            echo "nexu-main 分支已存在，切换并合并更新..."
+            echo "nexu-main 分支已存在，合并更新..."
             git checkout nexu-main
-            git merge nexu/main --allow-unrelated-histories -m "sync: merge nexu-io/nexu main into nexu-main [skip ci]"
+            git merge nexu/main --allow-unrelated-histories -m "mirror: nexu-io/nexu main → nexu-main [skip ci]"
           else
             echo "首次运行，创建 nexu-main 分支..."
             git checkout -b nexu-main nexu/main
           fi
 
-          # 推送
           git push --force-with-lease origin nexu-main
-          echo "同步完成！"
+          echo "镜像完成！"
