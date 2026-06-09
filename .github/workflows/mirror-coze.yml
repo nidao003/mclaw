@@ -1,0 +1,40 @@
+name: Mirror Coze Studio
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'    # 每6小时自动同步
+  workflow_dispatch:           # 允许手动触发
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+jobs:
+  mirror-coze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.MCLAW }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Mirror coze-dev/coze-studio main → coze-main
+        run: |
+          set -e
+
+          git remote add coze https://github.com/coze-dev/coze-studio.git 2>/dev/null || true
+          echo "拉取 coze-studio 仓库..."
+          git fetch coze main
+
+          echo "重置 coze-main 为 coze/main 的精确镜像..."
+          git checkout -B coze-main coze/main
+
+          git push origin coze-main --force
+          echo "镜像完成！"
