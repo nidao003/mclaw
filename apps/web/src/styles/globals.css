@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* mclaw SkillHub Web — skillhub.cn-inspired design tokens.
+ * White canvas, black capsule CTAs, blue editorial emphasis, rounded search
+ * controls, and list-first skill rows. Keep mclaw orange available as a brand
+ * token, but do not use it as the dominant web accent.
+ */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;           /* #ffffff */
+    --foreground: 240 3% 15%;          /* #1c1c1e */
+    --card: 0 0% 100%;                 /* #ffffff surface-card */
+    --card-foreground: 240 3% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 3% 15%;
+
+    --primary: 231 100% 61%;           /* #3957ff skillhub blue */
+    --primary-foreground: 0 0% 100%;   /* on-primary */
+
+    --secondary: 220 24% 97%;          /* #f6f7fb */
+    --secondary-foreground: 240 3% 15%;
+    --muted: 220 24% 97%;
+    --muted-foreground: 0 0% 40%;      /* #666 */
+    --accent: 220 24% 97%;
+    --accent-foreground: 240 3% 15%;
+
+    /* ── 语义色 ──────────────────────────────────────────────────── */
+    --destructive: 346 65% 49%;        /* #cf2d56 semantic-error */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 218 29% 92%;             /* #e6e9ef */
+    --input: 218 29% 92%;
+    --ring: 231 100% 61%;
+
+    --radius: 0.75rem;                 /* 12px — 卡片圆角 */
+
+    /* ── mclaw 表面 token ────────────────────────────────────────── */
+    --surface-modal: 0 0% 100%;        /* 纯白卡片 */
+    --surface-input: 220 24% 97%;
+    --surface-sidebar: 0 0% 100%;
+    --sidebar-foreground: 240 3% 15%;
+    --sidebar-foreground-muted: 0 0% 40%;
+    --sidebar-hover: 220 24% 97%;
+    --sidebar-active: 231 100% 61%;
+
+    /* ── usage accents ───────────────────────────────────────────── */
+    --usage-input: 18 83% 61%;
+    --usage-output: 161 64% 33%;       /* #1f8a65 semantic-success */
+    --usage-cache: 48 96% 53%;
+  }
+
+  /* 暗色模式适配（保持兼容，Skills Hub 以亮色为主） */
+  .dark {
+    --background: 20 14.3% 8%;
+    --foreground: 60 12% 96%;
+    --card: 20 14.3% 11%;
+    --card-foreground: 60 12% 96%;
+    --popover: 20 14.3% 11%;
+    --popover-foreground: 60 12% 96%;
+
+    --primary: 18 83% 65%;
+    --primary-foreground: 20 14.3% 4.1%;
+
+    --secondary: 20 14.3% 16%;
+    --secondary-foreground: 60 12% 96%;
+    --muted: 20 14.3% 16%;
+    --muted-foreground: 45 7% 60%;
+    --accent: 20 14.3% 22%;
+    --accent-foreground: 60 12% 96%;
+    --destructive: 0 65% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 20 14.3% 20%;
+    --input: 20 14.3% 16%;
+    --ring: 18 83% 65%;
+
+    --surface-modal: 20 14.3% 11%;
+    --surface-input: 20 14.3% 16%;
+    --surface-sidebar: 20 14% 9%;
+    --sidebar-foreground: 60 12% 96%;
+    --sidebar-foreground-muted: 45 7% 60%;
+    --sidebar-hover: 20 14% 16%;
+    --sidebar-active: 18 83% 65%;
+
+    --usage-input: 18 83% 70%;
+    --usage-output: 161 64% 52%;
+    --usage-cache: 48 96% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .skillhub-capsule-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-skillhub-black px-5 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-[#383838] hover:shadow-lg;
+  }
+
+  .skillhub-ghost-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white px-5 py-3 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-secondary;
+  }
+
+  .skillhub-soft-shadow {
+    box-shadow: 0 8px 24px -4px rgb(0 0 0 / 5%);
+  }
+}

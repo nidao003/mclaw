@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QClaw - 任务管理</title>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary:              #E11D48;
+      --color-primary-container:    #FFF1F2;
+      --color-on-primary:           #ffffff;
+      --color-background:           #FAFAFA;
+      --color-surface-container-lowest:   #FFFFFF;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #F4F4F5;
+      --color-surface-container-high:     #E4E4E7;
+      --color-surface-container-highest:  #D4D4D8;
+      --color-on-surface:           #18181B;
+      --color-on-surface-variant:   #71717A;
+      --color-success:  #10B981;
+      --color-error:    #EF4444;
+      --color-warning:  #F59E0B;
+      --color-outline:          #E4E4E7;
+      --color-outline-variant:  #A1A1AA;
+      --radius-sm:   0.375rem;
+      --radius-md:   0.5rem;
+      --radius-lg:   0.75rem;
+      --radius-xl:   1rem;
+      --radius-2xl:  1.5rem;
+      --radius-full: 9999px;
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.12);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- macOS 窗口控件 -->
+  <div class="fixed top-3 left-3 z-50 flex gap-2">
+    <button class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600"></button>
+    <button class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600"></button>
+    <button class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600"></button>
+  </div>
+
+  <!-- 侧边栏导航 -->
+  <aside class="fixed left-0 top-0 h-screen w-60 bg-zinc-900 text-zinc-100 flex flex-col z-40">
+    <div class="p-4 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">初</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium truncate">小初</div>
+        <div class="text-xs text-zinc-400 truncate">免费版</div>
+      </div>
+    </div>
+    <div class="px-3 pb-3">
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
+        <input type="text" placeholder="搜索" class="w-full bg-zinc-800 border-none rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700">
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto px-3 space-y-0.5">
+      <a href="chat.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="message-square" class="w-4 h-4"></i><span>对话</span>
+      </a>
+      <a href="expert.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="users" class="w-4 h-4"></i><span>专家</span>
+      </a>
+      <a href="task.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-100" aria-current="page">
+        <i data-lucide="check-circle" class="w-4 h-4"></i><span>任务</span>
+      </a>
+      <a href="file.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="folder" class="w-4 h-4"></i><span>文件</span>
+      </a>
+      <a href="connect.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="link" class="w-4 h-4"></i><span>连接</span>
+      </a>
+      <a href="memory.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="brain" class="w-4 h-4"></i><span>记忆</span>
+      </a>
+      <a href="lab.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="flask-conical" class="w-4 h-4"></i><span>Lab</span>
+      </a>
+    </nav>
+    <div class="p-3 border-t border-zinc-700/20">
+      <div class="flex items-center gap-1">
+        <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"><i data-lucide="coins" class="w-4 h-4"></i></button>
+        <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"><i data-lucide="smartphone" class="w-4 h-4"></i></button>
+        <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"><i data-lucide="bell" class="w-4 h-4"></i></button>
+        <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"><i data-lucide="settings" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 主内容区 -->
+  <main class="ml-60 min-h-screen bg-background p-6">
+    <!-- 页面标题 -->
+    <h1 class="text-xl font-bold text-zinc-900 mb-6">任务管理</h1>
+
+    <!-- 标签栏 -->
+    <div class="flex items-center gap-2 mb-6">
+      <button class="px-5 py-2 rounded-full text-sm font-medium bg-white text-zinc-900 shadow-sm">任务列表</button>
+      <button class="px-5 py-2 rounded-full text-sm font-medium text-zinc-500 hover:bg-zinc-100 transition-colors">历史任务</button>
+    </div>
+
+    <!-- 引导区 -->
+    <div class="bg-white rounded-xl p-8 shadow-sm mb-6 text-center">
+      <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-2xl flex items-center justify-center">
+        <i data-lucide="alarm-clock" class="w-10 h-10 text-white"></i>
+      </div>
+      <h2 class="text-base font-semibold text-zinc-900 mb-2">选择下方对话，开启你的第一个任务吧</h2>
+      <p class="text-sm text-zinc-500">任务可以自动执行，帮你节省时间</p>
+    </div>
+
+    <!-- 任务模板 -->
+    <div class="space-y-3 mb-6">
+      <div class="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
+        <div class="flex items-center gap-3">
+          <i data-lucide="clock" class="w-5 h-5 text-zinc-400"></i>
+          <span class="text-sm text-zinc-700">每天早上9点提醒我查看邮件</span>
+        </div>
+        <i data-lucide="chevron-right" class="w-5 h-5 text-zinc-300"></i>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
+        <div class="flex items-center gap-3">
+          <i data-lucide="file-text" class="w-5 h-5 text-zinc-400"></i>
+          <span class="text-sm text-zinc-700">每周一自动生成工作周报</span>
+        </div>
+        <i data-lucide="chevron-right" class="w-5 h-5 text-zinc-300"></i>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer">
+        <div class="flex items-center gap-3">
+          <i data-lucide="globe" class="w-5 h-5 text-zinc-400"></i>
+          <span class="text-sm text-zinc-700">每日收集行业新闻摘要</span>
+        </div>
+        <i data-lucide="chevron-right" class="w-5 h-5 text-zinc-300"></i>
+      </div>
+    </div>
+
+    <!-- 创建按钮 -->
+    <button class="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center justify-center gap-2">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      创建任务
+    </button>
+  </main>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+{
+  "name": "mclaw-skills",
+  "version": "1.0.4",
+  "description": "Skills Hub CLI — 通用 AI 技能包管理器，支持 Registry / Git / npm 三源安装",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "skills": "./dist/index.js",
+    "mclaw-skills": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "skills",
+    "ai",
+    "claude-code",
+    "codex",
+    "openclaw",
+    "agent-skills",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": "Skills Hub",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mclaw-ai/skills-hub"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "typescript": "^5.9.3"
+  }
+}

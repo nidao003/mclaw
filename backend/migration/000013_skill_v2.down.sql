@@ -1,0 +1,8 @@
+ALTER TABLE skills
+  DROP COLUMN IF EXISTS source_type,
+  DROP COLUMN IF EXISTS icon_name,
+  DROP COLUMN IF EXISTS summary,
+  DROP COLUMN IF EXISTS minio_path,
+  DROP COLUMN IF EXISTS npm_publish_status;
+
+ALTER TABLE users ALTER COLUMN role DROP DEFAULT;

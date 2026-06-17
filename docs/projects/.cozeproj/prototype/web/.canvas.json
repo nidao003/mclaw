@@ -1,0 +1,68 @@
+{
+  "elements": [
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/startup.html"
+      },
+      "title": "启动页",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/chat.html"
+      },
+      "title": "对话",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/expert.html"
+      },
+      "title": "专家广场",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/task.html"
+      },
+      "title": "任务管理",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/file.html"
+      },
+      "title": "文件空间",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/connect.html"
+      },
+      "title": "应用连接",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/memory.html"
+      },
+      "title": "记忆系统",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/lab.html"
+      },
+      "title": "实验室",
+      "size": "web"
+    }
+  ]
+}

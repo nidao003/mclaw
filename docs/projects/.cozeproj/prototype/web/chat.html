@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QClaw - 对话</title>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary:              #E11D48;
+      --color-primary-container:    #FFF1F2;
+      --color-on-primary:           #ffffff;
+      --color-background:           #FAFAFA;
+      --color-surface-container-lowest:   #FFFFFF;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #F4F4F5;
+      --color-surface-container-high:     #E4E4E7;
+      --color-surface-container-highest:  #D4D4D8;
+      --color-on-surface:           #18181B;
+      --color-on-surface-variant:   #71717A;
+      --color-success:  #10B981;
+      --color-error:    #EF4444;
+      --color-warning:  #F59E0B;
+      --color-outline:          #E4E4E7;
+      --color-outline-variant:  #A1A1AA;
+      --radius-sm:   0.375rem;
+      --radius-md:   0.5rem;
+      --radius-lg:   0.75rem;
+      --radius-xl:   1rem;
+      --radius-2xl:  1.5rem;
+      --radius-full: 9999px;
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.12);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- macOS 窗口控件 -->
+  <div class="fixed top-3 left-3 z-50 flex gap-2">
+    <button class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600"></button>
+    <button class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600"></button>
+    <button class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600"></button>
+  </div>
+
+  <!-- 侧边栏导航 -->
+  <aside class="fixed left-0 top-0 h-screen w-60 bg-zinc-900 text-zinc-100 flex flex-col z-40">
+    <div class="p-4 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">初</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium truncate">小初</div>
+        <div class="text-xs text-zinc-400 truncate">免费版</div>
+      </div>
+    </div>
+    <div class="px-3 pb-3">
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
+        <input type="text" placeholder="搜索" class="w-full bg-zinc-800 border-none rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700">
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto px-3 space-y-0.5">
+      <a href="chat.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-100" aria-current="page">
+        <i data-lucide="message-square" class="w-4 h-4"></i><span>对话</span>
+      </a>
+      <a href="expert.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="users" class="w-4 h-4"></i><span>专家</span>
+      </a>
+      <a href="task.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="check-circle" class="w-4 h-4"></i><span>任务</span>
+      </a>
+      <a href="file.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="folder" class="w-4 h-4"></i><span>文件</span>
+      </a>
+      <a href="connect.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="link" class="w-4 h-4"></i><span>连接</span>
+      </a>
+      <a href="memory.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="brain" class="w-4 h-4"></i><span>记忆</span>
+      </a>
+      <a href="lab.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors">
+        <i data-lucide="flask-conical" class="w-4 h-4"></i><span>Lab</span>
+      </a>
+    </nav>
+    <div class="p-3 border-t border-zinc-700/20">
+      <div class="flex items-center gap-1">
+        <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"><i data-lucide="coins" class="w-4 h-4"></i></button>
+        <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"><i data-lucide="smartphone" class="w-4 h-4"></i></button>
+        <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"><i data-lucide="bell" class="w-4 h-4"></i></button>
+        <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"><i data-lucide="settings" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 主内容区 -->
+  <main class="ml-60 min-h-screen flex">
+    <!-- 左侧对话列表 -->
+    <div class="w-72 bg-white border-r border-zinc-200/50 flex flex-col">
+      <div class="p-3">
+        <button class="w-full bg-white border border-zinc-200 rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center justify-center gap-2">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          新建 Agent
+        </button>
+      </div>
+      <!-- 默认 Agent -->
+      <div class="px-3 py-2 border-b border-zinc-200/50">
+        <div class="flex items-center gap-3 p-2 rounded-lg bg-primary/5">
+          <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L10 8L8 10L2 12C1 13 1 15 2 16L8 18L10 20L12 26C13 27 15 27 16 26L18 20L22 18C23 17 23 15 22 14L18 12L16 10C15 9 13 9 12 10L12 2Z"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-zinc-900">QClaw</div>
+            <div class="text-xs text-zinc-500 truncate">正经但有趣，靠谱但不无聊</div>
+          </div>
+        </div>
+      </div>
+      <!-- 历史对话 -->
+      <div class="flex-1 overflow-y-auto p-3 space-y-2">
+        <div class="p-3 rounded-lg hover:bg-zinc-50 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2 mb-1">
+            <i data-lucide="clock" class="w-4 h-4 text-zinc-400"></i>
+            <span class="text-sm font-medium text-zinc-700">定时任务提醒</span>
+          </div>
+          <p class="text-xs text-zinc-500 truncate">帮我设置每天早上9点提醒...</p>
+        </div>
+        <div class="p-3 rounded-lg hover:bg-zinc-50 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2 mb-1">
+            <i data-lucide="code" class="w-4 h-4 text-zinc-400"></i>
+            <span class="text-sm font-medium text-zinc-700">代码实现助手</span>
+          </div>
+          <p class="text-xs text-zinc-500 truncate">帮我写一个Python爬虫...</p>
+        </div>
+        <div class="p-3 rounded-lg hover:bg-zinc-50 cursor-pointer transition-colors">
+          <div class="flex items-center gap-2 mb-1">
+            <i data-lucide="file-text" class="w-4 h-4 text-zinc-400"></i>
+            <span class="text-sm font-medium text-zinc-700">文档整理</span>
+          </div>
+          <p class="text-xs text-zinc-500 truncate">帮我整理这份报告...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧对话区域 -->
+    <div class="flex-1 flex flex-col bg-background">
+      <!-- 顶部标签栏 -->
+      <div class="bg-white border-b border-zinc-200/50 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-1">
+          <button class="px-4 py-1.5 rounded-full text-sm font-medium bg-zinc-100 text-zinc-900">对话</button>
+          <button class="px-4 py-1.5 rounded-full text-sm font-medium text-zinc-500 hover:bg-zinc-50 transition-colors">工作室</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-1">
+            <i data-lucide="gift" class="w-3.5 h-3.5"></i>
+            赚积分
+          </button>
+          <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors">
+            <i data-lucide="maximize-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 对话内容区 -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <!-- AI 能力介绍 -->
+        <div class="max-w-2xl mx-auto">
+          <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L10 8L8 10L2 12C1 13 1 15 2 16L8 18L10 20L12 26C13 27 15 27 16 26L18 20L22 18C23 17 23 15 22 14L18 12L16 10C15 9 13 9 12 10L12 2Z"/>
+                </svg>
+              </div>
+              <div class="text-base font-semibold text-zinc-900">QClaw 能为你做什么？</div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex items-start gap-3 p-3 rounded-lg bg-zinc-50">
+                <i data-lucide="globe" class="w-5 h-5 text-blue-500 mt-0.5"></i>
+                <div>
+                  <div class="text-sm font-medium text-zinc-700">浏览器搜索</div>
+                  <div class="text-xs text-zinc-500">实时联网获取最新信息</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 p-3 rounded-lg bg-zinc-50">
+                <i data-lucide="alarm-clock" class="w-5 h-5 text-emerald-500 mt-0.5"></i>
+                <div>
+                  <div class="text-sm font-medium text-zinc-700">定时任务</div>
+                  <div class="text-xs text-zinc-500">设置提醒和自动化任务</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 p-3 rounded-lg bg-zinc-50">
+                <i data-lucide="terminal" class="w-5 h-5 text-violet-500 mt-0.5"></i>
+                <div>
+                  <div class="text-sm font-medium text-zinc-700">代码执行</div>
+                  <div class="text-xs text-zinc-500">运行代码并返回结果</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 p-3 rounded-lg bg-zinc-50">
+                <i data-lucide="file-search" class="w-5 h-5 text-amber-500 mt-0.5"></i>
+                <div>
+                  <div class="text-sm font-medium text-zinc-700">文件处理</div>
+                  <div class="text-xs text-zinc-500">读取、分析、生成文件</div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-zinc-100">
+              <p class="text-sm text-zinc-600">有什么想搞的吗？✏️</p>
+            </div>
+          </div>
+
+          <!-- 交互按钮 -->
+          <div class="flex items-center gap-2 mb-6">
+            <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"><i data-lucide="copy" class="w-4 h-4"></i></button>
+            <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"><i data-lucide="thumbs-up" class="w-4 h-4"></i></button>
+            <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"><i data-lucide="thumbs-down" class="w-4 h-4"></i></button>
+            <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+            <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"><i data-lucide="volume-2" class="w-4 h-4"></i></button>
+            <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"><i data-lucide="share-2" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部输入区 -->
+      <div class="bg-white border-t border-zinc-200/50 p-4">
+        <div class="max-w-2xl mx-auto">
+          <div class="bg-zinc-50 rounded-xl p-3 mb-3">
+            <textarea placeholder="可以描述任务或提问任何问题" class="w-full bg-transparent border-none resize-none text-sm text-zinc-700 placeholder:text-zinc-400 focus:outline-none" rows="2"></textarea>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors flex items-center gap-1">
+                Auto <i data-lucide="chevron-down" class="w-3 h-3"></i>
+              </button>
+              <button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors flex items-center gap-1">
+                连接 <i data-lucide="chevron-down" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"><i data-lucide="mic" class="w-4 h-4"></i></button>
+              <button class="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"><i data-lucide="paperclip" class="w-4 h-4"></i></button>
+              <button class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                发送
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-zinc-400 text-center mt-3">内容由 AI 生成，请仔细甄别</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

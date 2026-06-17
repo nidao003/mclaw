@@ -1,0 +1,462 @@
+{
+  "timestamp": "2026-06-08T18:20:00+08:00",
+  "project": {
+    "name": "mclaw",
+    "version": "0.4.9-alpha.0",
+    "description": "mclaw - Graphical AI Assistant based on OpenClaw",
+    "language": "TypeScript",
+    "framework": "Electron 40+ / React 19 / Vite 7",
+    "license": "MIT",
+    "packageManager": "pnpm@10.33.4"
+  },
+  "modules": [
+    {
+      "path": "electron/main/",
+      "name": "Electron Main Process",
+      "entry": "electron/main/index.ts",
+      "interfaces": ["IPC handlers", "Host API registry", "Window management"],
+      "tests": [
+        "tests/unit/main-quit-lifecycle.test.ts",
+        "tests/unit/main-window-focus.test.ts",
+        "tests/unit/launch-at-startup.test.ts",
+        "tests/unit/zoom-shortcuts.test.ts",
+        "tests/unit/signal-quit.test.ts",
+        "tests/unit/process-instance-lock.test.ts",
+        "tests/unit/provider-model-sync.test.ts"
+      ],
+      "importantPaths": [
+        "electron/main/index.ts",
+        "electron/main/ipc-handlers.ts",
+        "electron/main/ipc/host-invoke.ts",
+        "electron/main/window.ts",
+        "electron/main/tray.ts"
+      ],
+      "coverage": "high",
+      "gaps": []
+    },
+    {
+      "path": "electron/gateway/",
+      "name": "Gateway Process Manager",
+      "entry": "electron/gateway/manager.ts",
+      "interfaces": ["GatewayManager events", "RPC", "start/stop/restart"],
+      "tests": [
+        "tests/unit/gateway-events.test.ts",
+        "tests/unit/gateway-manager-diagnostics.test.ts",
+        "tests/unit/gateway-manager-heartbeat.test.ts",
+        "tests/unit/gateway-manager-reload-policy-refresh.test.ts",
+        "tests/unit/gateway-manager-restart-recovery.test.ts",
+        "tests/unit/gateway-connection-monitor.test.ts",
+        "tests/unit/gateway-event-dispatch.test.ts",
+        "tests/unit/gateway-process-policy.test.ts",
+        "tests/unit/gateway-ready-fallback.test.ts",
+        "tests/unit/gateway-reload-policy.test.ts",
+        "tests/unit/gateway-restart-governor.test.ts",
+        "tests/unit/gateway-rpc-backpressure.test.ts",
+        "tests/unit/gateway-startup-orchestrator.test.ts",
+        "tests/unit/gateway-startup-recovery.test.ts",
+        "tests/unit/gateway-supervisor.test.ts",
+        "tests/unit/gateway-ws-client.test.ts",
+        "tests/unit/gateway-ws-trace.test.ts",
+        "tests/unit/config-sync.test.ts",
+        "tests/unit/clawhub-service.test.ts",
+        "tests/unit/skills-symlink-cleanup.test.ts"
+      ],
+      "importantPaths": [
+        "electron/gateway/manager.ts",
+        "electron/gateway/ws-client.ts",
+        "electron/gateway/supervisor.ts",
+        "electron/gateway/protocol.ts",
+        "electron/gateway/config-sync.ts"
+      ],
+      "coverage": "high",
+      "gaps": []
+    },
+    {
+      "path": "electron/services/",
+      "name": "Host API Services",
+      "entry": "multiple *-api.ts files",
+      "interfaces": ["21 Host API namespaces"],
+      "tests": [
+        "tests/unit/host-services.test.ts",
+        "tests/unit/host-api-facade.test.ts",
+        "tests/unit/host-invoke.test.ts",
+        "tests/unit/provider-service-stale-cleanup.test.ts",
+        "tests/unit/provider-runtime-sync.test.ts",
+        "tests/unit/provider-store-init.test.ts",
+        "tests/unit/provider-store-validation.test.ts",
+        "tests/unit/provider-validation.test.ts",
+        "tests/unit/local-skill-service.test.ts",
+        "tests/unit/media-api.test.ts",
+        "tests/unit/token-usage.test.ts"
+      ],
+      "importantPaths": [
+        "electron/services/providers-api.ts",
+        "electron/services/skills-api.ts",
+        "electron/services/channels-api.ts",
+        "electron/services/chat-api.ts",
+        "electron/services/providers/provider-service.ts",
+        "electron/services/secrets/secret-store.ts"
+      ],
+      "coverage": "high",
+      "gaps": ["部分 service 缺少独立单测"]
+    },
+    {
+      "path": "electron/extensions/",
+      "name": "Extension System",
+      "entry": "electron/extensions/registry.ts",
+      "interfaces": ["Extension registry", "Marketplace provider"],
+      "tests": [
+        "tests/unit/extension-host-api-contributions.test.ts"
+      ],
+      "importantPaths": [
+        "electron/extensions/registry.ts",
+        "electron/extensions/loader.ts",
+        "electron/extensions/types.ts",
+        "electron/extensions/builtin/index.ts"
+      ],
+      "coverage": "low",
+      "gaps": ["扩展加载/注册的单元测试较少"]
+    },
+    {
+      "path": "electron/preload/",
+      "name": "Preload Bridge",
+      "entry": "electron/preload/index.ts",
+      "interfaces": ["contextBridge: electron API + mclaw hostInvoke"],
+      "tests": [],
+      "importantPaths": [
+        "electron/preload/index.ts"
+      ],
+      "coverage": "none",
+      "gaps": ["Preload 层无独立测试"]
+    },
+    {
+      "path": "electron/utils/",
+      "name": "Electron Utilities",
+      "entry": "multiple files",
+      "interfaces": [],
+      "tests": [
+        "tests/unit/agent-config.test.ts",
+        "tests/unit/env-path.test.ts",
+        "tests/unit/channel-config.test.ts",
+        "tests/unit/channel-status.test.ts",
+        "tests/unit/control-ui-device-pairing.test.ts",
+        "tests/unit/wechat-login.test.ts",
+        "tests/unit/whatsapp-login.test.ts",
+        "tests/unit/mclaw-auth.test.ts",
+        "tests/unit/mclaw-cli.test.ts",
+        "tests/unit/mclaw-control-ui.test.ts",
+        "tests/unit/mclaw-doctor.test.ts",
+        "tests/unit/mclaw-image-generation.test.ts",
+        "tests/unit/mclaw-proxy.test.ts",
+        "tests/unit/plugin-install.test.ts",
+        "tests/unit/proxy.test.ts",
+        "tests/unit/skill-config-bundled-defaults.test.ts",
+        "tests/unit/skill-quick-access.test.ts",
+        "tests/unit/token-usage.test.ts",
+        "tests/unit/uv-env.test.ts",
+        "tests/unit/win-shell.test.ts"
+      ],
+      "importantPaths": [
+        "electron/utils/config.ts",
+        "electron/utils/logger.ts",
+        "electron/utils/mclaw-workspace.ts",
+        "electron/utils/skill-config.ts",
+        "electron/utils/session-files.ts",
+        "electron/utils/token-usage.ts"
+      ],
+      "coverage": "high",
+      "gaps": []
+    },
+    {
+      "path": "src/pages/",
+      "name": "Page Components",
+      "entry": "src/App.tsx (routes)",
+      "interfaces": ["10 page routes"],
+      "tests": [
+        "tests/unit/chat-message.test.tsx",
+        "tests/unit/chat-input.test.tsx",
+        "tests/unit/agents-page.test.tsx",
+        "tests/unit/channels-page.test.tsx",
+        "tests/unit/dreams-page.test.tsx",
+        "tests/unit/models-page.test.tsx",
+        "tests/unit/skills-page-gateway-readiness.test.tsx",
+        "tests/e2e/chat-*.spec.ts",
+        "tests/e2e/main-navigation.spec.ts",
+        "tests/e2e/provider-lifecycle.spec.ts"
+      ],
+      "importantPaths": [
+        "src/pages/Chat/index.tsx",
+        "src/pages/Chat/ChatInput.tsx",
+        "src/pages/Setup/index.tsx",
+        "src/pages/Settings/index.tsx",
+        "src/pages/Channels/index.tsx"
+      ],
+      "coverage": "medium",
+      "gaps": ["Chat 页面部分子组件缺独立测试"]
+    },
+    {
+      "path": "src/stores/",
+      "name": "Zustand Stores",
+      "entry": "src/stores/chat.ts (largest)",
+      "interfaces": ["12 stores"],
+      "tests": [
+        "tests/unit/chat-*.test.ts(x)",
+        "tests/unit/stores.test.ts",
+        "tests/unit/gateway-events.test.ts",
+        "tests/unit/skills-store-fetch-parallel.test.ts",
+        "tests/unit/cron-store-fetch-dedupe.test.ts"
+      ],
+      "importantPaths": [
+        "src/stores/chat.ts",
+        "src/stores/chat/helpers.ts",
+        "src/stores/gateway.ts",
+        "src/stores/providers.ts",
+        "src/stores/settings.ts"
+      ],
+      "coverage": "high",
+      "gaps": []
+    },
+    {
+      "path": "src/lib/",
+      "name": "Renderer API Client & Utils",
+      "entry": "src/lib/host-api.ts",
+      "interfaces": ["hostApi facade", "hostEvents"],
+      "tests": [
+        "tests/unit/host-api-facade.test.ts",
+        "tests/unit/host-events.test.ts",
+        "tests/unit/host-invoke.test.ts",
+        "tests/unit/host-services.test.ts",
+        "tests/unit/error-model.test.ts",
+        "tests/unit/error-message.test.ts",
+        "tests/unit/generated-files.test.ts",
+        "tests/unit/file-preview-client.test.ts",
+        "tests/unit/model-options.test.ts",
+        "tests/unit/collect-dropped-files.test.ts"
+      ],
+      "importantPaths": [
+        "src/lib/host-api.ts",
+        "src/lib/host-api-client.ts",
+        "src/lib/host-events.ts",
+        "src/lib/error-model.ts"
+      ],
+      "coverage": "high",
+      "gaps": []
+    },
+    {
+      "path": "src/components/",
+      "name": "UI Components",
+      "entry": "multiple files",
+      "interfaces": [],
+      "tests": [
+        "tests/unit/artifact-panel.test.tsx",
+        "tests/unit/file-preview-body.test.tsx",
+        "tests/unit/confirm-dialog.test.tsx",
+        "tests/unit/feedback-state.test.tsx",
+        "tests/unit/generated-files-panel.test.tsx",
+        "tests/unit/image-viewer.test.tsx",
+        "tests/unit/main-layout.test.tsx",
+        "tests/unit/title-bar.test.tsx",
+        "tests/unit/workspace-browser-body.test.tsx"
+      ],
+      "importantPaths": [
+        "src/components/layout/MainLayout.tsx",
+        "src/components/layout/Sidebar.tsx",
+        "src/components/file-preview/FilePreviewBody.tsx",
+        "src/components/settings/ProvidersSettings.tsx"
+      ],
+      "coverage": "medium",
+      "gaps": ["部分 UI 组件无测试"]
+    },
+    {
+      "path": "shared/",
+      "name": "Shared Types & Contracts",
+      "entry": "shared/host-api/contract.ts",
+      "interfaces": ["HostApiContract", "HostEventContract", "i18n resources"],
+      "tests": [
+        "tests/unit/i18n-locale-parity.test.ts",
+        "tests/unit/sidebar-layout.test.ts",
+        "tests/unit/language-detection.test.ts"
+      ],
+      "importantPaths": [
+        "shared/host-api/contract.ts",
+        "shared/host-events/contract.ts",
+        "shared/types/channel.ts",
+        "shared/types/gateway.ts"
+      ],
+      "coverage": "low",
+      "gaps": ["共享类型缺少运行时验证测试"]
+    },
+    {
+      "path": "harness/",
+      "name": "Spec-driven Validation Framework",
+      "entry": "harness/src/cli.mjs",
+      "interfaces": ["harness CLI"],
+      "tests": [
+        "tests/unit/harness-specs.test.ts",
+        "tests/unit/harness-git.test.ts"
+      ],
+      "importantPaths": [
+        "harness/src/cli.mjs",
+        "harness/specs/rules/",
+        "harness/specs/scenarios/",
+        "harness/specs/tasks/"
+      ],
+      "coverage": "medium",
+      "gaps": []
+    },
+    {
+      "path": "src/pages/Chat/",
+      "name": "Chat Page (Deep Scan)",
+      "entry": "src/pages/Chat/index.tsx",
+      "interfaces": ["Chat", "ChatInput", "ChatMessage", "ExecutionGraphCard", "ChatToolbar"],
+      "tests": [
+        "tests/unit/chat-message.test.tsx",
+        "tests/unit/chat-input.test.tsx",
+        "tests/unit/execution-graph-card.test.tsx",
+        "tests/unit/message-utils.test.ts",
+        "tests/unit/task-visualization.test.ts"
+      ],
+      "importantPaths": [
+        "src/pages/Chat/index.tsx",
+        "src/pages/Chat/ChatInput.tsx",
+        "src/pages/Chat/ChatMessage.tsx",
+        "src/pages/Chat/task-visualization.ts",
+        "src/pages/Chat/message-utils.ts"
+      ],
+      "coverage": "high",
+      "gaps": []
+    },
+    {
+      "path": "src/components/file-preview/",
+      "name": "File Preview Components (Deep Scan)",
+      "entry": "src/components/file-preview/ArtifactPanel.tsx",
+      "interfaces": ["ArtifactPanel", "FilePreviewBody", "WorkspaceBrowserBody", "6 type renderers"],
+      "tests": [
+        "tests/unit/artifact-panel.test.tsx",
+        "tests/unit/file-preview-body.test.tsx",
+        "tests/unit/generated-files-panel.test.tsx",
+        "tests/unit/image-viewer.test.tsx",
+        "tests/unit/workspace-browser-body.test.tsx"
+      ],
+      "importantPaths": [
+        "src/components/file-preview/ArtifactPanel.tsx",
+        "src/components/file-preview/FilePreviewBody.tsx",
+        "src/components/file-preview/WorkspaceBrowserBody.tsx",
+        "src/components/file-preview/types.ts",
+        "src/components/file-preview/SheetViewer.tsx",
+        "src/components/file-preview/PdfViewer.tsx"
+      ],
+      "coverage": "medium",
+      "gaps": ["PdfViewer/SheetViewer/MonacoViewer/HtmlPreview 无独立测试"]
+    },
+    {
+      "path": "scripts/",
+      "name": "Build & Tool Scripts (Deep Scan)",
+      "entry": "scripts/bundle-openclaw.mjs",
+      "interfaces": ["build pipeline", "download scripts", "NSIS patches", "comms baseline"],
+      "tests": [
+        "tests/unit/comms-scripts.test.ts"
+      ],
+      "importantPaths": [
+        "scripts/bundle-openclaw.mjs",
+        "scripts/after-pack.cjs",
+        "scripts/bundle-mclaw-plugins.mjs",
+        "scripts/comms/replay.mjs",
+        "scripts/comms/compare.mjs"
+      ],
+      "coverage": "low",
+      "gaps": ["build scripts (bundle/after-pack/download) 缺少单元测试"]
+    }
+  ],
+  "scan": {
+    "totalFilesEstimated": 500,
+    "filesScanned": 475,
+    "coveragePercent": 95,
+    "truncated": false,
+    "ignorePatterns": [
+      "node_modules/",
+      ".git/",
+      "dist/",
+      "dist-electron/",
+      "release/",
+      "build/",
+      "coverage/",
+      "*.lock",
+      "*.log",
+      "*.bin",
+      "*.png",
+      "*.jpg",
+      "*.ico",
+      "*.icns",
+      "*.dmg",
+      "*.AppImage"
+    ],
+    "skippedDirectories": [
+      {
+        "path": "node_modules/",
+        "reason": "gitignore"
+      },
+      {
+        "path": ".git/",
+        "reason": "version control"
+      },
+      {
+        "path": "dist/",
+        "reason": "build output"
+      },
+      {
+        "path": "dist-electron/",
+        "reason": "build output"
+      },
+      {
+        "path": "release/",
+        "reason": "build output"
+      },
+      {
+        "path": "build/",
+        "reason": "build output"
+      },
+      {
+        "path": "resources/screenshot/",
+        "reason": "binary images"
+      },
+      {
+        "path": "resources/icons/*.png",
+        "reason": "binary images"
+      }
+    ]
+  },
+  "gaps": [
+    {
+      "module": "electron/extensions/",
+      "missing": ["unit tests for extension loading/registration"],
+      "priority": "low"
+    },
+    {
+      "module": "electron/preload/",
+      "missing": ["unit tests"],
+      "priority": "low"
+    },
+    {
+      "module": "shared/",
+      "missing": ["runtime type validation tests"],
+      "priority": "low"
+    },
+    {
+      "module": "src/components/file-preview/",
+      "missing": ["PdfViewer/SheetViewer/MonacoViewer/HtmlPreview 无独立测试"],
+      "priority": "medium"
+    },
+    {
+      "module": "scripts/",
+      "missing": ["build scripts (bundle/after-pack/download) 缺少单元测试"],
+      "priority": "low"
+    }
+  ],
+  "nextSteps": [
+    "src/stores/chat.ts -- Chat Store 函数级文档（1383行，项目最大文件）",
+    "src/components/file-preview/ 渲染器 -- PdfViewer/SheetViewer 组件测试",
+    "shared/host-api/contract.ts -- Host API 契约类型运行时校验",
+    "electron/extensions/ -- 扩展系统单元测试"
+  ]
+}

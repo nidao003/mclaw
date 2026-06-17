@@ -1,0 +1,112 @@
+name: mclaw
+
+services:
+  # PostgreSQL 17 数据库
+  db:
+    image: postgres:17-alpine
+    container_name: mclaw-db
+    restart: always
+    environment:
+      POSTGRES_DB: mclaw
+      POSTGRES_USER: mclaw
+      POSTGRES_PASSWORD: [REDACTED]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - mclaw-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mclaw"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis 7 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: mclaw-redis
+    restart: always
+    command:
+      - redis-server
+      - --requirepass [REDACTED]
+      - --appendonly yes
+      - --appendfilename appendonly.aof
+      - --save 900 1
+      - --save 300 10
+      - --save 60 10000
+    volumes:
+      - redisdata:/data
+    networks:
+      - mclaw-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "[REDACTED]", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Go 后端服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: build/Dockerfile
+      args:
+        GOMODCACHE: /go/pkg/mod
+        GOCACHE: /root/.cache/go-build
+    container_name: mclaw-backend
+    restart: always
+    environment:
+      # 运行模式
+      MCAI_DEBUG: "true"
+      MCAI_LOGGER_LEVEL: debug
+      # 服务器
+      MCAI_SERVER_ADDR: ":8888"
+      MCAI_SERVER_BASE_URL: "http://[REDACTED]"
+      # PostgreSQL 数据库
+      MCAI_DATABASE_MASTER: "postgres://mclaw:[REDACTED]@db:5432/mclaw?sslmode=disable&timezone=Asia/Shanghai"
+      # Redis
+      MCAI_REDIS_HOST: redis
+      MCAI_REDIS_PORT: "6379"
+      MCAI_REDIS_PASS: [REDACTED]
+      MCAI_REDIS_DB: "0"
+      # 管理员 Token
+      MCAI_ADMIN_TOKEN: admin-dev-token-123
+      # 初始团队
+      MCAI_INIT_TEAM_EMAIL: admin@mclaw.local
+      MCAI_INIT_TEAM_NAME: mclaw
+      MCAI_INIT_TEAM_PASSWORD: [REDACTED]
+      # 会话过期天数
+      MCAI_SESSION_EXPIRE_DAY: "30"
+      # 对象存储（关闭，开发环境不需要）
+      MCAI_OBJECT_STORAGE_ENABLED: "false"
+      # ClickHouse（关闭）
+      MCAI_CLICKHOUSE_INIT_ENABLED: "false"
+      # TaskFlow（开发环境占位，无实际 taskflow 服务）
+      TASKFLOW_SERVER: "http://dummy-taskflow:8888"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mclaw-net
+
+  # Nginx 前端 + 反向代理
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: mclaw-nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - mclaw-net
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  mclaw-net:
+    driver: bridge

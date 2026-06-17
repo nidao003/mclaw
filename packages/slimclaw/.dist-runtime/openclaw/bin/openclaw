@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+case "$0" in
+  */*) script_parent="${0%/*}" ;;
+  *) script_parent="." ;;
+esac
+
+script_dir="$(CDPATH= cd -- "$script_parent" && pwd)"
+runtime_root="$(CDPATH= cd -- "$script_dir/.." && pwd)"
+entry="$runtime_root/node_modules/openclaw/openclaw.mjs"
+
+if command -v node >/dev/null 2>&1; then
+  exec node "$entry" "$@"
+fi
+
+if [ -n "${OPENCLAW_ELECTRON_EXECUTABLE:-}" ] && [ -x "$OPENCLAW_ELECTRON_EXECUTABLE" ]; then
+  ELECTRON_RUN_AS_NODE=1 exec "$OPENCLAW_ELECTRON_EXECUTABLE" "$entry" "$@"
+fi
+
+echo "openclaw wrapper could not find node or OPENCLAW_ELECTRON_EXECUTABLE" >&2
+exit 1

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+case "$0" in
+  */*) script_parent="${0%/*}" ;;
+  *) script_parent="." ;;
+esac
+
+script_dir="$(CDPATH= cd -- "$script_parent" && pwd)"
+exec "$script_dir/openclaw" gateway "$@"

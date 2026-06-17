@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QClaw - 正在初始化</title>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary:              #E11D48;
+      --color-primary-container:    #FFF1F2;
+      --color-on-primary:           #ffffff;
+      --color-background:           #FAFAFA;
+      --color-surface-container-lowest:   #FFFFFF;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #F4F4F5;
+      --color-surface-container-high:     #E4E4E7;
+      --color-surface-container-highest:  #D4D4D8;
+      --color-on-surface:           #18181B;
+      --color-on-surface-variant:   #71717A;
+      --color-success:  #10B981;
+      --color-error:    #EF4444;
+      --color-warning:  #F59E0B;
+      --color-outline:          #E4E4E7;
+      --color-outline-variant:  #A1A1AA;
+      --radius-sm:   0.375rem;
+      --radius-md:   0.5rem;
+      --radius-lg:   0.75rem;
+      --radius-xl:   1rem;
+      --radius-2xl:  1.5rem;
+      --radius-full: 9999px;
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.12);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-rose-50 via-white to-amber-50 text-on-surface font-sans min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+
+  <!-- 背景装饰曲线 -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <svg class="absolute -top-20 -right-20 w-96 h-96 opacity-20" viewBox="0 0 200 200">
+      <path d="M50,150 Q100,50 150,100 T200,80" fill="none" stroke="#E11D48" stroke-width="0.5"/>
+      <path d="M0,100 Q50,0 100,50 T180,30" fill="none" stroke="#F59E0B" stroke-width="0.3"/>
+    </svg>
+    <svg class="absolute -bottom-20 -left-20 w-96 h-96 opacity-20" viewBox="0 0 200 200">
+      <path d="M50,50 Q100,150 150,80 T200,120" fill="none" stroke="#E11D48" stroke-width="0.5"/>
+    </svg>
+  </div>
+
+  <!-- macOS 窗口控件 -->
+  <div class="absolute top-3 left-3 flex gap-2">
+    <button class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600"></button>
+    <button class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600"></button>
+    <button class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600"></button>
+  </div>
+
+  <!-- 品牌图标 -->
+  <div class="relative mb-8">
+    <div class="w-24 h-24 bg-white rounded-3xl shadow-lg flex items-center justify-center">
+      <!-- 钳子图标 -->
+      <svg class="w-16 h-16" viewBox="0 0 64 64" fill="none">
+        <path d="M32 8L28 20L20 24L8 28C6 30 6 34 8 36L20 40L28 44L32 56C34 58 38 58 40 56L44 44L52 40C54 38 54 34 52 32L44 28L40 20C38 18 34 18 32 20L32 8Z" fill="#E11D48"/>
+        <circle cx="32" cy="32" r="6" fill="#18181B"/>
+      </svg>
+    </div>
+    <!-- 星星装饰 -->
+    <div class="absolute -top-2 -right-2">
+      <svg class="w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L14.5 9H22L16 14L18.5 21L12 17L5.5 21L8 14L2 9H9.5L12 2Z"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 加载信息 -->
+  <div class="text-center mb-6">
+    <h1 class="text-xl font-bold text-zinc-900 mb-2">
+      正在初始化<span class="text-primary underline decoration-primary decoration-2">QClaw</span>，请稍候
+    </h1>
+    <p class="text-sm text-zinc-500" id="status-text">正在安装必要组件...</p>
+  </div>
+
+  <!-- 进度条 -->
+  <div class="w-80 max-w-xs mb-8">
+    <div class="h-1.5 bg-zinc-200 rounded-full overflow-hidden">
+      <div class="h-full bg-primary rounded-full transition-all duration-500" id="progress-bar" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- 底部提示条 -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+    <div class="bg-rose-50 rounded-full px-6 py-3 flex items-center gap-3 shadow-sm">
+      <!-- 火苗图标 -->
+      <svg class="w-5 h-5 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 23C16.1421 23 19.5 19.6421 19.5 15.5C19.5 14.6 19.3 13.7 19 12.9C18.5 14.1 17.5 15 16.2 15C14.4 15 13 13.6 13 11.8C13 10.3 13.8 9 15 8.3C14.2 8.1 13.4 8 12.5 8C8.35786 8 5 11.3579 5 15.5C5 19.6421 8.35786 23 12 23Z"/>
+      </svg>
+      <span class="text-sm font-medium text-zinc-700">尝鲜正当时，优质稳定模型随心调用！</span>
+      <!-- 小钳子图标 -->
+      <svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L10 8L8 10L2 12C1 13 1 15 2 16L8 18L10 20L12 26C13 27 15 27 16 26L18 20L22 18C23 17 23 15 22 14L18 12L16 10C15 9 13 9 12 10L12 2Z"/>
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    
+    // 模拟加载进度
+    const progressBar = document.getElementById('progress-bar');
+    const statusText = document.getElementById('status-text');
+    const steps = [
+      { progress: 20, text: '正在加载核心组件...' },
+      { progress: 40, text: '正在初始化 AI 引擎...' },
+      { progress: 60, text: '正在连接云端服务...' },
+      { progress: 80, text: '正在准备用户界面...' },
+      { progress: 100, text: '初始化完成，即将进入...' }
+    ];
+    
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      if (currentStep < steps.length) {
+        progressBar.style.width = steps[currentStep].progress + '%';
+        statusText.textContent = steps[currentStep].text;
+        currentStep++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => {
+          window.location.href = 'chat.html';
+        }, 800);
+      }
+    }, 1200);
+  </script>
+</body>
+
+</html>
