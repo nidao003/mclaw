@@ -101,7 +101,7 @@ status: completed successfully`,
         mimeType: 'text/markdown',
         fileSize: 433,
         preview: null,
-        filePath: '/Users/bytedance/.openclaw/workspace/CHECKLIST.md',
+        filePath: '/Users/bytedance/.mclaw/workspace/CHECKLIST.md',
         source: 'tool-result',
       },
     ],
@@ -123,7 +123,7 @@ const childTranscriptMessages = [
       name: 'exec',
       arguments: {
         command: "cd ~/Velaria && git status --short && sed -n '1,200p' src/dataflow/core/logical/planner/plan.h",
-        workdir: '/Users/bytedance/.openclaw/workspace-coder',
+        workdir: '/Users/bytedance/.mclaw/workspace-coder',
       },
     }],
     timestamp: Date.now(),
@@ -136,7 +136,7 @@ const childTranscriptMessages = [
     details: {
       status: 'completed',
       aggregated: "M src/dataflow/core/logical/planner/plan.h\nM src/dataflow/core/execution/runtime/execution_optimizer.cc",
-      cwd: '/Users/bytedance/.openclaw/workspace-coder',
+      cwd: '/Users/bytedance/.mclaw/workspace-coder',
     },
     isError: false,
     timestamp: Date.now(),
@@ -189,13 +189,13 @@ const errorRunHistory = [
   },
 ];
 
-test.describe('ClawX chat execution graph', () => {
+test.describe('mclaw chat execution graph', () => {
   test('renders internal yield status and linked subagent branch from mocked IPC', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -222,7 +222,7 @@ test.describe('ClawX chat execution graph', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/chat/sessions', 'GET'])]: {
@@ -317,7 +317,7 @@ test.describe('ClawX chat execution graph', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -344,7 +344,7 @@ test.describe('ClawX chat execution graph', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/chat/sessions', 'GET'])]: {
@@ -413,7 +413,7 @@ test.describe('ClawX chat execution graph', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -440,7 +440,7 @@ test.describe('ClawX chat execution graph', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/chat/sessions', 'GET'])]: {

@@ -1,6 +1,6 @@
 appId: app.clawx.desktop
-productName: ClawX
-copyright: Copyright © 2026 ClawX
+productName: mclaw
+copyright: Copyright © 2026 mclaw
 compression: maximum
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 
@@ -20,12 +20,25 @@ extraResources:
       - "**/*"
       - "!icons/*.md"
       - "!icons/*.svg"
-      - "!bin/**"
       - "!screenshot/**"
-  # OpenClaw package (node_modules copied separately by afterPack hook
-  # because electron-builder respects .gitignore which excludes node_modules/)
-  - from: build/openclaw/
-    to: openclaw/
+  # ⭐ QClaw 模式：运行时解包
+  # mawruntime.tar.gz 包含整个 openclaw 包，首次启动时由 unpack-mclaw.cjs
+  # 解包到 ~/Library/Application Support/mclaw/openclaw/，告别重打 app.asar
+  - from: build/mawruntime.tar.gz
+    to: mawruntime/mawruntime.tar.gz
+  - from: build/mawruntime-manifest.json
+    to: mawruntime/mawruntime-manifest.json
+  # 解包脚本（独立 Node 跑，不依赖 Electron）
+  - from: scripts/unpack-mclaw.cjs
+    to: scripts/unpack-mclaw.cjs
+  # 独立 Node 二进制（各平台分别打，跨平台 zip/dmg 自动选）
+  - from: resources/bin/${os}-${arch}/node
+    to: bin/${os}-${arch}/node
+  - from: resources/bin/${os}-${arch}/node.exe
+    to: bin/${os}-${arch}/node.exe
+  # 反馈打包脚本（用户点"反馈问题"按钮时调用）
+  - from: scripts/pack-mclaw.cjs
+    to: scripts/pack-mclaw.cjs
   # Pre-bundled third-party skills (full directories, not only SKILL.md)
   - from: build/preinstalled-skills/
     to: resources/preinstalled-skills/
@@ -59,7 +72,7 @@ publish:
     useMultipleRangeRequest: false
   - provider: github
     owner: ValueCell-ai
-    repo: ClawX
+    repo: mclaw
 
 # macOS Configuration
 mac:
@@ -86,8 +99,8 @@ mac:
   entitlementsInherit: entitlements.mac.plist
   notarize: true
   extendInfo:
-    NSMicrophoneUsageDescription: ClawX requires microphone access for voice features
-    NSCameraUsageDescription: ClawX requires camera access for video features
+    NSMicrophoneUsageDescription: mclaw requires microphone access for voice features
+    NSCameraUsageDescription: mclaw requires camera access for video features
 
 dmg:
   # Explicit volume size prevents dmg-builder@1.2.0 auto-calculation from
@@ -133,8 +146,8 @@ nsis:
   differentialPackage: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: ClawX
-  uninstallDisplayName: ClawX
+  shortcutName: mclaw
+  uninstallDisplayName: mclaw
   license: LICENSE
   include: scripts/installer.nsh
   installerIcon: resources/icons/icon.ico
@@ -161,13 +174,13 @@ linux:
       arch:
         - x64
   category: Utility
-  maintainer: ClawX Team <public@valuecell.ai>
-  vendor: ClawX
+  maintainer: mclaw Team <public@valuecell.ai>
+  vendor: mclaw
   synopsis: AI Assistant powered by OpenClaw
-  description: ClawX is a graphical AI assistant application that integrates with OpenClaw Gateway to provide intelligent automation and assistance across multiple messaging platforms.
+  description: mclaw is a graphical AI assistant application that integrates with OpenClaw Gateway to provide intelligent automation and assistance across multiple messaging platforms.
   desktop:
     entry:
-      Name: ClawX
+      Name: mclaw
       Comment: AI Assistant powered by OpenClaw
       Categories: Utility;Network;
       Keywords: ai;assistant;automation;chat;

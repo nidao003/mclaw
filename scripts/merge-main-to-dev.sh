@@ -7,7 +7,7 @@
 #   ./scripts/merge-main-to-dev.sh --rebase # rebase 合并（保持线性历史）
 #
 # 说明：
-#   main 分支由 sync-upstream workflow 自动从 ValueCell-ai/ClawX 同步
+#   main 分支由 sync-upstream workflow 自动从 ValueCell-ai/mclaw 同步
 #   开发工作在 dev 分支进行，定期将 main 的更新合并进来
 #
 

@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { testHome, testUserData } = vi.hoisted(() => {
   const suffix = Math.random().toString(36).slice(2);
   return {
-    testHome: `/tmp/clawx-openclaw-image-gen-${suffix}`,
-    testUserData: `/tmp/clawx-openclaw-image-gen-user-data-${suffix}`,
+    testHome: `/tmp/mclaw-mclaw-image-gen-${suffix}`,
+    testUserData: `/tmp/mclaw-mclaw-image-gen-user-data-${suffix}`,
   };
 });
 
@@ -32,7 +32,7 @@ vi.mock('electron', () => ({
 
 vi.mock('@electron/utils/paths', async () => {
   const actual = await vi.importActual<typeof import('@electron/utils/paths')>('@electron/utils/paths');
-  const resolvedDir = join(testHome, '.openclaw-test-openclaw');
+  const resolvedDir = join(testHome, '.mclaw-test-openclaw');
   return {
     ...actual,
     getOpenClawResolvedDir: () => resolvedDir,
@@ -41,17 +41,17 @@ vi.mock('@electron/utils/paths', async () => {
 });
 
 async function writeOpenClawJson(config: unknown): Promise<void> {
-  const openclawDir = join(testHome, '.openclaw');
+  const openclawDir = join(testHome, '.mclaw');
   await mkdir(openclawDir, { recursive: true });
   await writeFile(join(openclawDir, 'openclaw.json'), JSON.stringify(config, null, 2), 'utf8');
 }
 
 async function readOpenClawJson(): Promise<Record<string, unknown>> {
-  const content = await readFile(join(testHome, '.openclaw', 'openclaw.json'), 'utf8');
+  const content = await readFile(join(testHome, '.mclaw', 'openclaw.json'), 'utf8');
   return JSON.parse(content) as Record<string, unknown>;
 }
 
-describe('openclaw-image-generation helpers', () => {
+describe('mclaw-image-generation helpers', () => {
   beforeEach(async () => {
     vi.resetModules();
     await rm(testHome, { recursive: true, force: true });
@@ -62,7 +62,7 @@ describe('openclaw-image-generation helpers', () => {
     const {
       parseProviderFromModelRef,
       isValidImageModelRef,
-    } = await import('@electron/utils/openclaw-image-generation');
+    } = await import('@electron/utils/mclaw-image-generation');
 
     expect(parseProviderFromModelRef('openai/gpt-image-2')).toBe('openai');
     expect(parseProviderFromModelRef('invalid')).toBeNull();
@@ -82,7 +82,7 @@ describe('openclaw-image-generation helpers', () => {
     const {
       readImageGenerationConfig,
       setImageGenerationConfig,
-    } = await import('@electron/utils/openclaw-image-generation');
+    } = await import('@electron/utils/mclaw-image-generation');
 
     expect(await readImageGenerationConfig()).toEqual({
       primary: null,

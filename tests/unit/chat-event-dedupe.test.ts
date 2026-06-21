@@ -12,7 +12,7 @@ const { gatewayRpcMock, hostApiFetchMock, agentsState } = vi.hoisted(() => ({
 vi.mock('@/stores/gateway', () => ({
   useGatewayStore: {
     getState: () => ({
-      status: { state: 'running', port: 18789 },
+      status: { state: 'running', port: 18999 },
       rpc: gatewayRpcMock,
     }),
   },

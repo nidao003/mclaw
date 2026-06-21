@@ -32,7 +32,7 @@ vi.mock('@electron/services/providers/provider-store', () => ({
   setDefaultProviderAccount: vi.fn(),
 }));
 
-vi.mock('@electron/utils/openclaw-auth', () => ({
+vi.mock('@electron/utils/mclaw-auth', () => ({
   getActiveOpenClawProviders: mocks.getActiveOpenClawProviders,
   getOpenClawProvidersConfig: mocks.getOpenClawProvidersConfig,
   getProviderApiKeyFromOpenClaw: mocks.getProviderApiKeyFromOpenClaw,
@@ -492,7 +492,7 @@ describe('ProviderService.listAccountsKeyInfo', () => {
       defaultModel: undefined,
     });
     mocks.getOpenClawProviderKeyForType.mockReturnValue('custom-runtime');
-    mocks.getProviderApiKeyFromOpenClaw.mockResolvedValue('sk-openclaw-runtime-key');
+    mocks.getProviderApiKeyFromOpenClaw.mockResolvedValue('sk-mclaw-runtime-key');
 
     const result = await service.listAccountsKeyInfo();
 
@@ -507,7 +507,7 @@ describe('ProviderService.listAccountsKeyInfo', () => {
     ]);
   });
 
-  it('falls back to ClawX local secrets when OpenClaw has no runtime key', async () => {
+  it('falls back to mclaw local secrets when OpenClaw has no runtime key', async () => {
     mocks.listProviderAccounts.mockResolvedValue([
       makeAccount({
         id: 'openrouter-ui-account-id',

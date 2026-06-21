@@ -5,7 +5,7 @@ import type { GatewayManager } from '../gateway/manager';
 import type { ProviderConfig } from '../utils/secure-storage';
 import { browserOAuthManager, type BrowserOAuthProviderType } from '../utils/browser-oauth';
 import { deviceOAuthManager, type OAuthProviderType } from '../utils/device-oauth';
-import { removeProviderFromOpenClaw, saveProviderKeyToOpenClaw } from '../utils/openclaw-auth';
+import { removeProviderFromOpenClaw, saveProviderKeyToOpenClaw } from '../utils/mclaw-auth';
 import { getProviderConfig } from '../utils/provider-registry';
 import { logger } from '../utils/logger';
 import { getProviderService } from './providers/provider-service';

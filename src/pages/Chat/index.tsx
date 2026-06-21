@@ -5,7 +5,7 @@
  * are in the toolbar; messages render with markdown + streaming.
  */
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, ArrowDownToLine, Loader2, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowDownToLine, Globe, Calendar, Terminal, FileText, MessageCircle, Loader2, Sparkles } from 'lucide-react';
 import { useChatStore, type ChatRuntimeRunState, type RawMessage } from '@/stores/chat';
 import { isInternalMessage } from '@/stores/chat/helpers';
 import { buildBaselineRunKey, getBaseline } from '@/stores/baseline-cache';
@@ -918,7 +918,9 @@ export function Chat() {
               )}
             >
               {isEmpty ? (
-                <WelcomeScreen />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <WelcomeScreen />
+                </div>
               ) : (
                 <>
                   {hasMoreHistory && (
@@ -1077,7 +1079,7 @@ export function Chat() {
             <button
               type="button"
               onClick={() => void scrollToBottom({ animation: 'smooth', ignoreEscapes: true })}
-              className="absolute bottom-4 right-4 z-20 inline-flex items-center gap-2 rounded-full border border-border bg-background/95 px-3 py-1.5 text-xs font-medium text-foreground shadow-lg shadow-black/10 backdrop-blur transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:shadow-black/30"
+              className="absolute bottom-4 right-4 z-20 inline-flex items-center gap-2 rounded-full border border-border bg-background/95 px-3 py-1.5 text-xs font-medium text-foreground shadow-lg shadow-black/10 backdrop-blur transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:shadow-black/30"
               aria-label={t('scrollToLatest')}
               title={t('scrollToLatest')}
               data-testid="chat-scroll-to-latest"
@@ -1145,7 +1147,7 @@ export function Chat() {
           <aside
             data-testid="artifact-panel-aside"
             className={cn(
-              'relative z-20 hidden shrink-0 border-l border-black/5 dark:border-white/10 lg:flex lg:flex-col',
+              'relative z-20 hidden shrink-0 border-l border-border/50 lg:flex lg:flex-col',
               isMac && 'no-drag',
             )}
             style={{ width: `${panelWidthPct}%` }}
@@ -1247,6 +1249,14 @@ function QuestionDirectory({ items }: { items: QuestionDirectoryItem[] }) {
 
 // ── Welcome Screen ──────────────────────────────────────────────
 
+// 欢迎屏能力卡片配置 — 参考设计图"我能做什么"的四类能力
+const WELCOME_CARDS = [
+  { icon: Globe,        title: '浏览器控制',   desc: '自动化网页操作、截图、表单填写' },
+  { icon: Calendar,     title: '定时任务',     desc: '设置每日提醒、定期任务（像刚才的新闻日报）' },
+  { icon: Terminal,     title: '命令行',       desc: '运行 shell 命令、文件管理、代码执行' },
+  { icon: FileText,     title: '文件 & 记忆',  desc: '读写文件、维护长期记忆、整理工作区' },
+] as const;
+
 function WelcomeScreen() {
   const { t } = useTranslation('chat');
   const quickActions = [
@@ -1256,16 +1266,52 @@ function WelcomeScreen() {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center text-center h-[60vh]">
-      <h1 className="text-4xl md:text-5xl font-serif text-foreground/80 mb-8 font-normal tracking-tight">
+    <div className="relative flex flex-col items-center justify-center text-center h-full w-full overflow-hidden">
+      {/* Brand gradient orbs — animated ambient glow filling the full area */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full blur-[150px] welcome-orb" style={{ background: 'hsl(18 83% 55% / 0.06)' }} />
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[100px] welcome-orb-delayed" style={{ background: 'hsl(33 96% 53% / 0.05)' }} />
+
+      {/* Brand mark */}
+      <div className="relative mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-hover text-white shadow-md animate-fade-up">
+        <MessageCircle className="h-6 w-6" strokeWidth={2} />
+      </div>
+
+      <h1 className="relative text-3xl md:text-4xl font-serif text-foreground/85 mb-2 font-normal tracking-tight animate-fade-up animate-fade-up-delay-1">
         {t('welcome.subtitle')}
       </h1>
+      <p className="relative text-sm text-muted-foreground mb-8 max-w-md animate-fade-up animate-fade-up-delay-2">
+        有什么想搞的吗？👇 试试下面这些能力，或直接和 AI 聊聊
+      </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-lg w-full">
+      {/* 能力卡片网格 — 4 张核心能力（设计图风格） */}
+      <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl w-full mb-8">
+        {WELCOME_CARDS.map(({ icon: Icon, title, desc }, i) => (
+          <button
+            key={title}
+            className={cn(
+              'group flex items-start gap-3 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm p-3.5 text-left',
+              'hover:border-brand/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200',
+              'animate-fade-up',
+              `animate-fade-up-delay-${Math.min(i + 1, 4)}`,
+            )}
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand/15 to-brand/5 text-brand group-hover:from-brand group-hover:to-brand-hover group-hover:text-white transition-all duration-200">
+              <Icon className="h-4.5 w-4.5" strokeWidth={2} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground/90">{title}</div>
+              <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{desc}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* 快捷操作胶囊 */}
+      <div className="relative flex flex-wrap items-center justify-center gap-2 max-w-lg w-full">
         {quickActions.map(({ key, label }) => (
-          <button 
+          <button
             key={key}
-            className="px-4 py-1.5 rounded-full border border-black/10 dark:border-white/10 text-meta font-medium text-foreground/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors bg-black/[0.02]"
+            className="px-4 py-1.5 rounded-full border border-border/60 text-meta font-medium text-foreground/70 hover:bg-accent/50 hover:text-foreground hover:border-brand/40 transition-all duration-200 bg-surface-input/60"
           >
             {label}
           </button>
@@ -1280,10 +1326,10 @@ function WelcomeScreen() {
 function TypingIndicator() {
   return (
     <div className="flex gap-3" data-testid="chat-typing-indicator">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full mt-1 bg-black/5 dark:bg-white/5 text-foreground">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full mt-1 bg-accent/50 text-foreground">
         <Sparkles className="h-4 w-4" />
       </div>
-      <div className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl px-4 py-3">
+      <div className="bg-accent/50 text-foreground rounded-2xl px-4 py-3">
         <div className="flex gap-1">
           <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
           <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -1300,10 +1346,10 @@ function ActivityIndicator({ phase }: { phase: 'tool_processing' }) {
   void phase;
   return (
     <div className="flex gap-3" data-testid="chat-activity-indicator">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full mt-1 bg-black/5 dark:bg-white/5 text-foreground">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full mt-1 bg-accent/50 text-foreground">
         <Sparkles className="h-4 w-4" />
       </div>
-      <div className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl px-4 py-3">
+      <div className="bg-accent/50 text-foreground rounded-2xl px-4 py-3">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
           <span>Processing tool results…</span>
@@ -1317,10 +1363,10 @@ function ImageGeneratingIndicator() {
   const { t } = useTranslation('chat');
   return (
     <div className="flex gap-3" data-testid="chat-image-generating-indicator">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full mt-1 bg-black/5 dark:bg-white/5 text-foreground">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full mt-1 bg-accent/50 text-foreground">
         <Sparkles className="h-4 w-4" />
       </div>
-      <div className="bg-black/5 dark:bg-white/5 text-foreground rounded-2xl px-4 py-3">
+      <div className="bg-accent/50 text-foreground rounded-2xl px-4 py-3">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
           <span>{t('imageGeneration.generating')}</span>

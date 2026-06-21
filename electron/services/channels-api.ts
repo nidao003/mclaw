@@ -69,7 +69,7 @@ import {
   listSlackDirectoryPeersFromConfig,
   normalizeSlackMessagingTarget,
   normalizeWhatsAppMessagingTarget,
-} from '../utils/openclaw-sdk';
+} from '../utils/mclaw-sdk';
 import { buildGatewayHealthSummary } from '../utils/gateway-health';
 import { logger } from '../utils/logger';
 import type { GatewayManager, GatewayHealthSummary } from '../gateway/manager';

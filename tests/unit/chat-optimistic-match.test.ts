@@ -108,7 +108,7 @@ describe('matchesOptimisticUserMessage', () => {
   it('matches the full Gateway echo with Sender block, leading + trailing media lines, and a timestamp prefix', () => {
     const optimistic = {
       role: 'user',
-      content: 'Please help me investigate why I am not getting a reply when I send messages on Discord. ClawX is now in connected status.',
+      content: 'Please help me investigate why I am not getting a reply when I send messages on Discord. mclaw is now in connected status.',
       timestamp: 1_700_000_000,
       _attachedFiles: [
         {
@@ -116,7 +116,7 @@ describe('matchesOptimisticUserMessage', () => {
           mimeType: 'image/png',
           fileSize: 456,
           preview: null,
-          filePath: '/Users/guoyuliang/.openclaw/media/inbound/image---9ad2735c-21ce-443e-af5c-1cd290c1d8d0.png',
+          filePath: '/Users/guoyuliang/.mclaw/media/inbound/image---9ad2735c-21ce-443e-af5c-1cd290c1d8d0.png',
         },
       ],
     } as const;
@@ -126,16 +126,16 @@ describe('matchesOptimisticUserMessage', () => {
         'Sender (untrusted metadata):',
         '```json',
         '{',
-        '  "label": "ClawX (gateway-client)",',
+        '  "label": "mclaw (gateway-client)",',
         '  "id": "gateway-client",',
-        '  "name": "ClawX",',
-        '  "username": "ClawX"',
+        '  "name": "mclaw",',
+        '  "username": "mclaw"',
         '}',
         '```',
         '',
-        '[media attached: /Users/guoyuliang/.openclaw/media/inbound/image---9ad2735c-21ce-443e-af5c-1cd290c1d8d0.png (image/png)]',
-        '[Mon 2026-05-18 10:39 GMT+8] Please help me investigate why I am not getting a reply when I send messages on Discord. ClawX is now in connected status.',
-        '[media attached: /Users/guoyuliang/.openclaw/media/outbound/fa3637d9-98b9-4e77-a176-3f66ca763cf4.png (image/png) | /Users/guoyuliang/.openclaw/media/outbound/fa3637d9-98b9-4e77-a176-3f66ca763cf4.png]',
+        '[media attached: /Users/guoyuliang/.mclaw/media/inbound/image---9ad2735c-21ce-443e-af5c-1cd290c1d8d0.png (image/png)]',
+        '[Mon 2026-05-18 10:39 GMT+8] Please help me investigate why I am not getting a reply when I send messages on Discord. mclaw is now in connected status.',
+        '[media attached: /Users/guoyuliang/.mclaw/media/outbound/fa3637d9-98b9-4e77-a176-3f66ca763cf4.png (image/png) | /Users/guoyuliang/.mclaw/media/outbound/fa3637d9-98b9-4e77-a176-3f66ca763cf4.png]',
       ].join('\n'),
       timestamp: 1_700_000_000,
     } as const;

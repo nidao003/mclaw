@@ -25,7 +25,7 @@ describe('media api', () => {
   beforeEach(async () => {
     vi.resetModules();
     createFromPathMock.mockClear();
-    testDir = await mkdtemp(join(tmpdir(), 'clawx-media-api-'));
+    testDir = await mkdtemp(join(tmpdir(), 'mclaw-media-api-'));
   });
 
   afterEach(async () => {

@@ -11,27 +11,27 @@ import { cn } from '@/lib/utils';
 export function MainLayout() {
   const platform = window.electron?.platform;
   const isMac = platform === 'darwin';
-  const isWin = platform === 'win32';
 
   return (
     <div
       data-testid="main-layout"
       data-platform={platform}
       className={cn(
-        'flex h-screen overflow-hidden',
-        isWin ? 'bg-surface-sidebar' : 'bg-background',
+        'flex h-screen overflow-hidden bg-background',
         isMac ? 'flex-row' : 'flex-col',
       )}
     >
       <TitleBar />
 
-      <div className="flex min-h-0 flex-1 overflow-hidden bg-surface-sidebar">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <Sidebar />
         <main
           data-testid="main-content"
           className={cn(
-            'relative min-h-0 flex-1 overflow-auto rounded-tl-2xl border-l border-border/60 bg-background p-6',
-            !isWin && 'border-t border-border/60',
+            // 主内容区：浅色背景下圆角柔和内嵌 + 1px 边框，与侧边栏自然衔接
+            'relative min-h-0 flex-1 overflow-auto bg-background',
+            'border-l border-border/50',
+            isMac ? '' : 'rounded-tl-2xl border-t border-border/50',
           )}
         >
           {isMac && (
@@ -42,7 +42,9 @@ export function MainLayout() {
               style={{ height: MAC_SIDEBAR_CHROME_HEIGHT }}
             />
           )}
-          <Outlet />
+          <div className="h-full w-full p-6">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

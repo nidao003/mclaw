@@ -33,6 +33,18 @@ func (f CheckInFunc) Mutate(ctx context.Context, m db.Mutation) (db.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *db.CheckInMutation", m)
 }
 
+// The DataApiPricingFunc type is an adapter to allow the use of ordinary
+// function as DataApiPricing mutator.
+type DataApiPricingFunc func(context.Context, *db.DataApiPricingMutation) (db.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DataApiPricingFunc) Mutate(ctx context.Context, m db.Mutation) (db.Value, error) {
+	if mv, ok := m.(*db.DataApiPricingMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *db.DataApiPricingMutation", m)
+}
+
 // The ExchangeCodeFunc type is an adapter to allow the use of ordinary
 // function as ExchangeCode mutator.
 type ExchangeCodeFunc func(context.Context, *db.ExchangeCodeMutation) (db.Value, error)

@@ -503,7 +503,7 @@ function isDuplicateChatEvent(eventState: string, event: Record<string, unknown>
 // [media attached: <path> ...] reference in the Gateway's user message text).
 // Keying by path avoids the race condition of keying by runId (which is only
 // available after the RPC returns, but history may load before that).
-const IMAGE_CACHE_KEY = 'clawx:image-cache';
+const IMAGE_CACHE_KEY = 'mclaw:image-cache';
 const IMAGE_CACHE_MAX = 100; // max entries to prevent unbounded growth
 
 function loadImageCache(): Map<string, AttachedFileMeta> {
@@ -1006,7 +1006,7 @@ function extractRawFilePaths(text: string): Array<{ filePath: string; mimeType: 
   const skillPathPart = '[^\\\\/\\s\\n"\'`()\\x5b\\x5d,<>]+';
   const skillPathTail = '[^\\s\\n"\'`()\\x5b\\x5d,<>]*?';
   const skillDirRegex = new RegExp(
-    `(?<![\\w./:])((?:~[\\\\/]\\.openclaw[\\\\/]skills[\\\\/]${skillPathPart})|(?:(?:\\/|[A-Za-z]:\\\\)${skillPathTail}[\\\\/]\\.openclaw[\\\\/]skills[\\\\/]${skillPathPart}))${skillPathBoundary}`,
+    `(?<![\\w./:])((?:~[\\\\/]\\.mclaw[\\\\/]skills[\\\\/]${skillPathPart})|(?:(?:\\/|[A-Za-z]:\\\\)${skillPathTail}[\\\\/]\\.mclaw[\\\\/]skills[\\\\/]${skillPathPart}))${skillPathBoundary}`,
     'gi',
   );
   for (const regex of [unixRegex, winRegex, skillDirRegex]) {
@@ -1804,7 +1804,7 @@ function isInternalMessage(msg: { role?: unknown; content?: unknown; idempotency
     //   - model: 'gateway-injected'
     //   - idempotencyKey: '<runId>:assistant-media'
     //   - content: text-only `MEDIA:<staging path>` (NOT an image-url block)
-    // The staging path lives in `~/.openclaw/media/outbound/` which has a
+    // The staging path lives in `~/.mclaw/media/outbound/` which has a
     // 120s TTL — the file is gone by the time the user reads the chat.
     // The original `MEDIA:/tmp/...` path is already on the previous
     // assistant message (the agent's actual reply), so the fallback is
@@ -3981,12 +3981,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
             // OpenClaw's gateway processes `MEDIA:/path` markers in the
             // assistant reply asynchronously, in the `dispatch.deliver` of
-            // the `final` payload (see openclaw/dist/chat-DM9hSaNV.js's
+            // the `final` payload (see mclaw/dist/chat-DM9hSaNV.js's
             // `appendWebchatAgentMediaTranscriptIfNeeded`):
             //   1. copy the original file under
-            //      `~/.openclaw/media/outgoing/originals/<uuid>`
+            //      `~/.mclaw/media/outgoing/originals/<uuid>`
             //   2. write the record JSON under
-            //      `~/.openclaw/media/outgoing/records/<id>.json`
+            //      `~/.mclaw/media/outgoing/records/<id>.json`
             //   3. `appendAssistantTranscriptMessage` writes a follow-up
             //      `assistant-media` message to the session JSONL, with
             //      `idempotencyKey: "<runId>:assistant-media"`.

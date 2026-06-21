@@ -23,7 +23,7 @@
  * agent's `sessions/` directory so a corrupt or malicious `sessions.json`
  * can never steer the unlink loop into an unrelated folder. The pointer-
  * follow path is the only deliberate exception: it walks to whatever
- * `runtimeFile` says (defended by schema + extension checks) so ClawX can
+ * `runtimeFile` says (defended by schema + extension checks) so mclaw can
  * cooperate with OpenClaw's documented `OPENCLAW_TRAJECTORY_DIR` override.
  */
 
@@ -134,12 +134,12 @@ export interface SweepResult {
  * as untrusted and ignored — we only follow pointers we know OpenClaw
  * authored.
  */
-const TRAJECTORY_POINTER_SCHEMA = 'openclaw-trajectory-pointer';
+const TRAJECTORY_POINTER_SCHEMA = 'mclaw-trajectory-pointer';
 
 /**
  * Best-effort: parse the trajectory pointer sidecar and return the off-disk
  * runtime file path it points at. Returns null when the pointer is absent,
- * malformed, missing the openclaw-trajectory-pointer schema, or its
+ * malformed, missing the mclaw-trajectory-pointer schema, or its
  * `runtimeFile` is not an absolute `.jsonl` path. Any of those conditions
  * means we silently skip the off-disk unlink — the local sidecar sweep
  * still runs and the worst case is one orphaned file the user can clean up
@@ -181,7 +181,7 @@ async function readTrajectoryRuntimeFile(pointerPath: string): Promise<string | 
  * In addition to the local sidecars (`.jsonl`, `.deleted.jsonl`,
  * `.jsonl.reset.*`, `.trajectory.jsonl`, `.trajectory-path.json`), the
  * sweep follows the `.trajectory-path.json` pointer when it exists and
- * unlinks the off-disk runtime file at `runtimeFile`. This keeps ClawX in
+ * unlinks the off-disk runtime file at `runtimeFile`. This keeps mclaw in
  * sync with OpenClaw's `OPENCLAW_TRAJECTORY_DIR` override (where the
  * actual trajectory is stored outside the sessions/ folder).
  */

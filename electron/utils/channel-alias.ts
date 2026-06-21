@@ -5,7 +5,7 @@ const LEADING_DASH_RE = /^-+/;
 const TRAILING_DASH_RE = /-+$/;
 
 export const UI_WECHAT_CHANNEL_TYPE = 'wechat';
-export const OPENCLAW_WECHAT_CHANNEL_TYPE = 'openclaw-weixin';
+export const OPENCLAW_WECHAT_CHANNEL_TYPE = 'mclaw-weixin';
 
 export type QrChannelEvent = 'qr' | 'success' | 'error';
 

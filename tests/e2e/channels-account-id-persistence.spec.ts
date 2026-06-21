@@ -12,7 +12,7 @@ function stableStringify(value: unknown): string {
 test.describe('Channels account editor behavior', () => {
   test('keeps Feishu credentials when account ID is changed', async ({ electronApp, page }) => {
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+      gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
       hostApi: {
         [stableStringify(['/api/channels/accounts', 'GET'])]: {
           ok: true,

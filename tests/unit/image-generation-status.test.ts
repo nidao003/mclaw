@@ -191,9 +191,9 @@ describe('isImageGenerationPending', () => {
         content: [{ type: 'text', text: '{ "status": "ok" }' }],
         details: {
           status: 'ok',
-          mediaUrl: '/Users/me/.openclaw/media/tool-image-generation/tomato.png',
+          mediaUrl: '/Users/me/.mclaw/media/tool-image-generation/tomato.png',
           sourceReply: {
-            mediaUrls: ['/Users/me/.openclaw/media/tool-image-generation/tomato.png'],
+            mediaUrls: ['/Users/me/.mclaw/media/tool-image-generation/tomato.png'],
           },
         },
       } as RawMessage,

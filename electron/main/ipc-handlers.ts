@@ -13,16 +13,23 @@ import {
   type ProviderConfig,
 } from '../utils/secure-storage';
 import { getOpenClawStatus, getOpenClawSkillsDir, ensureDir, expandPath } from '../utils/paths';
-import { getOpenClawCliCommand } from '../utils/openclaw-cli';
+import { getOpenClawCliCommand } from '../utils/mclaw-cli';
 import { getAllSettings, getSetting, resetSettings, setSetting, type AppSettings } from '../utils/store';
 import {
   saveProviderKeyToOpenClaw,
   removeProviderFromOpenClaw,
-} from '../utils/openclaw-auth';
-import { syncProxyConfigToOpenClaw } from '../utils/openclaw-proxy';
+} from '../utils/mclaw-auth';
+import { syncProxyConfigToOpenClaw } from '../utils/mclaw-proxy';
 import { logger } from '../utils/logger';
 import { resolveAgentIdFromChannel } from '../utils/agent-config';
 import { resolveAccountIdFromSessionHistory } from '../utils/session-util';
+// QClaw 模式集成
+import { withAudit } from '../services/audit/audit-middleware';
+import { mclawStore } from '../services/storage/sqlite-store';
+import { autoBackup } from '../services/backup/auto-backup';
+import { workspaceManager } from '../services/workspace/workspace-manager';
+import { skillUsage } from '../services/usage/skill-usage';
+import { getMclawExtensionLoader } from '../services/extensions/extension-loader';
 import { whatsAppLoginManager } from '../utils/whatsapp-login';
 import { getProviderConfig } from '../utils/provider-registry';
 import { deviceOAuthManager } from '../utils/device-oauth';
@@ -45,7 +52,7 @@ import { appUpdater } from './updater';
 import { GatewayRpcBackpressure } from '../gateway/rpc-backpressure';
 import { HostApiRegistry, registerHostInvokeHandler } from './ipc/host-invoke';
 import { createAppApi } from '../services/app-api';
-import { createOpenClawApi } from '../services/openclaw-api';
+import { createOpenClawApi } from '../services/mclaw-api';
 import { createShellApi } from '../services/shell-api';
 import { createDialogApi } from '../services/dialog-api';
 import { createWindowApi } from '../services/window-api';
@@ -135,7 +142,7 @@ function registerTypedHostHandlers(
 ): void {
   hostApiRegistry.registerCoreServices({
     app: createAppApi(),
-    openclaw: createOpenClawApi(),
+    mclaw: createOpenClawApi(),
     shell: createShellApi(),
     dialog: createDialogApi(),
     window: createWindowApi(mainWindow),
@@ -719,21 +726,21 @@ function registerGatewayHandlers(gatewayManager: GatewayManager): void {
  */
 function registerOpenClawHandlers(): void {
   // Get OpenClaw package status
-  ipcMain.handle('openclaw:status', () => {
+  ipcMain.handle('mclaw:status', () => {
     const status = getOpenClawStatus();
-    logger.info('openclaw:status IPC called', status);
+    logger.info('mclaw:status IPC called', status);
     return status;
   });
 
-  // Get the OpenClaw skills directory (~/.openclaw/skills)
-  ipcMain.handle('openclaw:getSkillsDir', () => {
+  // Get the mclaw skills directory (~/.mclaw/skills)
+  ipcMain.handle('mclaw:getSkillsDir', () => {
     const dir = getOpenClawSkillsDir();
     ensureDir(dir);
     return dir;
   });
 
-  // Get a shell command to run OpenClaw CLI without modifying PATH
-  ipcMain.handle('openclaw:getCliCommand', () => {
+  // Get a shell command to run mclaw CLI without modifying PATH
+  ipcMain.handle('mclaw:getCliCommand', () => {
     try {
       const status = getOpenClawStatus();
       if (!status.packageExists) {
@@ -1042,7 +1049,7 @@ function registerProviderHandlers(gatewayManager: GatewayManager): void {
         const resolvedBaseUrl = options?.baseUrl || provider?.baseUrl || registryBaseUrl;
         const resolvedProtocol = options?.apiProtocol || provider?.apiProtocol;
 
-        console.log(`[clawx-validate] validating provider type: ${providerType}`);
+        console.log(`[mclaw-validate] validating provider type: ${providerType}`);
         return await validateApiKeyWithProvider(providerType, apiKey, {
           baseUrl: resolvedBaseUrl,
           apiProtocol: resolvedProtocol,
@@ -1286,7 +1293,7 @@ function getMimeType(ext: string): string {
   return EXT_MIME_MAP[ext.toLowerCase()] || 'application/octet-stream';
 }
 
-const OUTBOUND_DIR = join(homedir(), '.openclaw', 'media', 'outbound');
+const OUTBOUND_DIR = join(homedir(), '.mclaw', 'media', 'outbound');
 
 // ── File preview (sandboxed) ──────────────────────────────────────────
 //
@@ -1338,7 +1345,7 @@ function isPathInside(child: string, parent: string): boolean {
   // Windows file systems are case-insensitive: realpath() returns the
   // on-disk casing while `homedir()` / `resolve()` may preserve whatever
   // casing the OS reported, leading to false `outsideSandbox` rejections
-  // (e.g. `C:\Users\Foo\.openclaw\…` vs `c:\users\foo\.openclaw\…`).
+  // (e.g. `C:\Users\Foo\.mclaw\…` vs `c:\users\foo\.mclaw\…`).
   // Compare case-insensitively on Windows; keep strict comparison on
   // POSIX so we don't accidentally widen the sandbox there.
   if (process.platform === 'win32') {
@@ -1355,8 +1362,8 @@ function isPathInside(child: string, parent: string): boolean {
  */
 function getFilePreviewWriteRoots(): string[] {
   const roots: string[] = [];
-  const openclawDir = join(homedir(), '.openclaw');
-  roots.push(resolve(openclawDir));
+  const mclawDir = join(homedir(), '.mclaw');
+  roots.push(resolve(mclawDir));
   try {
     roots.push(resolve(app.getPath('userData')));
   } catch {
@@ -1379,7 +1386,7 @@ async function resolveSandboxedPath(
   if (typeof input !== 'string' || !input.trim()) {
     throw new Error('outsideSandbox');
   }
-  // OpenClaw stores agent.workspace / agentDir paths as `~/.openclaw/...`
+  // OpenClaw stores agent.workspace / agentDir paths as `~/.mclaw/...`
   // literals; expand the tilde before realpath so sandbox resolution
   // matches what the user actually sees on disk.
   const expanded = expandPath(input);
@@ -1699,4 +1706,135 @@ function registerFilePreviewHandlers(): void {
       return { ok: false, error: message };
     }
   });
+
+  // ═════════════════════════════════════════════════════════════════════
+  // QClaw 模式：扩展管理 + 反馈打包（仿 QClaw 风格的运行时服务）
+  // ═════════════════════════════════════════════════════════════════════
+
+  ipcMain.handle('extension:list', withAudit({ optPath: 'extension:list' }, async () => {
+    const loader = getMclawExtensionLoader();
+    return loader.list().map((ext) => ({
+      name: ext.manifest.name,
+      version: ext.manifest.version,
+      displayName: ext.manifest.displayName,
+      description: ext.manifest.description,
+      author: ext.manifest.author,
+      permissions: ext.manifest.permissions,
+      builtin: ext.builtin,
+      category: ext.manifest.category || 'other',
+      enabled: !existsSync(join(ext.rootDir, '.disabled')),
+      hasError: !!ext.error,
+      errorMessage: ext.error,
+    }));
+  }));
+
+  ipcMain.handle(
+    'extension:setEnabled',
+    withAudit({ optPath: 'extension:setEnabled' }, async (_evt, params: { name: string; enabled: boolean }) => {
+      const loader = getMclawExtensionLoader();
+      const ok = loader.setEnabled(params.name, params.enabled);
+      return { ok };
+    }),
+  );
+
+  ipcMain.handle(
+    'extension:uninstall',
+    withAudit({ optPath: 'extension:uninstall' }, async (_evt, params: { name: string }) => {
+      const loader = getMclawExtensionLoader();
+      const ok = loader.uninstall(params.name);
+      return { ok };
+    }),
+  );
+
+  ipcMain.handle(
+    'extension:installFromTarball',
+    withAudit({ optPath: 'extension:installFromTarball' }, async (_evt, params: { tarballPath: string }) => {
+      const loader = getMclawExtensionLoader();
+      return loader.installFromTarball(params.tarballPath);
+    }),
+  );
+
+  ipcMain.handle('extension:pickTarball', async () => {
+    const { dialog } = await import('electron');
+    const result = await dialog.showOpenDialog({
+      title: '选择 mclaw 扩展包',
+      filters: [{ name: 'mclaw Plugin', extensions: ['tar.gz', 'tgz'] }],
+      properties: ['openFile'],
+    });
+    return result.canceled ? null : result.filePaths[0];
+  });
+
+  // 反馈打包（用户点"反馈问题"按钮触发）
+  ipcMain.handle('feedback:pack', withAudit({ optPath: 'feedback:pack' }, async () => {
+    const packModule = require('../../scripts/pack-mclaw.cjs') as {
+      packMclaw: (outputPath?: string) => Promise<{ outputFile: string; size: number; sizeFormatted: string }>;
+    };
+    return packModule.packMclaw();
+  }));
+
+  // SQLite 存储 API（让设置面板能直接读写 K-V）
+  ipcMain.handle(
+    'store:set',
+    withAudit({ optPath: 'store:set' }, async (_evt, params: { key: string; value: unknown; valueType?: string; description?: string }) => {
+      const type = (params.valueType as 'string' | 'number' | 'boolean' | 'json') || 'string';
+      mclawStore.set(params.key, params.value as string | number | boolean | object, type, params.description || '');
+      return { ok: true };
+    }),
+  );
+
+  ipcMain.handle('store:get', withAudit({ optPath: 'store:get' }, async (_evt, params: { key: string; defaultValue?: unknown }) => {
+    return mclawStore.get(params.key, params.defaultValue);
+  }));
+
+  ipcMain.handle('store:list', withAudit({ optPath: 'store:list' }, async (_evt, params: { prefix?: string }) => {
+    return mclawStore.list(params.prefix);
+  }));
+
+  // 审计日志查询
+  ipcMain.handle(
+    'audit:query',
+    withAudit({ optPath: 'audit:query' }, async (_evt, params: { actionType?: number; riskLevel?: number; sinceMs?: number; limit?: number }) => {
+      return mclawStore.queryAudit(params);
+    }),
+  );
+
+  // 备份管理
+  ipcMain.handle('backup:list', withAudit({ optPath: 'backup:list' }, async () => {
+    return autoBackup.list();
+  }));
+
+  ipcMain.handle(
+    'backup:create',
+    withAudit({ optPath: 'backup:create' }, async (_evt, params: { kind?: 'auto' | 'manual' | 'pre-upgrade' }) => {
+      return autoBackup.backup(params.kind || 'manual');
+    }),
+  );
+
+  // 多 workspace
+  ipcMain.handle('workspace:list', withAudit({ optPath: 'workspace:list' }, async () => {
+    return workspaceManager.list();
+  }));
+
+  ipcMain.handle(
+    'workspace:activate',
+    withAudit({ optPath: 'workspace:activate' }, async (_evt, params: { id: string }) => {
+      return workspaceManager.activate(params.id);
+    }),
+  );
+
+  ipcMain.handle(
+    'workspace:create',
+    withAudit({ optPath: 'workspace:create' }, async (_evt, params: { name: string; description?: string }) => {
+      return workspaceManager.create(params);
+    }),
+  );
+
+  // Skill 使用统计
+  ipcMain.handle('skillUsage:summary', withAudit({ optPath: 'skillUsage:summary' }, async () => {
+    return skillUsage.summary();
+  }));
+
+  ipcMain.handle('skillUsage:top', withAudit({ optPath: 'skillUsage:top' }, async (_evt, params: { n?: number }) => {
+    return skillUsage.topByUsage(params.n);
+  }));
 }

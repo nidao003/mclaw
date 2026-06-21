@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { label: '专家', path: '/experts' },
   { label: '技能热榜', path: '/skills/trending' },
   { label: '全部技能', path: '/skills' },
+  { label: 'API 文档', path: '/apis' },
   { label: '定价', path: '/pricing' },
 ] as const;
 
@@ -224,6 +225,7 @@ export default function Layout() {
               <div>
                 <p className="font-medium text-foreground">支持</p>
                 <div className="mt-3 flex flex-col gap-2 text-black/55">
+                  <Link to="/apis" className="hover:text-foreground transition-colors">API 文档</Link>
                   <Link to="/pricing" className="hover:text-foreground transition-colors">定价</Link>
                   <Link to="/login" className="hover:text-foreground transition-colors">登录</Link>
                 </div>

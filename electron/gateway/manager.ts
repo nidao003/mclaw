@@ -7,6 +7,7 @@ import path from 'path';
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import { PORTS } from '../utils/config';
+import { findFreeGatewayPort } from '../utils/port-allocation';
 import { JsonRpcNotification, isNotification, isResponse } from './protocol';
 import { logger } from '../utils/logger';
 import { captureTelemetryEvent, trackMetric } from '../utils/telemetry';
@@ -157,11 +158,12 @@ export interface GatewayManagerEvents {
  * Handles starting, stopping, and communicating with the OpenClaw Gateway
  */
 export class GatewayManager extends EventEmitter {
-  private process: Electron.UtilityProcess | null = null;
+  private process: import('node:child_process').ChildProcess | null = null;
   private processExitCode: number | null = null; // set by exit event, replaces exitCode/signalCode
   private ownsProcess = false;
   private ws: WebSocket | null = null;
   private status: GatewayStatus = { state: 'stopped', port: PORTS.OPENCLAW_GATEWAY };
+  private portAllocated = false;
   private readonly stateController: GatewayStateController;
   private reconnectTimer: NodeJS.Timeout | null = null;
   private reconnectAttempts = 0;
@@ -252,7 +254,7 @@ export class GatewayManager extends EventEmitter {
   private async initDeviceIdentity(): Promise<void> {
     if (this.deviceIdentity) return; // already loaded
     try {
-      const identityPath = path.join(app.getPath('userData'), 'clawx-device-identity.json');
+      const identityPath = path.join(app.getPath('userData'), 'mclaw-device-identity.json');
       this.deviceIdentity = await loadOrCreateDeviceIdentity(identityPath);
       logger.debug(`Device identity loaded (deviceId=${this.deviceIdentity.deviceId})`);
     } catch (err) {
@@ -316,6 +318,19 @@ export class GatewayManager extends EventEmitter {
     if (this.status.state === 'running') {
       logger.debug('Gateway already running, skipping start');
       return;
+    }
+
+    // 动态端口分配（QClaw 模式：避免多实例冲突）
+    // 第一次 start() 时分配，分配后写进 status.port
+    if (!this.portAllocated) {
+      try {
+        const freePort = await findFreeGatewayPort();
+        this.status = { ...this.status, port: freePort };
+        this.portAllocated = true;
+        logger.info(`[gateway] Allocated port: ${freePort} (preferred was ${PORTS.OPENCLAW_GATEWAY})`);
+      } catch (err) {
+        logger.warn('[gateway] Port allocation failed, using default:', err);
+      }
     }
 
     this.startLock = true;

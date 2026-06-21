@@ -46,14 +46,14 @@ describe('GatewayManager restart recovery', () => {
     // Set the manager into a state where restart can proceed:
     // - state must not be 'starting' or 'reconnecting' (would defer restart)
     // - startLock must be false
-    internals.status = { state: 'running', port: 18789 };
+    internals.status = { state: 'running', port: 18999 };
     internals.startLock = false;
     internals.shouldReconnect = true;
 
     // Mock stop to just reset flags (simulates normal stop)
     vi.spyOn(manager, 'stop').mockImplementation(async () => {
       internals.shouldReconnect = false;
-      internals.status = { state: 'stopped', port: 18789 };
+      internals.status = { state: 'stopped', port: 18999 };
     });
 
     // Mock start to fail (simulates the race condition where gateway
@@ -92,20 +92,20 @@ describe('GatewayManager restart recovery', () => {
       scheduleReconnect: () => void;
     };
 
-    internals.status = { state: 'running', port: 18789 };
+    internals.status = { state: 'running', port: 18999 };
     internals.startLock = false;
     internals.shouldReconnect = true;
 
     // Mock stop to reset flags
     vi.spyOn(manager, 'stop').mockImplementation(async () => {
       internals.shouldReconnect = false;
-      internals.status = { state: 'stopped', port: 18789 };
+      internals.status = { state: 'stopped', port: 18999 };
     });
 
     // Mock start to succeed
     vi.spyOn(manager, 'start').mockImplementation(async () => {
       internals.shouldReconnect = true;
-      internals.status = { state: 'running', port: 18789 };
+      internals.status = { state: 'running', port: 18999 };
     });
 
     const scheduleReconnectSpy = vi.spyOn(

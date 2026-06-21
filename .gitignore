@@ -50,6 +50,11 @@ tests/fixtures/transcripts/
 .turbo/
 *.tsbuildinfo
 
+# Runtime temp/cache (Electron session, dev pids, nexu-home cache) — 不进 git
+.tmp/
+# Playwright MCP 浏览器快照缓存 — 不进 git
+.playwright-mcp/
+
 # Electron
 *.dmg
 *.exe
@@ -70,7 +75,6 @@ artifacts/
 docs/pr-session-notes-*.md
 
 .cursor/
-.claude/
 .pnpm-store/
 package-lock.json
 

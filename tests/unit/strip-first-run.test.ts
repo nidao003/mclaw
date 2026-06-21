@@ -3,7 +3,7 @@ import { join } from 'path';
 import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 const { testHome } = vi.hoisted(() => ({
-  testHome: `/tmp/clawx-openclaw-workspace-${Math.random().toString(36).slice(2)}`,
+  testHome: `/tmp/mclaw-mclaw-workspace-${Math.random().toString(36).slice(2)}`,
 }));
 
 vi.mock('os', async () => {
@@ -19,12 +19,12 @@ vi.mock('os', async () => {
 });
 
 import {
-  ensureClawXContext,
-  ensureClawXDefaultIdentity,
-  ensureClawXIdentityFile,
-  mergeClawXSection,
+  ensuremclawContext,
+  ensuremclawDefaultIdentity,
+  ensuremclawIdentityFile,
+  mergemclawSection,
   stripFirstRunSection,
-} from '../../electron/utils/openclaw-workspace';
+} from '../../electron/utils/mclaw-workspace';
 
 beforeEach(async () => {
   await rm(testHome, { recursive: true, force: true });
@@ -133,9 +133,9 @@ describe('stripFirstRunSection', () => {
 
   it('still changes AGENTS content when only First Run is removed', () => {
     const section = [
-      '## ClawX Environment',
+      '## mclaw Environment',
       '',
-      'You are ClawX.',
+      'You are mclaw.',
     ].join('\n');
     const original = [
       '# AGENTS.md',
@@ -148,37 +148,37 @@ describe('stripFirstRunSection', () => {
       '',
       'Read SOUL.md first.',
       '',
-      '<!-- clawx:begin -->',
-      '## ClawX Environment',
+      '<!-- mclaw:begin -->',
+      '## mclaw Environment',
       '',
-      'You are ClawX.',
-      '<!-- clawx:end -->',
+      'You are mclaw.',
+      '<!-- mclaw:end -->',
       '',
     ].join('\n');
 
     const stripped = stripFirstRunSection(original);
-    const merged = mergeClawXSection(stripped, section);
+    const merged = mergemclawSection(stripped, section);
 
     expect(merged).not.toBe(original);
     expect(merged).not.toContain('## First Run');
     expect(merged).toContain('## Session Startup');
-    expect(merged).toContain('<!-- clawx:begin -->');
-    expect(merged).toContain('<!-- clawx:end -->');
+    expect(merged).toContain('<!-- mclaw:begin -->');
+    expect(merged).toContain('<!-- mclaw:end -->');
   });
 });
 
-describe('ensureClawXIdentityFile', () => {
-  it('writes a default ClawX identity when the workspace has none', async () => {
-    const workspaceDir = join(testHome, '.openclaw', 'workspace');
+describe('ensuremclawIdentityFile', () => {
+  it('writes a default mclaw identity when the workspace has none', async () => {
+    const workspaceDir = join(testHome, '.mclaw', 'workspace');
     await mkdir(workspaceDir, { recursive: true });
 
-    await ensureClawXIdentityFile(workspaceDir);
+    await ensuremclawIdentityFile(workspaceDir);
 
-    await expect(readFile(join(workspaceDir, 'IDENTITY.md'), 'utf-8')).resolves.toContain('ClawX');
+    await expect(readFile(join(workspaceDir, 'IDENTITY.md'), 'utf-8')).resolves.toContain('mclaw');
   });
 
   it('replaces the untouched OpenClaw identity template but preserves custom identities', async () => {
-    const workspaceDir = join(testHome, '.openclaw', 'workspace');
+    const workspaceDir = join(testHome, '.mclaw', 'workspace');
     await mkdir(workspaceDir, { recursive: true });
 
     await writeFile(
@@ -200,38 +200,38 @@ describe('ensureClawXIdentityFile', () => {
       'utf-8',
     );
 
-    await ensureClawXIdentityFile(workspaceDir);
-    await expect(readFile(join(workspaceDir, 'IDENTITY.md'), 'utf-8')).resolves.toContain('ClawX');
+    await ensuremclawIdentityFile(workspaceDir);
+    await expect(readFile(join(workspaceDir, 'IDENTITY.md'), 'utf-8')).resolves.toContain('mclaw');
     await expect(readFile(join(workspaceDir, 'IDENTITY.md'), 'utf-8')).resolves.not.toContain('pick something you like');
 
     await writeFile(join(workspaceDir, 'IDENTITY.md'), '# IDENTITY.md\n\n- **Name:** Paisley\n', 'utf-8');
-    await ensureClawXIdentityFile(workspaceDir);
+    await ensuremclawIdentityFile(workspaceDir);
     await expect(readFile(join(workspaceDir, 'IDENTITY.md'), 'utf-8')).resolves.toBe('# IDENTITY.md\n\n- **Name:** Paisley\n');
   });
 
   it('removes a lingering BOOTSTRAP.md after identity seeding', async () => {
-    const workspaceDir = join(testHome, '.openclaw', 'workspace');
+    const workspaceDir = join(testHome, '.mclaw', 'workspace');
     await mkdir(workspaceDir, { recursive: true });
     await writeFile(join(workspaceDir, 'BOOTSTRAP.md'), 'chat-first bootstrap', 'utf-8');
 
-    await ensureClawXIdentityFile(workspaceDir);
+    await ensuremclawIdentityFile(workspaceDir);
 
     await expect(access(join(workspaceDir, 'BOOTSTRAP.md'))).rejects.toThrow();
-    await expect(readFile(join(workspaceDir, 'IDENTITY.md'), 'utf-8')).resolves.toContain('ClawX');
+    await expect(readFile(join(workspaceDir, 'IDENTITY.md'), 'utf-8')).resolves.toContain('mclaw');
   });
 });
 
-describe('ensureClawXDefaultIdentity', () => {
+describe('ensuremclawDefaultIdentity', () => {
   it('creates the default workspace and seeds IDENTITY.md for startup-owned workspaces', async () => {
-    await ensureClawXDefaultIdentity();
+    await ensuremclawDefaultIdentity();
 
-    await expect(readFile(join(testHome, '.openclaw', 'workspace', 'IDENTITY.md'), 'utf-8')).resolves.toContain('ClawX');
+    await expect(readFile(join(testHome, '.mclaw', 'workspace', 'IDENTITY.md'), 'utf-8')).resolves.toContain('mclaw');
   });
 });
 
-describe('ensureClawXContext', () => {
+describe('ensuremclawContext', () => {
   it('does not wait for missing files in non-default agent workspaces', async () => {
-    const openclawDir = join(testHome, '.openclaw');
+    const openclawDir = join(testHome, '.mclaw');
     const defaultWorkspace = join(openclawDir, 'workspace-main');
     const agentWorkspace = join(openclawDir, 'workspace-agent');
     await mkdir(defaultWorkspace, { recursive: true });
@@ -250,19 +250,19 @@ describe('ensureClawXContext', () => {
     );
 
     const result = await Promise.race([
-      ensureClawXContext().then(() => 'done'),
+      ensuremclawContext().then(() => 'done'),
       new Promise((resolve) => setTimeout(() => resolve('timeout'), 200)),
     ]);
 
     expect(result).toBe('done');
-    await expect(readFile(join(defaultWorkspace, 'AGENTS.md'), 'utf-8')).resolves.toContain('## ClawX Environment');
-    await expect(readFile(join(defaultWorkspace, 'TOOLS.md'), 'utf-8')).resolves.toContain('## ClawX Tool Notes');
+    await expect(readFile(join(defaultWorkspace, 'AGENTS.md'), 'utf-8')).resolves.toContain('## mclaw Environment');
+    await expect(readFile(join(defaultWorkspace, 'TOOLS.md'), 'utf-8')).resolves.toContain('## mclaw Tool Notes');
     await expect(access(join(agentWorkspace, 'AGENTS.md'))).rejects.toThrow();
     await expect(access(join(agentWorkspace, 'TOOLS.md'))).rejects.toThrow();
   });
 
   it('does not wait for missing external default workspaces', async () => {
-    const openclawDir = join(testHome, '.openclaw');
+    const openclawDir = join(testHome, '.mclaw');
     const externalWorkspace = join(testHome, '..', `external-missing-${Date.now()}`);
     await mkdir(openclawDir, { recursive: true });
     await writeFile(
@@ -276,7 +276,7 @@ describe('ensureClawXContext', () => {
     );
 
     const result = await Promise.race([
-      ensureClawXContext().then(() => 'done'),
+      ensuremclawContext().then(() => 'done'),
       new Promise((resolve) => setTimeout(() => resolve('timeout'), 200)),
     ]);
 

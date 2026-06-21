@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { collectQuickAccessSkills, filterEnabledQuickAccessSkills, type QuickAccessSkill } from '@electron/utils/skill-quick-access';
 
-const testRoot = join(tmpdir(), 'clawx-tests', 'skill-quick-access');
+const testRoot = join(tmpdir(), 'mclaw-tests', 'skill-quick-access');
 
 function writeSkill(baseDir: string, skillName: string, content: string): void {
   const skillDir = join(baseDir, skillName);
@@ -208,8 +208,8 @@ describe('collectQuickAccessSkills', () => {
         description: 'Legacy OpenClaw built-in skill.',
         source: 'legacy',
         sourceLabel: 'Legacy',
-        manifestPath: '/tmp/openclaw/skills/apple-notes/SKILL.md',
-        baseDir: '/tmp/openclaw/skills/apple-notes',
+        manifestPath: '/tmp/mclaw/skills/apple-notes/SKILL.md',
+        baseDir: '/tmp/mclaw/skills/apple-notes',
       },
       {
         name: 'wecom-meeting-manage',
@@ -232,7 +232,7 @@ describe('collectQuickAccessSkills', () => {
     const filtered = filterEnabledQuickAccessSkills(
       skills,
       [
-        { skillKey: 'apple-notes', disabled: false, baseDir: '/tmp/openclaw/skills/apple-notes' },
+        { skillKey: 'apple-notes', disabled: false, baseDir: '/tmp/mclaw/skills/apple-notes' },
         { skillKey: 'wecom-meeting-manage', disabled: true, baseDir: '/tmp/extensions/wecom/skills/wecom-meeting-manage' },
       ],
       {

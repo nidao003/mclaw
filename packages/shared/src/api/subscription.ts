@@ -19,12 +19,12 @@ export const subscriptionApi = {
 
   /** 我的订阅 */
   getMySubscription() {
-    return apiRequest<UserSubscription>('/api/v1/subscription');
+    return apiRequest<UserSubscription>('/api/v1/users/subscription');
   },
 
   /** 订阅套餐 */
   subscribe(planId: string, autoRenew = false) {
-    return apiRequest<UserSubscription>('/api/v1/subscription', {
+    return apiRequest<UserSubscription>('/api/v1/users/subscription', {
       method: 'POST',
       body: JSON.stringify({ plan_id: planId, auto_renew: autoRenew }),
     });
@@ -32,7 +32,7 @@ export const subscriptionApi = {
 
   /** 切换自动续费 */
   toggleAutoRenew(enable: boolean) {
-    return apiRequest<null>('/api/v1/subscription/auto-renew', {
+    return apiRequest<null>('/api/v1/users/subscription/auto-renew', {
       method: 'PUT',
       body: JSON.stringify({ enable }),
     });

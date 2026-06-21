@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/nidao003/mclaw/backend/db/audit"
 	"github.com/nidao003/mclaw/backend/db/checkin"
+	"github.com/nidao003/mclaw/backend/db/dataapipricing"
 	"github.com/nidao003/mclaw/backend/db/exchangecode"
 	"github.com/nidao003/mclaw/backend/db/expert"
 	"github.com/nidao003/mclaw/backend/db/gitbot"
@@ -128,6 +129,7 @@ func checkColumn(t, c string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			audit.Table:               audit.ValidColumn,
 			checkin.Table:             checkin.ValidColumn,
+			dataapipricing.Table:      dataapipricing.ValidColumn,
 			exchangecode.Table:        exchangecode.ValidColumn,
 			expert.Table:              expert.ValidColumn,
 			gitbot.Table:              gitbot.ValidColumn,

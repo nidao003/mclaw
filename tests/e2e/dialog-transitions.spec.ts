@@ -28,7 +28,7 @@ async function expectSubtleDialogAnimation(locator: Locator): Promise<void> {
     };
   });
 
-  expect(animation.name).toContain('clawx-dialog-content-in');
+  expect(animation.name).toContain('mclaw-dialog-content-in');
   expect(animation.duration).toContain('0.1s');
 
   const firstFrameOffset = await locator.evaluate(async (element) => {
@@ -59,7 +59,7 @@ async function expectSubtleDialogAnimation(locator: Locator): Promise<void> {
 test.describe('dialog transitions', () => {
   test('uses the shared subtle transition for core modal dialogs', async ({ electronApp, page }) => {
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+      gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
       gatewayRpc: {},
       hostApi: {
         [stableStringify(['/api/gateway/status', 'GET'])]: {
@@ -67,7 +67,7 @@ test.describe('dialog transitions', () => {
           data: {
             status: 200,
             ok: true,
-            json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+            json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
           },
         },
         [stableStringify(['/api/cron/jobs', 'GET'])]: {
@@ -100,8 +100,8 @@ test.describe('dialog transitions', () => {
                 modelRef: 'openai/gpt-5.5',
                 overrideModelRef: null,
                 inheritedModel: true,
-                workspace: '/tmp/clawx-main-agent',
-                agentDir: '/tmp/clawx-main-agent/agent',
+                workspace: '/tmp/mclaw-main-agent',
+                agentDir: '/tmp/mclaw-main-agent/agent',
                 mainSessionKey: 'main/default',
                 channelTypes: [],
               }],
@@ -145,7 +145,7 @@ test.describe('dialog transitions', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true, connectedAt: nowMs },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true, connectedAt: nowMs },
         gatewayRpc: {
           [stableStringify(['sessions.list', SESSIONS_LIST_PAYLOAD])]: {
             sessions: [{
@@ -167,7 +167,7 @@ test.describe('dialog transitions', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true, connectedAt: nowMs },
+              json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true, connectedAt: nowMs },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

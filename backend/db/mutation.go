@@ -15,6 +15,7 @@ import (
 	"github.com/nidao003/mclaw/backend/consts"
 	"github.com/nidao003/mclaw/backend/db/audit"
 	"github.com/nidao003/mclaw/backend/db/checkin"
+	"github.com/nidao003/mclaw/backend/db/dataapipricing"
 	"github.com/nidao003/mclaw/backend/db/exchangecode"
 	"github.com/nidao003/mclaw/backend/db/expert"
 	"github.com/nidao003/mclaw/backend/db/gitbot"
@@ -82,6 +83,7 @@ const (
 	// Node types.
 	TypeAudit               = "Audit"
 	TypeCheckIn             = "CheckIn"
+	TypeDataApiPricing      = "DataApiPricing"
 	TypeExchangeCode        = "ExchangeCode"
 	TypeExpert              = "Expert"
 	TypeGitBot              = "GitBot"
@@ -1396,6 +1398,1476 @@ func (m *CheckInMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *CheckInMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown CheckIn edge %s", name)
+}
+
+// DataApiPricingMutation represents an operation that mutates the DataApiPricing nodes in the graph.
+type DataApiPricingMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	api_code              *string
+	name                  *string
+	group                 *string
+	category              *string
+	method                *string
+	_path                 *string
+	summary               *string
+	description           *string
+	credits_per_call      *int64
+	addcredits_per_call   *int64
+	enabled               *bool
+	need_api_key          *bool
+	params                *[]map[string]interface{}
+	appendparams          []map[string]interface{}
+	response_fields       *[]map[string]interface{}
+	appendresponse_fields []map[string]interface{}
+	example_request       *string
+	example_response      *string
+	sort_order            *int
+	addsort_order         *int
+	created_at            *time.Time
+	updated_at            *time.Time
+	clearedFields         map[string]struct{}
+	done                  bool
+	oldValue              func(context.Context) (*DataApiPricing, error)
+	predicates            []predicate.DataApiPricing
+}
+
+var _ ent.Mutation = (*DataApiPricingMutation)(nil)
+
+// dataapipricingOption allows management of the mutation configuration using functional options.
+type dataapipricingOption func(*DataApiPricingMutation)
+
+// newDataApiPricingMutation creates new mutation for the DataApiPricing entity.
+func newDataApiPricingMutation(c config, op Op, opts ...dataapipricingOption) *DataApiPricingMutation {
+	m := &DataApiPricingMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDataApiPricing,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDataApiPricingID sets the ID field of the mutation.
+func withDataApiPricingID(id uuid.UUID) dataapipricingOption {
+	return func(m *DataApiPricingMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DataApiPricing
+		)
+		m.oldValue = func(ctx context.Context) (*DataApiPricing, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DataApiPricing.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDataApiPricing sets the old DataApiPricing of the mutation.
+func withDataApiPricing(node *DataApiPricing) dataapipricingOption {
+	return func(m *DataApiPricingMutation) {
+		m.oldValue = func(context.Context) (*DataApiPricing, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DataApiPricingMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DataApiPricingMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("db: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DataApiPricing entities.
+func (m *DataApiPricingMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DataApiPricingMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DataApiPricingMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DataApiPricing.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAPICode sets the "api_code" field.
+func (m *DataApiPricingMutation) SetAPICode(s string) {
+	m.api_code = &s
+}
+
+// APICode returns the value of the "api_code" field in the mutation.
+func (m *DataApiPricingMutation) APICode() (r string, exists bool) {
+	v := m.api_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAPICode returns the old "api_code" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldAPICode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAPICode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAPICode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAPICode: %w", err)
+	}
+	return oldValue.APICode, nil
+}
+
+// ResetAPICode resets all changes to the "api_code" field.
+func (m *DataApiPricingMutation) ResetAPICode() {
+	m.api_code = nil
+}
+
+// SetName sets the "name" field.
+func (m *DataApiPricingMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *DataApiPricingMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *DataApiPricingMutation) ResetName() {
+	m.name = nil
+}
+
+// SetGroup sets the "group" field.
+func (m *DataApiPricingMutation) SetGroup(s string) {
+	m.group = &s
+}
+
+// Group returns the value of the "group" field in the mutation.
+func (m *DataApiPricingMutation) Group() (r string, exists bool) {
+	v := m.group
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGroup returns the old "group" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldGroup(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGroup is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGroup requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGroup: %w", err)
+	}
+	return oldValue.Group, nil
+}
+
+// ResetGroup resets all changes to the "group" field.
+func (m *DataApiPricingMutation) ResetGroup() {
+	m.group = nil
+}
+
+// SetCategory sets the "category" field.
+func (m *DataApiPricingMutation) SetCategory(s string) {
+	m.category = &s
+}
+
+// Category returns the value of the "category" field in the mutation.
+func (m *DataApiPricingMutation) Category() (r string, exists bool) {
+	v := m.category
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCategory returns the old "category" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldCategory(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCategory is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCategory requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCategory: %w", err)
+	}
+	return oldValue.Category, nil
+}
+
+// ResetCategory resets all changes to the "category" field.
+func (m *DataApiPricingMutation) ResetCategory() {
+	m.category = nil
+}
+
+// SetMethod sets the "method" field.
+func (m *DataApiPricingMutation) SetMethod(s string) {
+	m.method = &s
+}
+
+// Method returns the value of the "method" field in the mutation.
+func (m *DataApiPricingMutation) Method() (r string, exists bool) {
+	v := m.method
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMethod returns the old "method" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldMethod(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMethod is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMethod requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMethod: %w", err)
+	}
+	return oldValue.Method, nil
+}
+
+// ResetMethod resets all changes to the "method" field.
+func (m *DataApiPricingMutation) ResetMethod() {
+	m.method = nil
+}
+
+// SetPath sets the "path" field.
+func (m *DataApiPricingMutation) SetPath(s string) {
+	m._path = &s
+}
+
+// Path returns the value of the "path" field in the mutation.
+func (m *DataApiPricingMutation) Path() (r string, exists bool) {
+	v := m._path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPath returns the old "path" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPath: %w", err)
+	}
+	return oldValue.Path, nil
+}
+
+// ResetPath resets all changes to the "path" field.
+func (m *DataApiPricingMutation) ResetPath() {
+	m._path = nil
+}
+
+// SetSummary sets the "summary" field.
+func (m *DataApiPricingMutation) SetSummary(s string) {
+	m.summary = &s
+}
+
+// Summary returns the value of the "summary" field in the mutation.
+func (m *DataApiPricingMutation) Summary() (r string, exists bool) {
+	v := m.summary
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSummary returns the old "summary" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldSummary(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSummary is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSummary requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSummary: %w", err)
+	}
+	return oldValue.Summary, nil
+}
+
+// ClearSummary clears the value of the "summary" field.
+func (m *DataApiPricingMutation) ClearSummary() {
+	m.summary = nil
+	m.clearedFields[dataapipricing.FieldSummary] = struct{}{}
+}
+
+// SummaryCleared returns if the "summary" field was cleared in this mutation.
+func (m *DataApiPricingMutation) SummaryCleared() bool {
+	_, ok := m.clearedFields[dataapipricing.FieldSummary]
+	return ok
+}
+
+// ResetSummary resets all changes to the "summary" field.
+func (m *DataApiPricingMutation) ResetSummary() {
+	m.summary = nil
+	delete(m.clearedFields, dataapipricing.FieldSummary)
+}
+
+// SetDescription sets the "description" field.
+func (m *DataApiPricingMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *DataApiPricingMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *DataApiPricingMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[dataapipricing.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *DataApiPricingMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[dataapipricing.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *DataApiPricingMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, dataapipricing.FieldDescription)
+}
+
+// SetCreditsPerCall sets the "credits_per_call" field.
+func (m *DataApiPricingMutation) SetCreditsPerCall(i int64) {
+	m.credits_per_call = &i
+	m.addcredits_per_call = nil
+}
+
+// CreditsPerCall returns the value of the "credits_per_call" field in the mutation.
+func (m *DataApiPricingMutation) CreditsPerCall() (r int64, exists bool) {
+	v := m.credits_per_call
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreditsPerCall returns the old "credits_per_call" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldCreditsPerCall(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreditsPerCall is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreditsPerCall requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreditsPerCall: %w", err)
+	}
+	return oldValue.CreditsPerCall, nil
+}
+
+// AddCreditsPerCall adds i to the "credits_per_call" field.
+func (m *DataApiPricingMutation) AddCreditsPerCall(i int64) {
+	if m.addcredits_per_call != nil {
+		*m.addcredits_per_call += i
+	} else {
+		m.addcredits_per_call = &i
+	}
+}
+
+// AddedCreditsPerCall returns the value that was added to the "credits_per_call" field in this mutation.
+func (m *DataApiPricingMutation) AddedCreditsPerCall() (r int64, exists bool) {
+	v := m.addcredits_per_call
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCreditsPerCall resets all changes to the "credits_per_call" field.
+func (m *DataApiPricingMutation) ResetCreditsPerCall() {
+	m.credits_per_call = nil
+	m.addcredits_per_call = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *DataApiPricingMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *DataApiPricingMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *DataApiPricingMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetNeedAPIKey sets the "need_api_key" field.
+func (m *DataApiPricingMutation) SetNeedAPIKey(b bool) {
+	m.need_api_key = &b
+}
+
+// NeedAPIKey returns the value of the "need_api_key" field in the mutation.
+func (m *DataApiPricingMutation) NeedAPIKey() (r bool, exists bool) {
+	v := m.need_api_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNeedAPIKey returns the old "need_api_key" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldNeedAPIKey(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNeedAPIKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNeedAPIKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNeedAPIKey: %w", err)
+	}
+	return oldValue.NeedAPIKey, nil
+}
+
+// ResetNeedAPIKey resets all changes to the "need_api_key" field.
+func (m *DataApiPricingMutation) ResetNeedAPIKey() {
+	m.need_api_key = nil
+}
+
+// SetParams sets the "params" field.
+func (m *DataApiPricingMutation) SetParams(value []map[string]interface{}) {
+	m.params = &value
+	m.appendparams = nil
+}
+
+// Params returns the value of the "params" field in the mutation.
+func (m *DataApiPricingMutation) Params() (r []map[string]interface{}, exists bool) {
+	v := m.params
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParams returns the old "params" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldParams(ctx context.Context) (v []map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParams is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParams requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParams: %w", err)
+	}
+	return oldValue.Params, nil
+}
+
+// AppendParams adds value to the "params" field.
+func (m *DataApiPricingMutation) AppendParams(value []map[string]interface{}) {
+	m.appendparams = append(m.appendparams, value...)
+}
+
+// AppendedParams returns the list of values that were appended to the "params" field in this mutation.
+func (m *DataApiPricingMutation) AppendedParams() ([]map[string]interface{}, bool) {
+	if len(m.appendparams) == 0 {
+		return nil, false
+	}
+	return m.appendparams, true
+}
+
+// ClearParams clears the value of the "params" field.
+func (m *DataApiPricingMutation) ClearParams() {
+	m.params = nil
+	m.appendparams = nil
+	m.clearedFields[dataapipricing.FieldParams] = struct{}{}
+}
+
+// ParamsCleared returns if the "params" field was cleared in this mutation.
+func (m *DataApiPricingMutation) ParamsCleared() bool {
+	_, ok := m.clearedFields[dataapipricing.FieldParams]
+	return ok
+}
+
+// ResetParams resets all changes to the "params" field.
+func (m *DataApiPricingMutation) ResetParams() {
+	m.params = nil
+	m.appendparams = nil
+	delete(m.clearedFields, dataapipricing.FieldParams)
+}
+
+// SetResponseFields sets the "response_fields" field.
+func (m *DataApiPricingMutation) SetResponseFields(value []map[string]interface{}) {
+	m.response_fields = &value
+	m.appendresponse_fields = nil
+}
+
+// ResponseFields returns the value of the "response_fields" field in the mutation.
+func (m *DataApiPricingMutation) ResponseFields() (r []map[string]interface{}, exists bool) {
+	v := m.response_fields
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResponseFields returns the old "response_fields" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldResponseFields(ctx context.Context) (v []map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResponseFields is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResponseFields requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResponseFields: %w", err)
+	}
+	return oldValue.ResponseFields, nil
+}
+
+// AppendResponseFields adds value to the "response_fields" field.
+func (m *DataApiPricingMutation) AppendResponseFields(value []map[string]interface{}) {
+	m.appendresponse_fields = append(m.appendresponse_fields, value...)
+}
+
+// AppendedResponseFields returns the list of values that were appended to the "response_fields" field in this mutation.
+func (m *DataApiPricingMutation) AppendedResponseFields() ([]map[string]interface{}, bool) {
+	if len(m.appendresponse_fields) == 0 {
+		return nil, false
+	}
+	return m.appendresponse_fields, true
+}
+
+// ClearResponseFields clears the value of the "response_fields" field.
+func (m *DataApiPricingMutation) ClearResponseFields() {
+	m.response_fields = nil
+	m.appendresponse_fields = nil
+	m.clearedFields[dataapipricing.FieldResponseFields] = struct{}{}
+}
+
+// ResponseFieldsCleared returns if the "response_fields" field was cleared in this mutation.
+func (m *DataApiPricingMutation) ResponseFieldsCleared() bool {
+	_, ok := m.clearedFields[dataapipricing.FieldResponseFields]
+	return ok
+}
+
+// ResetResponseFields resets all changes to the "response_fields" field.
+func (m *DataApiPricingMutation) ResetResponseFields() {
+	m.response_fields = nil
+	m.appendresponse_fields = nil
+	delete(m.clearedFields, dataapipricing.FieldResponseFields)
+}
+
+// SetExampleRequest sets the "example_request" field.
+func (m *DataApiPricingMutation) SetExampleRequest(s string) {
+	m.example_request = &s
+}
+
+// ExampleRequest returns the value of the "example_request" field in the mutation.
+func (m *DataApiPricingMutation) ExampleRequest() (r string, exists bool) {
+	v := m.example_request
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExampleRequest returns the old "example_request" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldExampleRequest(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExampleRequest is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExampleRequest requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExampleRequest: %w", err)
+	}
+	return oldValue.ExampleRequest, nil
+}
+
+// ClearExampleRequest clears the value of the "example_request" field.
+func (m *DataApiPricingMutation) ClearExampleRequest() {
+	m.example_request = nil
+	m.clearedFields[dataapipricing.FieldExampleRequest] = struct{}{}
+}
+
+// ExampleRequestCleared returns if the "example_request" field was cleared in this mutation.
+func (m *DataApiPricingMutation) ExampleRequestCleared() bool {
+	_, ok := m.clearedFields[dataapipricing.FieldExampleRequest]
+	return ok
+}
+
+// ResetExampleRequest resets all changes to the "example_request" field.
+func (m *DataApiPricingMutation) ResetExampleRequest() {
+	m.example_request = nil
+	delete(m.clearedFields, dataapipricing.FieldExampleRequest)
+}
+
+// SetExampleResponse sets the "example_response" field.
+func (m *DataApiPricingMutation) SetExampleResponse(s string) {
+	m.example_response = &s
+}
+
+// ExampleResponse returns the value of the "example_response" field in the mutation.
+func (m *DataApiPricingMutation) ExampleResponse() (r string, exists bool) {
+	v := m.example_response
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExampleResponse returns the old "example_response" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldExampleResponse(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExampleResponse is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExampleResponse requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExampleResponse: %w", err)
+	}
+	return oldValue.ExampleResponse, nil
+}
+
+// ClearExampleResponse clears the value of the "example_response" field.
+func (m *DataApiPricingMutation) ClearExampleResponse() {
+	m.example_response = nil
+	m.clearedFields[dataapipricing.FieldExampleResponse] = struct{}{}
+}
+
+// ExampleResponseCleared returns if the "example_response" field was cleared in this mutation.
+func (m *DataApiPricingMutation) ExampleResponseCleared() bool {
+	_, ok := m.clearedFields[dataapipricing.FieldExampleResponse]
+	return ok
+}
+
+// ResetExampleResponse resets all changes to the "example_response" field.
+func (m *DataApiPricingMutation) ResetExampleResponse() {
+	m.example_response = nil
+	delete(m.clearedFields, dataapipricing.FieldExampleResponse)
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *DataApiPricingMutation) SetSortOrder(i int) {
+	m.sort_order = &i
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *DataApiPricingMutation) SortOrder() (r int, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldSortOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds i to the "sort_order" field.
+func (m *DataApiPricingMutation) AddSortOrder(i int) {
+	if m.addsort_order != nil {
+		*m.addsort_order += i
+	} else {
+		m.addsort_order = &i
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *DataApiPricingMutation) AddedSortOrder() (r int, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *DataApiPricingMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DataApiPricingMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DataApiPricingMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DataApiPricingMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DataApiPricingMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DataApiPricingMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the DataApiPricing entity.
+// If the DataApiPricing object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DataApiPricingMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DataApiPricingMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the DataApiPricingMutation builder.
+func (m *DataApiPricingMutation) Where(ps ...predicate.DataApiPricing) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DataApiPricingMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DataApiPricingMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DataApiPricing, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DataApiPricingMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DataApiPricingMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DataApiPricing).
+func (m *DataApiPricingMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DataApiPricingMutation) Fields() []string {
+	fields := make([]string, 0, 18)
+	if m.api_code != nil {
+		fields = append(fields, dataapipricing.FieldAPICode)
+	}
+	if m.name != nil {
+		fields = append(fields, dataapipricing.FieldName)
+	}
+	if m.group != nil {
+		fields = append(fields, dataapipricing.FieldGroup)
+	}
+	if m.category != nil {
+		fields = append(fields, dataapipricing.FieldCategory)
+	}
+	if m.method != nil {
+		fields = append(fields, dataapipricing.FieldMethod)
+	}
+	if m._path != nil {
+		fields = append(fields, dataapipricing.FieldPath)
+	}
+	if m.summary != nil {
+		fields = append(fields, dataapipricing.FieldSummary)
+	}
+	if m.description != nil {
+		fields = append(fields, dataapipricing.FieldDescription)
+	}
+	if m.credits_per_call != nil {
+		fields = append(fields, dataapipricing.FieldCreditsPerCall)
+	}
+	if m.enabled != nil {
+		fields = append(fields, dataapipricing.FieldEnabled)
+	}
+	if m.need_api_key != nil {
+		fields = append(fields, dataapipricing.FieldNeedAPIKey)
+	}
+	if m.params != nil {
+		fields = append(fields, dataapipricing.FieldParams)
+	}
+	if m.response_fields != nil {
+		fields = append(fields, dataapipricing.FieldResponseFields)
+	}
+	if m.example_request != nil {
+		fields = append(fields, dataapipricing.FieldExampleRequest)
+	}
+	if m.example_response != nil {
+		fields = append(fields, dataapipricing.FieldExampleResponse)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, dataapipricing.FieldSortOrder)
+	}
+	if m.created_at != nil {
+		fields = append(fields, dataapipricing.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, dataapipricing.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DataApiPricingMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case dataapipricing.FieldAPICode:
+		return m.APICode()
+	case dataapipricing.FieldName:
+		return m.Name()
+	case dataapipricing.FieldGroup:
+		return m.Group()
+	case dataapipricing.FieldCategory:
+		return m.Category()
+	case dataapipricing.FieldMethod:
+		return m.Method()
+	case dataapipricing.FieldPath:
+		return m.Path()
+	case dataapipricing.FieldSummary:
+		return m.Summary()
+	case dataapipricing.FieldDescription:
+		return m.Description()
+	case dataapipricing.FieldCreditsPerCall:
+		return m.CreditsPerCall()
+	case dataapipricing.FieldEnabled:
+		return m.Enabled()
+	case dataapipricing.FieldNeedAPIKey:
+		return m.NeedAPIKey()
+	case dataapipricing.FieldParams:
+		return m.Params()
+	case dataapipricing.FieldResponseFields:
+		return m.ResponseFields()
+	case dataapipricing.FieldExampleRequest:
+		return m.ExampleRequest()
+	case dataapipricing.FieldExampleResponse:
+		return m.ExampleResponse()
+	case dataapipricing.FieldSortOrder:
+		return m.SortOrder()
+	case dataapipricing.FieldCreatedAt:
+		return m.CreatedAt()
+	case dataapipricing.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DataApiPricingMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case dataapipricing.FieldAPICode:
+		return m.OldAPICode(ctx)
+	case dataapipricing.FieldName:
+		return m.OldName(ctx)
+	case dataapipricing.FieldGroup:
+		return m.OldGroup(ctx)
+	case dataapipricing.FieldCategory:
+		return m.OldCategory(ctx)
+	case dataapipricing.FieldMethod:
+		return m.OldMethod(ctx)
+	case dataapipricing.FieldPath:
+		return m.OldPath(ctx)
+	case dataapipricing.FieldSummary:
+		return m.OldSummary(ctx)
+	case dataapipricing.FieldDescription:
+		return m.OldDescription(ctx)
+	case dataapipricing.FieldCreditsPerCall:
+		return m.OldCreditsPerCall(ctx)
+	case dataapipricing.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case dataapipricing.FieldNeedAPIKey:
+		return m.OldNeedAPIKey(ctx)
+	case dataapipricing.FieldParams:
+		return m.OldParams(ctx)
+	case dataapipricing.FieldResponseFields:
+		return m.OldResponseFields(ctx)
+	case dataapipricing.FieldExampleRequest:
+		return m.OldExampleRequest(ctx)
+	case dataapipricing.FieldExampleResponse:
+		return m.OldExampleResponse(ctx)
+	case dataapipricing.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case dataapipricing.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case dataapipricing.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown DataApiPricing field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DataApiPricingMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case dataapipricing.FieldAPICode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAPICode(v)
+		return nil
+	case dataapipricing.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case dataapipricing.FieldGroup:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGroup(v)
+		return nil
+	case dataapipricing.FieldCategory:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCategory(v)
+		return nil
+	case dataapipricing.FieldMethod:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMethod(v)
+		return nil
+	case dataapipricing.FieldPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPath(v)
+		return nil
+	case dataapipricing.FieldSummary:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSummary(v)
+		return nil
+	case dataapipricing.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case dataapipricing.FieldCreditsPerCall:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreditsPerCall(v)
+		return nil
+	case dataapipricing.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case dataapipricing.FieldNeedAPIKey:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNeedAPIKey(v)
+		return nil
+	case dataapipricing.FieldParams:
+		v, ok := value.([]map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParams(v)
+		return nil
+	case dataapipricing.FieldResponseFields:
+		v, ok := value.([]map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResponseFields(v)
+		return nil
+	case dataapipricing.FieldExampleRequest:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExampleRequest(v)
+		return nil
+	case dataapipricing.FieldExampleResponse:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExampleResponse(v)
+		return nil
+	case dataapipricing.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case dataapipricing.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case dataapipricing.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DataApiPricing field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DataApiPricingMutation) AddedFields() []string {
+	var fields []string
+	if m.addcredits_per_call != nil {
+		fields = append(fields, dataapipricing.FieldCreditsPerCall)
+	}
+	if m.addsort_order != nil {
+		fields = append(fields, dataapipricing.FieldSortOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DataApiPricingMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case dataapipricing.FieldCreditsPerCall:
+		return m.AddedCreditsPerCall()
+	case dataapipricing.FieldSortOrder:
+		return m.AddedSortOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DataApiPricingMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case dataapipricing.FieldCreditsPerCall:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreditsPerCall(v)
+		return nil
+	case dataapipricing.FieldSortOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DataApiPricing numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DataApiPricingMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(dataapipricing.FieldSummary) {
+		fields = append(fields, dataapipricing.FieldSummary)
+	}
+	if m.FieldCleared(dataapipricing.FieldDescription) {
+		fields = append(fields, dataapipricing.FieldDescription)
+	}
+	if m.FieldCleared(dataapipricing.FieldParams) {
+		fields = append(fields, dataapipricing.FieldParams)
+	}
+	if m.FieldCleared(dataapipricing.FieldResponseFields) {
+		fields = append(fields, dataapipricing.FieldResponseFields)
+	}
+	if m.FieldCleared(dataapipricing.FieldExampleRequest) {
+		fields = append(fields, dataapipricing.FieldExampleRequest)
+	}
+	if m.FieldCleared(dataapipricing.FieldExampleResponse) {
+		fields = append(fields, dataapipricing.FieldExampleResponse)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DataApiPricingMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DataApiPricingMutation) ClearField(name string) error {
+	switch name {
+	case dataapipricing.FieldSummary:
+		m.ClearSummary()
+		return nil
+	case dataapipricing.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case dataapipricing.FieldParams:
+		m.ClearParams()
+		return nil
+	case dataapipricing.FieldResponseFields:
+		m.ClearResponseFields()
+		return nil
+	case dataapipricing.FieldExampleRequest:
+		m.ClearExampleRequest()
+		return nil
+	case dataapipricing.FieldExampleResponse:
+		m.ClearExampleResponse()
+		return nil
+	}
+	return fmt.Errorf("unknown DataApiPricing nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DataApiPricingMutation) ResetField(name string) error {
+	switch name {
+	case dataapipricing.FieldAPICode:
+		m.ResetAPICode()
+		return nil
+	case dataapipricing.FieldName:
+		m.ResetName()
+		return nil
+	case dataapipricing.FieldGroup:
+		m.ResetGroup()
+		return nil
+	case dataapipricing.FieldCategory:
+		m.ResetCategory()
+		return nil
+	case dataapipricing.FieldMethod:
+		m.ResetMethod()
+		return nil
+	case dataapipricing.FieldPath:
+		m.ResetPath()
+		return nil
+	case dataapipricing.FieldSummary:
+		m.ResetSummary()
+		return nil
+	case dataapipricing.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case dataapipricing.FieldCreditsPerCall:
+		m.ResetCreditsPerCall()
+		return nil
+	case dataapipricing.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case dataapipricing.FieldNeedAPIKey:
+		m.ResetNeedAPIKey()
+		return nil
+	case dataapipricing.FieldParams:
+		m.ResetParams()
+		return nil
+	case dataapipricing.FieldResponseFields:
+		m.ResetResponseFields()
+		return nil
+	case dataapipricing.FieldExampleRequest:
+		m.ResetExampleRequest()
+		return nil
+	case dataapipricing.FieldExampleResponse:
+		m.ResetExampleResponse()
+		return nil
+	case dataapipricing.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case dataapipricing.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case dataapipricing.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown DataApiPricing field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DataApiPricingMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DataApiPricingMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DataApiPricingMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DataApiPricingMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DataApiPricingMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DataApiPricingMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DataApiPricingMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown DataApiPricing unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DataApiPricingMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown DataApiPricing edge %s", name)
 }
 
 // ExchangeCodeMutation represents an operation that mutates the ExchangeCode nodes in the graph.

@@ -3,7 +3,7 @@ import type { GatewayRpcBackpressure } from '../gateway/rpc-backpressure';
 import type { CompleteHostServiceRegistry } from '../main/ipc/host-contract';
 import { PORTS } from '../utils/config';
 import { scheduleControlUiDeviceAutoApproval } from '../utils/control-ui-device-pairing';
-import { buildOpenClawControlUiUrl } from '../utils/openclaw-control-ui';
+import { buildOpenClawControlUiUrl } from '../utils/mclaw-control-ui';
 import { getSetting } from '../utils/store';
 import { isRecord } from './payload-utils';
 

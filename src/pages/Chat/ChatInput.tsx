@@ -765,7 +765,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
         )}
 
         {/* Input Container */}
-        <div className={`relative bg-surface-modal rounded-2xl shadow-sm border px-3 pt-2.5 pb-1.5 transition-all ${dragOver ? 'border-primary ring-1 ring-primary' : 'border-black/10 dark:border-white/10'}`}>
+        <div className={`relative bg-surface-modal rounded-2xl shadow-sm border px-3 pt-2.5 pb-1.5 transition-all ${dragOver ? 'border-primary ring-1 ring-primary' : 'border-border'}`}>
           {selectedTarget && (
             <div className="flex flex-wrap gap-2 pb-1.5">
               <button
@@ -826,7 +826,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
             <Button
               variant="ghost"
               size="icon"
-              className="shrink-0 h-8 w-8 rounded-lg text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground transition-colors"
+              className="shrink-0 h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
               onClick={pickFiles}
               disabled={inputDisabled || sending}
               title={t('composer.attachFiles')}
@@ -841,7 +841,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
                   size="icon"
                   data-testid="chat-composer-agent"
                   className={cn(
-                    'h-8 w-8 rounded-lg text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 hover:text-foreground transition-colors',
+                    'h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors',
                     (pickerOpen || selectedTarget) && 'bg-primary/10 text-primary hover:bg-primary/20'
                   )}
                   onClick={() => {
@@ -997,7 +997,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
                           onClick={() => void handleSelectModel(option.modelRef)}
                           className={cn(
                             'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors',
-                            option.modelRef === effectiveModelRef ? 'bg-primary/10 text-foreground' : 'hover:bg-black/5 dark:hover:bg-white/5'
+                            option.modelRef === effectiveModelRef ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50'
                           )}
                           data-testid={`chat-model-picker-option-${option.label}`}
                         >
@@ -1021,7 +1021,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
               data-testid="chat-composer-send"
               className={`ml-auto shrink-0 h-8 w-8 rounded-lg transition-colors ${
                 (sending || canSend)
-                  ? 'bg-black/5 dark:bg-white/10 text-foreground hover:bg-black/10 dark:hover:bg-white/20'
+                  ? 'bg-accent/50 text-foreground hover:bg-black/10 dark:hover:bg-white/20'
                   : 'text-muted-foreground/50 hover:bg-transparent bg-transparent'
               }`}
               variant="ghost"
@@ -1155,7 +1155,7 @@ function AgentPickerItem({
       onClick={onSelect}
       className={cn(
         'flex w-full flex-col items-start rounded-xl px-3 py-2 text-left transition-colors',
-        selected ? 'bg-primary/10 text-foreground' : 'hover:bg-black/5 dark:hover:bg-white/5'
+        selected ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50'
       )}
     >
       <span className="text-sm font-medium text-foreground">{agent.name}</span>
@@ -1184,7 +1184,7 @@ function SkillPickerItem({
           onClick={onSelect}
           className={cn(
             'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition-colors',
-            selected ? 'bg-primary/10 text-foreground' : 'hover:bg-black/5 dark:hover:bg-white/5',
+            selected ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50',
           )}
         >
           <div className="min-w-0">

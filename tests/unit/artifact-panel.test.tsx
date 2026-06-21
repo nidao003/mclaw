@@ -53,7 +53,7 @@ describe('ArtifactPanel', () => {
       open: true,
       tab: 'changes',
       focusedFile: {
-        filePath: '~/.openclaw/skills/open-baidu/SKILL.md',
+        filePath: '~/.mclaw/skills/open-baidu/SKILL.md',
         fileName: 'SKILL.md',
         ext: '.md',
         mimeType: 'text/markdown',
@@ -71,7 +71,7 @@ describe('ArtifactPanel', () => {
 
     const previewBodies = screen.getAllByTestId('file-preview-body');
     expect(previewBodies[0]).toHaveTextContent('SKILL.md');
-    expect(previewBodies[0]).toHaveTextContent('~/.openclaw/skills/open-baidu/SKILL.md');
+    expect(previewBodies[0]).toHaveTextContent('~/.mclaw/skills/open-baidu/SKILL.md');
     expect(screen.queryByText('test_example.py')).not.toBeInTheDocument();
   });
 
@@ -80,7 +80,7 @@ describe('ArtifactPanel', () => {
       open: true,
       tab: 'preview',
       focusedFile: {
-        filePath: '~/.openclaw/skills/open-xueqiu/SKILL.md',
+        filePath: '~/.mclaw/skills/open-xueqiu/SKILL.md',
         fileName: 'SKILL.md',
         ext: '.md',
         mimeType: 'text/markdown',

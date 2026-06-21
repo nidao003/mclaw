@@ -11,13 +11,13 @@ function stableStringify(value: unknown): string {
   return `{${entries.join(',')}}`;
 }
 
-test.describe('ClawX chat run state events', () => {
+test.describe('mclaw chat run state events', () => {
   test('keeps stop control active across non-terminal runtime events and clears it on run.ended', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
         gatewayRpc: {
           [stableStringify(['sessions.list', { includeDerivedTitles: true, includeLastMessage: true }])]: {
             success: true,
@@ -40,7 +40,7 @@ test.describe('ClawX chat run state events', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+              json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
             },
           },
           [stableStringify(['/api/chat/sessions', 'GET'])]: {
@@ -169,7 +169,7 @@ test.describe('ClawX chat run state events', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
         gatewayRpc: {
           [stableStringify(['sessions.list', { includeDerivedTitles: true, includeLastMessage: true }])]: {
             success: true,
@@ -188,7 +188,7 @@ test.describe('ClawX chat run state events', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+              json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {
@@ -227,7 +227,7 @@ test.describe('ClawX chat run state events', () => {
 
   test('hydrates Windows MEDIA SVG artifacts without leaking the marker text', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
-    const filePath = String.raw`C:\Users\Administrator\.openclaw\workspace\japan-kansai-4d3n-plan.svg`;
+    const filePath = String.raw`C:\Users\Administrator\.mclaw\workspace\japan-kansai-4d3n-plan.svg`;
     const svgPreview = `data:image/svg+xml;base64,${Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>').toString('base64')}`;
     const history = [
       {
@@ -236,13 +236,13 @@ test.describe('ClawX chat run state events', () => {
         timestamp: Date.now() / 1000,
         content: String.raw`SVG file is ready:
 
-MEDIA:C:\Users\Administrator\.openclaw\workspace\japan-kansai-4d3n-plan.svg`,
+MEDIA:C:\Users\Administrator\.mclaw\workspace\japan-kansai-4d3n-plan.svg`,
       },
     ];
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
         gatewayRpc: {
           [stableStringify(['sessions.list', { includeDerivedTitles: true, includeLastMessage: true }])]: {
             success: true,
@@ -261,7 +261,7 @@ MEDIA:C:\Users\Administrator\.openclaw\workspace\japan-kansai-4d3n-plan.svg`,
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+              json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

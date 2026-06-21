@@ -7,24 +7,24 @@
  * Port configuration
  */
 export const PORTS = {
-  /** ClawX GUI development server port */
-  CLAWX_DEV: 5173,
+  /** mclaw GUI development server port */
+  MCLAW_DEV: 5173,
   
-  /** ClawX GUI production port (for reference) */
-  CLAWX_GUI: 23333,
+  /** mclaw GUI production port (for reference) */
+  MCLAW_GUI: 23333,
 
   /** Local host API server port */
-  CLAWX_HOST_API: 13210,
+  MCLAW_HOST_API: 13210,
   
   /** OpenClaw Gateway port */
-  OPENCLAW_GATEWAY: 18789,
+  OPENCLAW_GATEWAY: 18999,
 } as const;
 
 /**
  * Get port from environment or default
  */
 export function getPort(key: keyof typeof PORTS): number {
-  const envKey = `CLAWX_PORT_${key}`;
+  const envKey = `MCLAW_PORT_${key}`;
   const envValue = process.env[envKey];
   return envValue ? parseInt(envValue, 10) : PORTS[key];
 }
@@ -34,13 +34,13 @@ export function getPort(key: keyof typeof PORTS): number {
  */
 export const APP_PATHS = {
   /** OpenClaw configuration directory */
-  OPENCLAW_CONFIG: '~/.openclaw',
+  OPENCLAW_CONFIG: '~/.mclaw',
   
-  /** ClawX configuration directory */
-  CLAWX_CONFIG: '~/.clawx',
+  /** mclaw configuration directory */
+  MCLAW_CONFIG: '~/.mclaw',
   
   /** Log files directory */
-  LOGS: '~/.clawx/logs',
+  LOGS: '~/.mclaw/logs',
 } as const;
 
 /**

@@ -208,7 +208,7 @@ describe('chat history actions', () => {
     resetChatHistoryMaxCharsCache();
     await resolveChatHistoryMaxChars();
     gatewayStoreGetStateMock.mockReturnValue({
-      status: { state: 'running', port: 18789, connectedAt: Date.now() },
+      status: { state: 'running', port: 18999, connectedAt: Date.now() },
     });
   });
 
@@ -420,7 +420,7 @@ describe('chat history actions', () => {
     });
     const actions = createHistoryActions(h.set as never, h.get as never);
     gatewayStoreGetStateMock.mockReturnValue({
-      status: { state: 'running', port: 18789, connectedAt: Date.now() - 40_000 },
+      status: { state: 'running', port: 18999, connectedAt: Date.now() - 40_000 },
     });
 
     gatewayRpcMock

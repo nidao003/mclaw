@@ -6,17 +6,17 @@ import { describe, expect, it } from 'vitest';
 
 const repoRoot = process.cwd();
 
-describe('ClawX OpenAI image plugin request shape', () => {
+describe('mclaw OpenAI image plugin request shape', () => {
   it('does not force deprecated OpenAI Images response_format', async () => {
     const pluginSource = await readFile(
-      join(repoRoot, 'resources/openclaw-plugins/clawx-openai-image/index.mjs'),
+      join(repoRoot, 'resources/mclaw-plugins/mclaw-openai-image/index.mjs'),
       'utf8',
     );
     const packageJson = await readFile(join(repoRoot, 'package.json'), 'utf8');
     const bundleScript = await readFile(join(repoRoot, 'scripts/bundle-openclaw.mjs'), 'utf8');
 
     expect(pluginSource).not.toContain('response_format');
-    expect(packageJson).not.toContain('patch-openclaw-image-b64-json');
+    expect(packageJson).not.toContain('patch-mclaw-image-b64-json');
     expect(bundleScript).not.toContain('response_format: "b64_json"');
   });
 
@@ -36,7 +36,7 @@ describe('ClawX OpenAI image plugin request shape', () => {
 
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     try {
-      const plugin = await import('../../resources/openclaw-plugins/clawx-openai-image/index.mjs');
+      const plugin = await import('../../resources/mclaw-plugins/mclaw-openai-image/index.mjs');
       let provider: { generateImage: (req: Record<string, unknown>) => Promise<{ images: unknown[] }> } | undefined;
       plugin.default.register({
         registerImageGenerationProvider(nextProvider: typeof provider) {
@@ -48,7 +48,7 @@ describe('ClawX OpenAI image plugin request shape', () => {
       if (!address || typeof address === 'string') throw new Error('Test server failed to bind to a port');
 
       const result = await provider?.generateImage({
-        provider: 'clawx-openai-image',
+        provider: 'mclaw-openai-image',
         model: 'gpt-image-2',
         prompt: 'paint a fox',
         quality: 'high',
@@ -65,14 +65,14 @@ describe('ClawX OpenAI image plugin request shape', () => {
         cfg: {
           models: {
             providers: {
-              'clawx-openai-image': {
+              'mclaw-openai-image': {
                 apiKey: 'test-key',
                 baseUrl: `http://127.0.0.1:${address.port}/v1`,
               },
             },
           },
         },
-        agentDir: '/tmp/clawx-openai-image-test-agent',
+        agentDir: '/tmp/mclaw-openai-image-test-agent',
         ssrfPolicy: { dangerouslyAllowPrivateNetwork: true },
       });
 

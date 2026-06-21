@@ -75,7 +75,7 @@ function isDirectoryAttachment(file: AttachedFileMeta): boolean {
 function isSkillFileAttachment(file: AttachedFileMeta): boolean {
   const path = file.filePath ?? '';
   return (
-    /(?:^|[\\/])\.openclaw[\\/]skills[\\/][^\\/]+[\\/].+\.[A-Za-z0-9]+$/i.test(path)
+    /(?:^|[\\/])\.mclaw[\\/]skills[\\/][^\\/]+[\\/].+\.[A-Za-z0-9]+$/i.test(path)
     || /(?:^|[\\/])skills[\\/][^\\/]+[\\/]SKILL\.md$/i.test(path)
   );
 }
@@ -162,11 +162,11 @@ function extractPreviewDocumentPaths(text: string): AttachedFileMeta[] {
   const skillPathPart = '[^\\\\/\\s\\n"\'`()\\x5b\\x5d,<>]+';
   const skillPathTail = '[^\\s\\n"\'`()\\x5b\\x5d,<>]*?';
   const skillDirRegex = new RegExp(
-    `(?<![\\w./:])((?:~[\\\\/]\\.openclaw[\\\\/]skills[\\\\/]${skillPathPart})|(?:(?:\\/|[A-Za-z]:\\\\)${skillPathTail}[\\\\/]\\.openclaw[\\\\/]skills[\\\\/]${skillPathPart}))${skillPathBoundary}`,
+    `(?<![\\w./:])((?:~[\\\\/]\\.mclaw[\\\\/]skills[\\\\/]${skillPathPart})|(?:(?:\\/|[A-Za-z]:\\\\)${skillPathTail}[\\\\/]\\.mclaw[\\\\/]skills[\\\\/]${skillPathPart}))${skillPathBoundary}`,
     'gi',
   );
   const skillMarkdownRegex = new RegExp(
-    `(?<![\\w./:])((?:~[\\\\/]\\.openclaw[\\\\/]skills[\\\\/]${skillPathTail}\\.md)|(?:(?:\\/|[A-Za-z]:\\\\)${skillPathTail}[\\\\/]\\.openclaw[\\\\/]skills[\\\\/]${skillPathTail}\\.md))${skillPathBoundary}`,
+    `(?<![\\w./:])((?:~[\\\\/]\\.mclaw[\\\\/]skills[\\\\/]${skillPathTail}\\.md)|(?:(?:\\/|[A-Za-z]:\\\\)${skillPathTail}[\\\\/]\\.mclaw[\\\\/]skills[\\\\/]${skillPathTail}\\.md))${skillPathBoundary}`,
     'gi',
   );
 
@@ -353,7 +353,7 @@ export const ChatMessage = memo(function ChatMessage({
           sit alongside a single line of text. */}
       {!isUser && (
         <div className="flex h-6 shrink-0 items-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/5 dark:bg-white/5 text-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/50 text-foreground">
             <Sparkles className="h-4 w-4" />
           </div>
         </div>
@@ -657,7 +657,7 @@ function AssistantMarkdown({
             const isInline = !match && !className;
             if (isInline) {
               return (
-                <code className="bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded text-sm font-mono break-words break-all" {...props}>
+                <code className="bg-accent/50 px-1.5 py-0.5 rounded text-sm font-mono break-words break-all" {...props}>
                   {children}
                 </code>
               );
@@ -671,7 +671,7 @@ function AssistantMarkdown({
           pre({ children, ...props }) {
             return (
               <pre
-                className="bg-black/5 dark:bg-white/5 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-words"
+                className="bg-accent/50 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-words"
                 {...props}
               >
                 {children}
@@ -734,7 +734,7 @@ function FileCard({ file, onOpen }: { file: AttachedFileMeta; onOpen?: (file: At
   return (
     <div 
       className={cn(
-        "flex items-center gap-3 rounded-xl border border-black/10 dark:border-white/10 px-3 py-2.5 bg-black/5 dark:bg-white/5 max-w-[220px]",
+        "flex items-center gap-3 rounded-xl border border-border px-3 py-2.5 bg-accent/50 max-w-[220px]",
         file.filePath && "cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
       )}
       onClick={handleOpen}
@@ -797,7 +797,7 @@ function ImageThumbnail({
   void filePath; void base64; void mimeType;
   return (
     <div
-      className="relative w-36 h-36 rounded-xl border overflow-hidden border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 group/img cursor-zoom-in"
+      className="relative w-36 h-36 rounded-xl border overflow-hidden border-border bg-accent/50 group/img cursor-zoom-in"
       onClick={onPreview}
     >
       <img src={src} alt={fileName} className="w-full h-full object-cover" />
@@ -828,7 +828,7 @@ function ImagePreviewCard({
   void filePath; void base64; void mimeType;
   return (
     <div
-      className="relative max-w-xs rounded-xl border overflow-hidden border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 group/img cursor-zoom-in"
+      className="relative max-w-xs rounded-xl border overflow-hidden border-border bg-accent/50 group/img cursor-zoom-in"
       onClick={onPreview}
     >
       <img src={src} alt={fileName} className="block w-full" />

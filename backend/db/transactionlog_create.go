@@ -103,6 +103,14 @@ func (_c *TransactionLogCreate) SetID(v uuid.UUID) *TransactionLogCreate {
 	return _c
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *TransactionLogCreate) SetNillableID(v *uuid.UUID) *TransactionLogCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
+	return _c
+}
+
 // Mutation returns the TransactionLogMutation object of the builder.
 func (_c *TransactionLogCreate) Mutation() *TransactionLogMutation {
 	return _c.mutation
@@ -141,6 +149,10 @@ func (_c *TransactionLogCreate) defaults() {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := transactionlog.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := transactionlog.DefaultID()
+		_c.mutation.SetID(v)
 	}
 }
 

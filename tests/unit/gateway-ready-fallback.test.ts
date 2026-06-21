@@ -18,7 +18,7 @@ vi.mock('@electron/utils/logger', () => ({
 }));
 
 vi.mock('@electron/utils/config', () => ({
-  PORTS: { OPENCLAW_GATEWAY: 18789 },
+  PORTS: { OPENCLAW_GATEWAY: 18999 },
 }));
 
 vi.mock('@electron/gateway/startup-orchestrator', () => ({

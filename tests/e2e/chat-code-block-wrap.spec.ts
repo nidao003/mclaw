@@ -9,7 +9,7 @@ import { closeElectronApp, expect, getStableWindow, installIpcMocks, test } from
 const SESSION_KEY = 'agent:main:main';
 
 const LONG_LOG_LINE = 'config change requires channel reload (wecom) — deferring until 2 operation(s), 1 reply(ies), 1 embedded run(s) complete';
-const LONG_PATH = '/Users/guoyuliang/.openclaw/agents/main/sessions/6a9f6ff8-91e7-4532-bfe0-4393e6aa120d.jsonl';
+const LONG_PATH = '/Users/guoyuliang/.mclaw/agents/main/sessions/6a9f6ff8-91e7-4532-bfe0-4393e6aa120d.jsonl';
 
 function stableStringify(value: unknown): string {
   if (value == null || typeof value !== 'object') return JSON.stringify(value);
@@ -43,13 +43,13 @@ const seededHistory = [
   },
 ];
 
-test.describe('ClawX chat code block wrapping', () => {
+test.describe('mclaw chat code block wrapping', () => {
   test('soft-wraps long lines inside fenced code blocks instead of overflowing', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -67,7 +67,7 @@ test.describe('ClawX chat code block wrapping', () => {
         hostApi: {
           [stableStringify(['/api/gateway/status', 'GET'])]: {
             ok: true,
-            data: { status: 200, ok: true, json: { state: 'running', port: 18789, pid: 12345 } },
+            data: { status: 200, ok: true, json: { state: 'running', port: 18999, pid: 12345 } },
           },
           [stableStringify(['/api/agents', 'GET'])]: {
             ok: true,

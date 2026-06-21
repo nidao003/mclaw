@@ -1,6 +1,6 @@
 /**
  * Skill Config Utilities
- * Direct read/write access to skill configuration in ~/.openclaw/openclaw.json
+ * Direct read/write access to skill configuration in ~/.mclaw/openclaw.json
  * This bypasses the Gateway RPC for faster and more reliable config updates.
  *
  * All file I/O uses async fs/promises to avoid blocking the main thread.
@@ -10,12 +10,12 @@ import { existsSync } from 'fs';
 import { constants } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { getOpenClawDir, getOpenClawResolvedDir, getResourcesDir } from './paths';
+import { getMclawDir, getOpenClawResolvedDir, getResourcesDir } from './paths';
 import { logger } from './logger';
 import { cpAsyncSafe } from './plugin-install';
 import { withConfigLock } from './config-mutex';
 
-const OPENCLAW_CONFIG_PATH = join(homedir(), '.openclaw', 'openclaw.json');
+const MCLAW_CONFIG_PATH = join(homedir(), '.mclaw', 'openclaw.json');
 const BUNDLED_OPENCLAW_SKILL_ALLOWLIST = new Set(['skill-creator']);
 
 export interface SkillConfigUpdates {
@@ -54,7 +54,7 @@ interface PreinstalledLockFile {
 }
 
 interface PreinstalledMarker {
-    source: 'clawx-preinstalled';
+    source: 'mclaw-preinstalled';
     slug: string;
     version: string;
     installedAt: string;
@@ -68,11 +68,11 @@ async function fileExists(p: string): Promise<boolean> {
  * Read the current OpenClaw config
  */
 async function readConfig(): Promise<OpenClawConfig> {
-    if (!(await fileExists(OPENCLAW_CONFIG_PATH))) {
+    if (!(await fileExists(MCLAW_CONFIG_PATH))) {
         return {};
     }
     try {
-        const raw = await readFile(OPENCLAW_CONFIG_PATH, 'utf-8');
+        const raw = await readFile(MCLAW_CONFIG_PATH, 'utf-8');
         return JSON.parse(raw);
     } catch (err) {
         console.error('Failed to read openclaw config:', err);
@@ -85,7 +85,7 @@ async function readConfig(): Promise<OpenClawConfig> {
  */
 async function writeConfig(config: OpenClawConfig): Promise<void> {
     const json = JSON.stringify(config, null, 2);
-    await writeFile(OPENCLAW_CONFIG_PATH, json, 'utf-8');
+    await writeFile(MCLAW_CONFIG_PATH, json, 'utf-8');
 }
 
 async function setSkillsEnabled(skillKeys: string[], enabled: boolean): Promise<void> {
@@ -316,20 +316,20 @@ export async function trimBundledOpenClawSkillsAndConfigs(
 }
 
 /**
- * Built-in skills bundled with ClawX that should be pre-deployed to
- * ~/.openclaw/skills/ on first launch.  These come from the openclaw package's
+ * Built-in skills bundled with mclaw that should be pre-deployed to
+ * ~/.mclaw/skills/ on first launch.  These come from the openclaw package's
  * extensions directory and are available in both dev and packaged builds.
  */
 const BUILTIN_SKILLS = [] as const;
 
 /**
- * Ensure built-in skills are deployed to ~/.openclaw/skills/<slug>/.
+ * Ensure built-in skills are deployed to ~/.mclaw/skills/<slug>/.
  * Skips any skill that already has a SKILL.md present (idempotent).
  * Runs at app startup; all errors are logged and swallowed so they never
  * block the normal startup flow.
  */
 export async function ensureBuiltinSkillsInstalled(): Promise<void> {
-    const skillsRoot = join(homedir(), '.openclaw', 'skills');
+    const skillsRoot = join(homedir(), '.mclaw', 'skills');
 
     for (const { slug, sourceExtension } of BUILTIN_SKILLS) {
         const targetDir = join(skillsRoot, slug);
@@ -339,8 +339,8 @@ export async function ensureBuiltinSkillsInstalled(): Promise<void> {
             continue; // already installed
         }
 
-        const openclawDir = getOpenClawDir();
-        const sourceDir = join(openclawDir, 'extensions', sourceExtension, 'skills', slug);
+        const mclawDir = getMclawDir();
+        const sourceDir = join(mclawDir, 'extensions', sourceExtension, 'skills', slug);
 
         if (!existsSync(join(sourceDir, 'SKILL.md'))) {
             logger.warn(`Built-in skill source not found, skipping: ${sourceDir}`);
@@ -358,7 +358,7 @@ export async function ensureBuiltinSkillsInstalled(): Promise<void> {
 }
 
 const PREINSTALLED_MANIFEST_NAME = 'preinstalled-manifest.json';
-const PREINSTALLED_MARKER_NAME = '.clawx-preinstalled.json';
+const PREINSTALLED_MARKER_NAME = '.mclaw-preinstalled.json';
 
 async function readPreinstalledManifest(): Promise<PreinstalledSkillSpec[]> {
     const candidates = [
@@ -436,7 +436,7 @@ async function tryReadMarker(markerPath: string): Promise<PreinstalledMarker | n
 
 /**
  * Ensure third-party preinstalled skills (bundled in app resources) are
- * deployed to ~/.openclaw/skills/<slug>/ as full directories.
+ * deployed to ~/.mclaw/skills/<slug>/ as full directories.
  *
  * Policy:
  * - If skill is missing locally, install it.
@@ -457,7 +457,7 @@ export async function ensurePreinstalledSkillsInstalled(): Promise<void> {
     }
     const lockVersions = await readPreinstalledLockVersions(sourceRoot);
 
-    const targetRoot = join(homedir(), '.openclaw', 'skills');
+    const targetRoot = join(homedir(), '.mclaw', 'skills');
     await mkdir(targetRoot, { recursive: true });
     const toEnable: string[] = [];
 
@@ -493,7 +493,7 @@ export async function ensurePreinstalledSkillsInstalled(): Promise<void> {
             await mkdir(targetDir, { recursive: true });
             await cpAsyncSafe(sourceDir, targetDir);
             const markerPayload: PreinstalledMarker = {
-                source: 'clawx-preinstalled',
+                source: 'mclaw-preinstalled',
                 slug: spec.slug,
                 version: desiredVersion,
                 installedAt: new Date().toISOString(),

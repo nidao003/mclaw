@@ -35,7 +35,7 @@ const cronJobs = [
 test.describe('Cron job card layout', () => {
   test('keeps the toggle switch fully inside the card when the title is very long', async ({ electronApp, page }) => {
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+      gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
       gatewayRpc: {},
       hostApi: {
         [stableStringify(['/api/gateway/status', 'GET'])]: {
@@ -43,7 +43,7 @@ test.describe('Cron job card layout', () => {
           data: {
             status: 200,
             ok: true,
-            json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+            json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
           },
         },
         [stableStringify(['/api/cron/jobs', 'GET'])]: {

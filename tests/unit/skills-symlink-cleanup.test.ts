@@ -52,7 +52,7 @@ describe('cleanupAgentsSymlinkedSkills', () => {
   let workspaceAgentsSkillsDir: string;
 
   beforeEach(() => {
-    root = mkdtempSync(path.join(tmpdir(), 'clawx-skills-cleanup-'));
+    root = mkdtempSync(path.join(tmpdir(), 'mclaw-skills-cleanup-'));
     skillsDir = path.join(root, 'openclaw', 'skills');
     agentsRootDir = path.join(root, 'agents');
     agentsSkillsDir = path.join(agentsRootDir, 'skills');
@@ -339,7 +339,7 @@ describe('cleanupStalePluginRuntimeDeps', () => {
   let oldOpenClawDir: string;
 
   beforeEach(() => {
-    root = mkdtempSync(path.join(tmpdir(), 'clawx-runtime-deps-cleanup-'));
+    root = mkdtempSync(path.join(tmpdir(), 'mclaw-runtime-deps-cleanup-'));
     runtimeDepsDir = path.join(root, 'openclaw', 'plugin-runtime-deps');
     currentOpenClawDir = path.join(root, 'current-worktree', 'node_modules', 'openclaw');
     oldOpenClawDir = path.join(root, 'old-worktree', 'node_modules', 'openclaw');
@@ -361,8 +361,8 @@ describe('cleanupStalePluginRuntimeDeps', () => {
   it('removes OpenClaw runtime cache roots that symlink to an old worktree package', () => {
     const oldDistFile = writeOpenClawDistFile(oldOpenClawDir, 'runtime.js');
     const currentDistFile = writeOpenClawDistFile(currentOpenClawDir, 'runtime.js');
-    const staleRoot = path.join(runtimeDepsDir, 'openclaw-2026.4.26-old');
-    const currentRoot = path.join(runtimeDepsDir, 'openclaw-2026.5.1-current');
+    const staleRoot = path.join(runtimeDepsDir, 'mclaw-2026.4.26-old');
+    const currentRoot = path.join(runtimeDepsDir, 'mclaw-2026.5.1-current');
     mkdirSync(path.join(staleRoot, 'dist'), { recursive: true });
     mkdirSync(path.join(currentRoot, 'dist'), { recursive: true });
     symlinkSync(oldDistFile, path.join(staleRoot, 'dist', 'runtime.js'), 'file');
@@ -370,7 +370,7 @@ describe('cleanupStalePluginRuntimeDeps', () => {
 
     const res = cleanupStalePluginRuntimeDeps({ runtimeDepsDir, currentOpenClawDir });
 
-    expect(res.removed).toEqual(['openclaw-2026.4.26-old']);
+    expect(res.removed).toEqual(['mclaw-2026.4.26-old']);
     expect(res.examined).toBe(2);
     expect(existsSync(staleRoot)).toBe(false);
     expect(existsSync(currentRoot)).toBe(true);
@@ -382,7 +382,7 @@ describe('cleanupStalePluginRuntimeDeps', () => {
     mkdirSync(path.dirname(externalPackageFile), { recursive: true });
     writeFileSync(externalPackageFile, 'export {}\n');
 
-    const openClawNamedRoot = path.join(runtimeDepsDir, 'openclaw-2026.5.1-current');
+    const openClawNamedRoot = path.join(runtimeDepsDir, 'mclaw-2026.5.1-current');
     const externalNamedRoot = path.join(runtimeDepsDir, 'external-plugin-cache');
     mkdirSync(path.join(openClawNamedRoot, 'dist'), { recursive: true });
     mkdirSync(path.join(externalNamedRoot, 'dist'), { recursive: true });

@@ -191,26 +191,9 @@ ssh root@[REDACTED]  # 密码 [REDACTED]
 
 ## 8. 修改记录
 
-| 日期 | 改动 | 涉及 |
-|------|------|------|
-| 2026-06-09 | 侧边栏从冷蓝灰深色改为温暖奶油浅色 | `tailwind.config.js`, `globals.css`, `Sidebar.tsx`, `MainLayout.tsx` |
-| 2026-06-09 | Card 圆角升级到 16px，Button 升级 + 新增 soft/brand 变体 | `card.tsx`, `button.tsx`, `badge.tsx` |
-| 2026-06-09 | Windows 标题栏按钮加圆角分组 | `TitleBar.tsx` |
-| 2026-06-09 | Chat 欢迎屏加 4 张能力卡片 | `Chat/index.tsx` |
-| 2026-06-09 | 建立设计规范文档 + 项目级 CLAUDE.md | `docs/design-spec.md`, `CLAUDE.md` |
-| 2026-06-09 | 侧边栏改为三栏固定宽度布局 + 菜单两字命名 | `Sidebar.tsx`, `common.json` |
-| 2026-06-10 | Go 后端迁入（20 个 biz 模块 + 52 个 Ent schema 编译通过） | `backend/` |
-| 2026-06-11 | 阶段 2-3：SkillHub Web SPA 骨架 + packages/shared 共享层扩展 | `apps/web/`, `packages/shared/src/` |
-| 2026-06-11 | pnpm install 修复（删除 6 个私有频道包） | `package.json` |
-| 2026-06-11 | 共享 UI 组件库（SkillCard/List/Detail/SearchBar + PricingTable + LoginForm/OAuthButtons） | `packages/shared/src/components/` |
-| 2026-06-11 | 共享 Hooks + Stores（useSkillList/Detail + useSubscription + useAuth + authStore） | `packages/shared/src/hooks/`, `packages/shared/src/stores/` |
-| 2026-06-11 | Web 页面全量升级（Skills/Detail/Pricing/Login 对接共享组件 + API） | `apps/web/src/pages/` |
-| 2026-06-11 | CORS 中间件 + subscriptionStore + 管理后台（Admin/Skills 审核页） | `backend/middleware/cors.go`, `packages/shared/src/stores/`, `apps/web/src/pages/Admin/` |
-| 2026-06-11 | API Key 全链路（Ent schema + domain + middleware + handler + Web 管理页） | `backend/ent/schema/user_apikey.go`, `backend/middleware/auth.go`, `apps/web/src/pages/Settings/ApiKeys.tsx` |
-| 2026-06-12 | Skills Hub Web 设计规范全面应用：暖奶油画布 #f7f7f4、Inter + JetBrains Mono、hairline 替代投影、8px CTA 圆角、80px 区块间距 | `apps/web/src/styles/globals.css`, `tailwind.config.js`, `apps/web/index.html`, `packages/shared/src/components/`, `apps/web/src/pages/`, `apps/web/src/components/layout/` |
-| 2026-06-12 | **Skills Hub 开放分发系统**：CLI (`mclaw-skills`)、Registry API (download/manifest)、Web 安装弹窗、SKILL.md 包格式规范 → [知识库](docs/knowledge/skills-hub-distribution.md) | `packages/cli/`, `backend/biz/skill/handler/v1/skill.go`, `apps/web/src/pages/SkillDetail/`, `packages/shared/src/` |
-| 2026-06-12 | Skills Hub Web 更新为 skillhub.cn 风格：白色画布、Plus Jakarta Sans + Outfit、蓝色强调、黑色胶囊 CTA、圆形搜索条、纵向技能流；新增 Web 专门规范 | `docs/skills-hub-DESIGN.md`, `docs/design-spec.md`, `apps/web/`, `packages/shared/src/components/` |
-| 2026-06-12 | BindHandler→BaseHandler 修复 + Ent UUID 全链路补齐（skill/review/version）；发布「中文公文 Word 版式」技能 v1.0.0 | `backend/biz/skill/handler/v1/skill.go`, `usecase/skill.go`, `repo/skill.go`, `repo/skill_review.go`, `repo/skill_version.go`, `.claude/skills/chinese-official-word-style/` |
+完整修改记录已独立为知识库文档，本节仅作索引：详见 [docs/changelog.md](docs/changelog.md)。
+
+> 新改动请直接在 `docs/changelog.md` 顶部追加，保持按日期倒序。
 
 ---
 
@@ -218,6 +201,7 @@ ssh root@[REDACTED]  # 密码 [REDACTED]
 
 | 文档 | 内容 |
 |------|------|
+| [修改记录](docs/changelog.md) | 项目演进时间线，按日期倒序整理关键改动及涉及文件 |
 | [Skills Hub 分发系统](docs/knowledge/skills-hub-distribution.md) | CLI + Registry API + Web 安装弹窗，三源安装架构，部署流程，踩坑记录 |
 | [设计规范](docs/design-spec.md) | mclaw 视觉设计落地规范 |
 | [Skills Hub Web 设计规范](docs/skills-hub-DESIGN.md) | Web 技能市场专门视觉规范 |

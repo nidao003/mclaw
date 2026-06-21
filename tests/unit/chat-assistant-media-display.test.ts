@@ -5,14 +5,14 @@ describe('assistant media path display cleanup', () => {
   it('strips bare OpenClaw media paths when the image is shown as an attachment card', () => {
     const text = [
       '宇航员图片生成完成啦 🧑‍🚀✨',
-      '/Users/zhonghaolu/.openclaw/media/tool-image-generation/clawx-image-1---82d6c7e6-ea44-4850-a24b-9e88e1660683.png',
+      '/Users/zhonghaolu/.mclaw/media/tool-image-generation/mclaw-image-1---82d6c7e6-ea44-4850-a24b-9e88e1660683.png',
     ].join('\n');
 
     expect(extractText({ role: 'assistant', content: text })).toBe('宇航员图片生成完成啦 🧑‍🚀✨');
   });
 
   it('still strips MEDIA: tagged OpenClaw artifact paths', () => {
-    const text = 'Done:\n\nMEDIA:/Users/alice/.openclaw/media/outbound/cat---abc.png';
+    const text = 'Done:\n\nMEDIA:/Users/alice/.mclaw/media/outbound/cat---abc.png';
 
     expect(extractText({ role: 'assistant', content: text })).toBe('Done:');
   });
@@ -20,14 +20,14 @@ describe('assistant media path display cleanup', () => {
   it('strips MEDIA: tagged Windows artifact paths', () => {
     const text = String.raw`SVG file is ready:
 
-MEDIA:C:\Users\Administrator\.openclaw\workspace\japan-kansai-4d3n-plan.svg`;
+MEDIA:C:\Users\Administrator\.mclaw\workspace\japan-kansai-4d3n-plan.svg`;
 
     expect(extractText({ role: 'assistant', content: text })).toBe('SVG file is ready:');
   });
 
   it('strips bare Windows OpenClaw media paths when surfaced as attachment cards', () => {
     const text = String.raw`Done:
-C:\Users\alice\.openclaw\media\outbound\cat---abc.png`;
+C:\Users\alice\.mclaw\media\outbound\cat---abc.png`;
 
     expect(extractText({ role: 'assistant', content: text })).toBe('Done:');
   });

@@ -37,7 +37,7 @@ vi.mock('electron', () => ({
 
 vi.mock('@electron/utils/paths', () => ({
   getOpenClawDir: () => '/tmp/openclaw',
-  getOpenClawEntryPath: () => 'C:\\Program Files\\ClawX\\resources\\openclaw\\openclaw.mjs',
+  getOpenClawEntryPath: () => 'C:\\Program Files\\mclaw\\resources\\openclaw\\openclaw.mjs',
 }));
 
 describe('getOpenClawCliCommand (Windows packaged)', () => {
@@ -47,7 +47,7 @@ describe('getOpenClawCliCommand (Windows packaged)', () => {
     setPlatform('win32');
     mockIsPackagedGetter.value = true;
     Object.defineProperty(process, 'resourcesPath', {
-      value: 'C:\\Program Files\\ClawX\\resources',
+      value: 'C:\\Program Files\\mclaw\\resources',
       configurable: true,
       writable: true,
     });
@@ -64,25 +64,25 @@ describe('getOpenClawCliCommand (Windows packaged)', () => {
 
   it('prefers bundled node.exe when present', async () => {
     mockExistsSync.mockImplementation((p: string) => /[\\/]cli[\\/]openclaw\.cmd$/i.test(p) || /[\\/]bin[\\/]node\.exe$/i.test(p));
-    const { getOpenClawCliCommand } = await import('@electron/utils/openclaw-cli');
+    const { getOpenClawCliCommand } = await import('@electron/utils/mclaw-cli');
     expect(getOpenClawCliCommand()).toBe(
-      "& 'C:\\Program Files\\ClawX\\resources/cli/openclaw.cmd'",
+      "& 'C:\\Program Files\\mclaw\\resources/cli/openclaw.cmd'",
     );
   });
 
   it('falls back to bundled node.exe when openclaw.cmd is missing', async () => {
     mockExistsSync.mockImplementation((p: string) => /[\\/]bin[\\/]node\.exe$/i.test(p));
-    const { getOpenClawCliCommand } = await import('@electron/utils/openclaw-cli');
+    const { getOpenClawCliCommand } = await import('@electron/utils/mclaw-cli');
     expect(getOpenClawCliCommand()).toBe(
-      "& 'C:\\Program Files\\ClawX\\resources/bin/node.exe' 'C:\\Program Files\\ClawX\\resources\\openclaw\\openclaw.mjs'",
+      "& 'C:\\Program Files\\mclaw\\resources/bin/node.exe' 'C:\\Program Files\\mclaw\\resources\\openclaw\\openclaw.mjs'",
     );
   });
 
   it('falls back to ELECTRON_RUN_AS_NODE command when wrappers are missing', async () => {
     mockExistsSync.mockReturnValue(false);
-    const { getOpenClawCliCommand } = await import('@electron/utils/openclaw-cli');
+    const { getOpenClawCliCommand } = await import('@electron/utils/mclaw-cli');
     const command = getOpenClawCliCommand();
     expect(command.startsWith('$env:ELECTRON_RUN_AS_NODE=1; & ')).toBe(true);
-    expect(command.endsWith("'C:\\Program Files\\ClawX\\resources\\openclaw\\openclaw.mjs'")).toBe(true);
+    expect(command.endsWith("'C:\\Program Files\\mclaw\\resources\\openclaw\\openclaw.mjs'")).toBe(true);
   });
 });

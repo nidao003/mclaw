@@ -11,8 +11,8 @@ vi.mock('@electron/utils/store', () => ({
 
 vi.mock('@electron/utils/paths', () => ({
   getOpenClawConfigDir: () => '/tmp/openclaw',
-  getOpenClawDir: () => '/tmp/openclaw/pkg',
-  getOpenClawEntryPath: () => '/tmp/openclaw/pkg/openclaw.mjs',
+  getOpenClawDir: () => '/tmp/mclaw/pkg',
+  getOpenClawEntryPath: () => '/tmp/mclaw/pkg/openclaw.mjs',
 }));
 
 import {
@@ -64,7 +64,7 @@ describe('control-ui-device-pairing', () => {
 
     const approved = await approvePendingControlUiPairingRequests({
       isConnected: () => true,
-      getStatus: () => ({ port: 18789 }),
+      getStatus: () => ({ port: 18999 }),
       rpc,
     });
 
@@ -90,7 +90,7 @@ describe('control-ui-device-pairing', () => {
 
     const approvedRequestIds = new Set<string>(['req-1']);
     const approved = await approvePendingControlUiPairingRequests(
-      { isConnected: () => true, getStatus: () => ({ port: 18789 }), rpc },
+      { isConnected: () => true, getStatus: () => ({ port: 18999 }), rpc },
       { approvedRequestIds },
     );
 

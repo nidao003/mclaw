@@ -100,7 +100,7 @@ describe('GatewayManager diagnostics', () => {
     (manager as unknown as { ws: typeof ws }).ws = ws;
     (manager as unknown as { status: { state: string; port: number } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
     };
 
     const failurePromise = manager.rpc('channels.status', {}, 1000);
@@ -139,7 +139,7 @@ describe('GatewayManager diagnostics', () => {
     (manager as unknown as { ws: typeof ws }).ws = ws;
     (manager as unknown as { status: { state: string; port: number } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
     };
 
     const memoryPromise = manager.rpc('doctor.memory.status', {}, 1000);
@@ -167,7 +167,7 @@ describe('GatewayManager diagnostics', () => {
     (manager as unknown as { ws: typeof ws }).ws = ws;
     (manager as unknown as { status: { state: string; port: number; gatewayReady: boolean } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
       gatewayReady: true,
     };
 
@@ -177,8 +177,8 @@ describe('GatewayManager diagnostics', () => {
 
     expect(health.ok).toBe(true);
     expect(manager.getDiagnostics().consecutiveRpcFailures).toBe(0);
-    expect(manager.getCapabilitySnapshot().openclawHealth.state).toBe('degraded');
-    expect(manager.getCapabilitySnapshot().openclawStatus.state).toBe('degraded');
+    expect(manager.getCapabilitySnapshot().mclawHealth.state).toBe('degraded');
+    expect(manager.getCapabilitySnapshot().mclawStatus.state).toBe('degraded');
 
     const summary = buildGatewayHealthSummary({
       status: manager.getStatus(),
@@ -200,7 +200,7 @@ describe('GatewayManager diagnostics', () => {
     const snapshot = monitor.buildSnapshot({
       status: {
         state: 'running',
-        port: 18789,
+        port: 18999,
         gatewayReady: true,
       },
       transportConnected: true,
@@ -232,7 +232,7 @@ describe('GatewayManager diagnostics', () => {
     (manager as unknown as { shouldReconnect: boolean }).shouldReconnect = true;
     (manager as unknown as { status: { state: string; port: number } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
     };
     const restartSpy = vi.spyOn(manager, 'restart').mockResolvedValue();
 
@@ -242,7 +242,7 @@ describe('GatewayManager diagnostics', () => {
     expect(restartSpy).toHaveBeenCalledTimes(1);
 
     const health = buildGatewayHealthSummary({
-      status: { state: 'running', port: 18789 },
+      status: { state: 'running', port: 18999 },
       diagnostics: {
         ...manager.getDiagnostics(),
         consecutiveHeartbeatMisses: 4,

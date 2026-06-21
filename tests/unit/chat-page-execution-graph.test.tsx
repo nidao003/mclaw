@@ -5,7 +5,7 @@ const hostApiFetchMock = vi.fn();
 
 const { gatewayState, agentsState } = vi.hoisted(() => ({
   gatewayState: {
-    status: { state: 'running', port: 18789 },
+    status: { state: 'running', port: 18999 },
   },
   agentsState: {
     agents: [{ id: 'main', name: 'main' }] as Array<Record<string, unknown>>,
@@ -861,9 +861,9 @@ describe('Chat execution graph lifecycle', () => {
           content: [{ type: 'text', text: '{ "status": "ok" }' }],
           details: {
             status: 'ok',
-            mediaUrl: '/Users/me/.openclaw/media/tool-image-generation/tomato.png',
+            mediaUrl: '/Users/me/.mclaw/media/tool-image-generation/tomato.png',
             sourceReply: {
-              mediaUrls: ['/Users/me/.openclaw/media/tool-image-generation/tomato.png'],
+              mediaUrls: ['/Users/me/.mclaw/media/tool-image-generation/tomato.png'],
             },
           },
         } as RawMessage,

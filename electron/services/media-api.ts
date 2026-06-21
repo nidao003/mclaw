@@ -3,9 +3,9 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { CompleteHostServiceRegistry } from '../main/ipc/host-contract';
 import {
-  CLAWX_OPENAI_IMAGE_DEFAULT_MODEL,
-  CLAWX_OPENAI_IMAGE_PROVIDER_KEY,
-} from '../utils/openclaw-image-relay-constants';
+  MCLAW_OPENAI_IMAGE_DEFAULT_MODEL,
+  MCLAW_OPENAI_IMAGE_PROVIDER_KEY,
+} from '../utils/mclaw-image-relay-constants';
 import {
   applyOpenAiImageRelaySettings,
   getImageGenerationSettingsSnapshot,
@@ -13,7 +13,7 @@ import {
   runImageGenerationTest,
   setImageGenerationConfig,
   type ImageGenerationModelConfig,
-} from '../utils/openclaw-image-generation';
+} from '../utils/mclaw-image-generation';
 import { isRecord } from './payload-utils';
 
 type ThumbnailEntry = {
@@ -70,7 +70,7 @@ async function resolveOutgoingMediaUrl(
     if (!match) return null;
     const attachmentId = decodeURIComponent(match[1]);
     if (!/^[A-Za-z0-9._-]+$/.test(attachmentId)) return null;
-    const recordPath = join(homedir(), '.openclaw', 'media', 'outgoing', 'records', `${attachmentId}.json`);
+    const recordPath = join(homedir(), '.mclaw', 'media', 'outgoing', 'records', `${attachmentId}.json`);
     const fsP = await import('node:fs/promises');
     const raw = await fsP.readFile(recordPath, 'utf8');
     const record = JSON.parse(raw) as {
@@ -177,14 +177,14 @@ export function createMediaApi(): CompleteHostServiceRegistry['media'] {
       const normalizeRelayModel = (value: unknown): string => {
         const raw = typeof value === 'string' && value.trim()
           ? value.trim()
-          : (current.openAiRelay.model || CLAWX_OPENAI_IMAGE_DEFAULT_MODEL);
+          : (current.openAiRelay.model || MCLAW_OPENAI_IMAGE_DEFAULT_MODEL);
         const slash = raw.indexOf('/');
-        return (slash > 0 ? raw.slice(slash + 1) : raw).trim() || CLAWX_OPENAI_IMAGE_DEFAULT_MODEL;
+        return (slash > 0 ? raw.slice(slash + 1) : raw).trim() || MCLAW_OPENAI_IMAGE_DEFAULT_MODEL;
       };
       const relayModel = normalizeRelayModel(body.openAiRelayModel);
       let nextPrimary = current.config.primary;
       if (body.openAiRelayEnabled === true) {
-        nextPrimary = `${CLAWX_OPENAI_IMAGE_PROVIDER_KEY}/${relayModel}`;
+        nextPrimary = `${MCLAW_OPENAI_IMAGE_PROVIDER_KEY}/${relayModel}`;
       } else if (body.openAiRelayEnabled === false) {
         nextPrimary = null;
       }

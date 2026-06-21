@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
-import { getOpenClawDir, getOpenClawResolvedDir } from './paths';
+import { getMclawDir, getOpenClawResolvedDir } from './paths';
 
 export type RuntimeModuleResolver = {
   label: string;
@@ -29,8 +29,8 @@ export function resolveModulePathWithFallbacks(
 
 function getRuntimeModuleResolvers(): RuntimeModuleResolver[] {
   const candidates: Array<{ label: string; base: string | URL }> = [
-    { label: 'openclaw-resolved', base: join(getOpenClawResolvedDir(), 'package.json') },
-    { label: 'openclaw', base: join(getOpenClawDir(), 'package.json') },
+    { label: 'mclaw-resolved', base: join(getOpenClawResolvedDir(), 'package.json') },
+    { label: 'openclaw', base: join(getMclawDir(), 'package.json') },
     { label: 'app', base: import.meta.url },
   ];
 

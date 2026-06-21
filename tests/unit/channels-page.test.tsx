@@ -10,7 +10,7 @@ const toastWarningMock = vi.fn();
 
 const { gatewayState } = vi.hoisted(() => ({
   gatewayState: {
-    status: { state: 'running', port: 18789 },
+    status: { state: 'running', port: 18999 },
   },
 }));
 
@@ -89,7 +89,7 @@ describe('Channels page status refresh', () => {
       },
       configurable: true,
     });
-    gatewayState.status = { state: 'running', port: 18789 };
+    gatewayState.status = { state: 'running', port: 18999 };
     hostApiCallMock.mockImplementation(async (path: string) => {
       if (path === 'channels.accounts') {
         return {
@@ -243,7 +243,7 @@ describe('Channels page status refresh', () => {
   });
 
   it('refetches when the gateway transitions to running after mount', async () => {
-    gatewayState.status = { state: 'starting', port: 18789 };
+    gatewayState.status = { state: 'starting', port: 18999 };
 
     const { rerender } = render(<Channels />);
 
@@ -252,7 +252,7 @@ describe('Channels page status refresh', () => {
       expect(hostApiCallMock).toHaveBeenCalledWith('agents.list');
     });
 
-    gatewayState.status = { state: 'running', port: 18789 };
+    gatewayState.status = { state: 'running', port: 18999 };
     await act(async () => {
       rerender(<Channels />);
     });
@@ -522,7 +522,7 @@ describe('Channels page status refresh', () => {
             consecutiveHeartbeatMisses: 1,
           },
           channels: [],
-          clawxLogTail: 'clawx',
+          mclawLogTail: 'mclaw',
           gatewayLogTail: 'gateway',
           gatewayErrLogTail: '',
         };
@@ -746,7 +746,7 @@ describe('Channels page status refresh', () => {
             consecutiveHeartbeatMisses: 1,
           },
           channels: [],
-          clawxLogTail: `clawx-${diagnosticsFetchCount}`,
+          mclawLogTail: `mclaw-${diagnosticsFetchCount}`,
           gatewayLogTail: 'gateway',
           gatewayErrLogTail: '',
         };

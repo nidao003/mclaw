@@ -45,7 +45,7 @@ describe('Settings Store', () => {
       sidebarWidth: 280,
       devModeUnlocked: false,
       gatewayAutoStart: true,
-      gatewayPort: 18789,
+      gatewayPort: 18999,
       autoCheckUpdate: true,
       startMinimized: false,
       launchAtStartup: false,
@@ -110,7 +110,7 @@ describe('Gateway Store', () => {
   beforeEach(() => {
     // Reset store
     useGatewayStore.setState({
-      status: { state: 'stopped', port: 18789 },
+      status: { state: 'stopped', port: 18999 },
       isInitialized: false,
     });
   });
@@ -118,12 +118,12 @@ describe('Gateway Store', () => {
   it('should have default status', () => {
     const state = useGatewayStore.getState();
     expect(state.status.state).toBe('stopped');
-    expect(state.status.port).toBe(18789);
+    expect(state.status.port).toBe(18999);
   });
   
   it('should update status', () => {
     const { setStatus } = useGatewayStore.getState();
-    setStatus({ state: 'running', port: 18789, pid: 12345 });
+    setStatus({ state: 'running', port: 18999, pid: 12345 });
     
     const state = useGatewayStore.getState();
     expect(state.status.state).toBe('running');

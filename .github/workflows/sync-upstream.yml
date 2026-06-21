@@ -27,7 +27,7 @@ jobs:
 
       - name: Sync upstream
         run: |
-          git remote add upstream https://github.com/ValueCell-ai/ClawX.git
+          git remote add upstream https://github.com/ValueCell-ai/mclaw.git
           git fetch upstream
           git checkout main
           git merge upstream/main --allow-unrelated-histories

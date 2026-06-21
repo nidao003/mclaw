@@ -1,14 +1,16 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore, canPublish } from '@shared';
 import { cn } from '@/lib/utils';
-import { User, Key, ArrowLeft, Package, Upload } from 'lucide-react';
+import { User, Key, ArrowLeft, Package, Upload, Wallet, Bot } from 'lucide-react';
 
 // 个人中心布局 — Skills Hub 设计规范
-// 左侧栏：基础项（个人资料、API 密钥）+ 发布者项（我的技能、上传技能）
+// 左侧栏：基础项（个人资料、API 密钥、我的账户）+ 发布者项（我的技能、上传技能）
 // 内容区顶部：统一页面标题，按当前路由映射，切换菜单时有"着落感"
 const PAGE_TITLES: Record<string, string> = {
   '/settings': '个人资料',
+  '/settings/account': '我的账户',
   '/settings/api-keys': 'API 密钥',
+  '/settings/models': '云端模型',
   '/settings/my-skills': '我的技能',
   '/settings/upload': '上传技能',
 };
@@ -19,7 +21,9 @@ export default function Settings() {
 
   const navItems = [
     { to: '/settings', label: '个人资料', icon: User, exact: true },
+    { to: '/settings/account', label: '我的账户', icon: Wallet },
     { to: '/settings/api-keys', label: 'API 密钥', icon: Key },
+    { to: '/settings/models', label: '云端模型', icon: Bot },
     // 发布者可见：技能管理入口
     ...(!!user && canPublish(user.role)
       ? [

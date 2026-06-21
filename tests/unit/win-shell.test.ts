@@ -137,12 +137,12 @@ describe('prepareWinSpawn', () => {
     setPlatform('win32');
     const result = prepareWinSpawn(
       'node',
-      ['C:\\Users\\John Doe\\script.js', '--port', '18789'],
+      ['C:\\Users\\John Doe\\script.js', '--port', '18999'],
       true,
     );
     expect(result.shell).toBe(true);
     expect(result.command).toBe('node');
-    expect(result.args).toEqual(['"C:\\Users\\John Doe\\script.js"', '--port', '18789']);
+    expect(result.args).toEqual(['"C:\\Users\\John Doe\\script.js"', '--port', '18999']);
   });
 
   it('auto-detects shell need based on absolute path on Windows', () => {
@@ -177,8 +177,8 @@ describe('normalizeNodeRequirePathForNodeOptions', () => {
 
   it('converts backslashes to forward slashes on Windows', () => {
     setPlatform('win32');
-    expect(normalizeNodeRequirePathForNodeOptions('C:\\Users\\70954\\AppData\\Roaming\\clawx\\gateway-fetch-preload.cjs'))
-      .toBe('C:/Users/70954/AppData/Roaming/clawx/gateway-fetch-preload.cjs');
+    expect(normalizeNodeRequirePathForNodeOptions('C:\\Users\\70954\\AppData\\Roaming\\mclaw\\gateway-fetch-preload.cjs'))
+      .toBe('C:/Users/70954/AppData/Roaming/mclaw/gateway-fetch-preload.cjs');
   });
 
   it('leaves forward slashes intact on Windows', () => {

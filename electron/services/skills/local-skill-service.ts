@@ -177,8 +177,8 @@ async function parseSkillManifest(manifestPath: string, fallbackId: string): Pro
   const metadata = frontmatter.metadata && typeof frontmatter.metadata === 'object'
     ? frontmatter.metadata as Record<string, unknown>
     : {};
-  const openclawMeta = metadata.openclaw && typeof metadata.openclaw === 'object'
-    ? metadata.openclaw as Record<string, unknown>
+  const openclawMeta = metadata.mclaw && typeof metadata.mclaw === 'object'
+    ? metadata.mclaw as Record<string, unknown>
     : {};
 
   return {
@@ -225,7 +225,7 @@ async function readManifestMeta(skillDir: string): Promise<ManifestMeta | null> 
 }
 
 async function readPreinstalledMeta(skillDir: string): Promise<PreinstalledMeta | null> {
-  const parsed = await safeReadJson<Record<string, unknown>>(join(skillDir, '.clawx-preinstalled.json'));
+  const parsed = await safeReadJson<Record<string, unknown>>(join(skillDir, '.mclaw-preinstalled.json'));
   if (!parsed) return null;
   return {
     slug: toStringValue(parsed.slug),
@@ -272,7 +272,7 @@ async function inspectSkillDir(
     const config: Record<string, unknown> = { ...rawConfig };
     const version = manifestMeta?.version || parsedManifest.version || originMeta?.installedVersion;
     const source = descriptor.source;
-    const isBundled = source === 'openclaw-bundled' || Boolean(preinstalledMeta);
+    const isBundled = source === 'mclaw-bundled' || Boolean(preinstalledMeta);
     const marketplace = originMeta || manifestMeta
       ? {
           provider: originMeta?.provider || (manifestMeta ? 'manifest' : source),
@@ -364,7 +364,7 @@ async function buildDescriptors(): Promise<SourceDescriptor[]> {
   return [
     ...workspaces.map((workspace) => ({
       root: join(workspace, 'skills'),
-      source: 'openclaw-workspace',
+      source: 'mclaw-workspace',
       priority: 0,
     })),
     ...workspaces.map((workspace) => ({
@@ -379,12 +379,12 @@ async function buildDescriptors(): Promise<SourceDescriptor[]> {
     },
     {
       root: getOpenClawSkillsDir(),
-      source: 'openclaw-managed',
+      source: 'mclaw-managed',
       priority: 3,
     },
     {
       root: join(getOpenClawResolvedDir(), 'skills'),
-      source: 'openclaw-bundled',
+      source: 'mclaw-bundled',
       priority: 4,
       allowedSkillSlugs: BUNDLED_OPENCLAW_SKILL_ALLOWLIST,
     },

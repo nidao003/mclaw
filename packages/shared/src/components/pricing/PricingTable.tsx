@@ -50,10 +50,9 @@ export function PricingTable({ plans, currentPlan, onSubscribe, loading, classNa
             )}
 
             <h3 className="font-display text-xl font-semibold">{PLAN_NAMES[plan.name] || plan.display_name}</h3>
-            <p className="mt-2 text-sm leading-6 text-black/55">{plan.description}</p>
 
             <div className="mt-4">
-              <span className="font-display text-4xl font-semibold">{formatPrice(plan.price)}</span>
+              <span className="font-display text-4xl font-semibold">{formatPrice(plan.price_month)}</span>
               <span className="text-sm text-black/50">/月</span>
             </div>
 
@@ -81,7 +80,7 @@ export function PricingTable({ plans, currentPlan, onSubscribe, loading, classNa
                       : 'border border-black/10 bg-white hover:bg-secondary',
                 )}
               >
-                {isCurrent ? '当前方案' : isPro ? '立即订阅' : plan.price === 0 ? '免费开始' : '订阅'}
+                {isCurrent ? '当前方案' : isPro ? '立即订阅' : plan.price_month === 0 ? '免费开始' : '订阅'}
               </button>
             )}
           </div>

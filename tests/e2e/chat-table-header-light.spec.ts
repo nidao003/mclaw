@@ -56,13 +56,13 @@ const seededHistory = [
 
 const CLOUD_ARTIFACT_PATH = '/opt/cursor/artifacts/chat_table_header_light.png';
 
-test.describe('ClawX chat table header styling', () => {
+test.describe('mclaw chat table header styling', () => {
   test('renders markdown table headers with transparent background and bold text in light theme', async ({ launchElectronApp }, testInfo) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -85,7 +85,7 @@ test.describe('ClawX chat table header styling', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

@@ -1,66 +1,58 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield } from 'lucide-react';
-import { useAuthStore, canManageUsers } from '@shared';
-import type { UserRole } from '@shared/types/user';
+import { Shield, Users, Crown, Coins, Activity, Loader2 } from 'lucide-react';
+import { useAuthStore, canManageUsers, teamApi } from '@shared';
+import type { TeamMemberInfo, MemberListResp } from '@shared';
+import { cn } from '@/lib/utils';
 
-const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
+const ROLE_OPTIONS = [
   { value: 'user', label: '普通用户' },
-  { value: 'publisher', label: '技能上传者' },
-  { value: 'reviewer', label: '审核员' },
   { value: 'admin', label: '管理员' },
-  { value: 'super_admin', label: '超级管理员' },
 ];
 
-interface UserItem {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
-  avatar_url?: string;
-  created_at: string;
-}
+// 会员等级映射（后续对接 subscription API）
+const MEMBERSHIP_LABELS: Record<string, { label: string; color: string }> = {
+  basic: { label: '基础版', color: 'bg-secondary text-muted-foreground' },
+  pro: { label: '专业版', color: 'bg-brand/10 text-brand-hover' },
+  enterprise: { label: '企业版', color: 'bg-yellow-100 text-yellow-700' },
+};
 
-// 用户管理页 — Super admin / Admin 管理用户
+// 用户管理页 — Admin / Super admin 管理团队成员
 export default function AdminUsers() {
   const currentUser = useAuthStore((s) => s.user);
-  const [users, setUsers] = useState<UserItem[]>([]);
+  const [data, setData] = useState<MemberListResp | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMembers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await teamApi.listMembers();
+      setData(resp);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (!currentUser || !canManageUsers(currentUser.role)) return;
-    fetch('/api/v1/admin/users', { credentials: 'include' })
-      .then((res) => res.json())
-      .then((data) => setUsers(data.data?.users || []))
-      .catch(() => setUsers([]))
-      .finally(() => setLoading(false));
-  }, [currentUser]);
-
-  const handleRoleChange = async (userId: string, newRole: UserRole) => {
-    try {
-      const res = await fetch(`/api/v1/admin/users/${userId}/role`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ role: newRole }),
-      });
-      if (res.ok) {
-        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
-      }
-    } catch {
-      // 角色更新失败，静默处理
+    if (currentUser && canManageUsers(currentUser.role)) {
+      fetchMembers();
+    } else {
+      setLoading(false);
     }
-  };
+  }, [currentUser, fetchMembers]);
 
   // 未登录提示
   if (!currentUser) {
     return (
       <div className="mx-auto flex max-w-[720px] flex-col items-center px-4 py-24 text-center">
         <Shield className="h-10 w-10 text-black/30" />
-        <h1 className="mt-4 font-display text-3xl font-semibold">请先登录</h1>
-        <p className="mt-3 text-sm text-black/55">用户管理仅管理员可用。</p>
-        <Link to="/login" className="skillhub-capsule-button mt-6">
+        <h1 className="mt-4 text-3xl font-semibold">请先登录</h1>
+        <p className="mt-3 text-sm text-muted-foreground">用户管理仅管理员可用。</p>
+        <Link to="/login" className="mt-6 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
           去登录
         </Link>
       </div>
@@ -72,9 +64,9 @@ export default function AdminUsers() {
     return (
       <div className="mx-auto flex max-w-[720px] flex-col items-center px-4 py-24 text-center">
         <Shield className="h-10 w-10 text-black/30" />
-        <h1 className="mt-4 font-display text-3xl font-semibold">无权限访问</h1>
-        <p className="mt-3 text-sm text-black/55">用户管理仅超级管理员可用。</p>
-        <Link to="/skills" className="skillhub-ghost-button mt-6">
+        <h1 className="mt-4 text-3xl font-semibold">无权限访问</h1>
+        <p className="mt-3 text-sm text-muted-foreground">用户管理仅超级管理员可用。</p>
+        <Link to="/skills" className="mt-6 rounded-lg border border-border px-5 py-2.5 text-sm transition-colors hover:bg-secondary">
           返回技能市场
         </Link>
       </div>
@@ -82,66 +74,128 @@ export default function AdminUsers() {
   }
 
   if (loading) {
-    return <div className="p-8 text-skillhub-ink/40">加载中...</div>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  return (
-    <div className="max-w-6xl mx-auto p-8">
-      <h1 className="text-2xl font-bold text-skillhub-ink mb-2">用户管理</h1>
-      <p className="text-skillhub-ink/50 mb-8">管理用户角色和权限分配</p>
+  const members = data?.members ?? [];
 
-      <div className="bg-white border border-skillhub-line rounded-xl overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-skillhub-soft border-b border-skillhub-line">
-            <tr>
-              <th className="text-left px-6 py-3 text-xs font-medium text-skillhub-ink/50 uppercase">用户</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-skillhub-ink/50 uppercase">邮箱</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-skillhub-ink/50 uppercase">角色</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-skillhub-ink/50 uppercase">注册时间</th>
-              <th className="px-6 py-3 text-xs font-medium text-skillhub-ink/50 uppercase">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-b border-skillhub-line">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center text-sm font-medium text-brand">
-                      {u.name.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="font-medium text-skillhub-ink">{u.name}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-skillhub-ink/50">{u.email}</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-skillhub-soft rounded-full text-xs font-medium text-skillhub-ink/70">
-                    <Shield className="w-3 h-3" />
-                    {ROLE_OPTIONS.find((r) => r.value === u.role)?.label || u.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-skillhub-ink/50">
-                  {new Date(u.created_at).toLocaleDateString('zh-CN')}
-                </td>
-                <td className="px-6 py-4">
-                  <select
-                    value={u.role}
-                    onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole)}
-                    disabled={u.id === currentUser?.id}
-                    className="px-3 py-1.5 bg-white border border-skillhub-line rounded-lg text-sm focus:outline-none focus:border-skillhub-blue disabled:opacity-40"
-                  >
-                    {ROLE_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {users.length === 0 && (
-          <div className="p-12 text-center text-skillhub-ink/40">暂无用户数据</div>
-        )}
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+            <Users className="h-5 w-5" />
+            用户管理
+          </h2>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            管理团队成员、会员等级和资源使用
+            {data?.member_limit ? ` （上限 ${data.member_limit} 人）` : ''}
+          </p>
+        </div>
+        <button
+          onClick={fetchMembers}
+          disabled={loading}
+          className="rounded-lg border border-border px-3 py-1.5 text-xs transition-colors hover:bg-secondary"
+        >
+          刷新
+        </button>
       </div>
+
+      {error && (
+        <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>
+      )}
+
+      {members.length === 0 ? (
+        <div className="rounded-xl border border-dashed p-12 text-center">
+          <Users className="mx-auto h-8 w-8 text-muted-foreground/50" />
+          <p className="mt-3 text-sm text-muted-foreground">暂无团队成员</p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <table className="w-full">
+            <thead className="border-b border-border bg-muted/50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">用户</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">角色</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">会员等级</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Token 用量</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">接口调用</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">最近活跃</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((member) => (
+                <MemberRow key={member.user.id} member={member} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
+  );
+}
+
+function MemberRow({ member }: { member: TeamMemberInfo }) {
+  const { user, role, last_active_at } = member;
+  const membership = MEMBERSHIP_LABELS[user.role] ?? MEMBERSHIP_LABELS.basic;
+
+  return (
+    <tr className="border-b border-border last:border-0">
+      {/* 用户信息 */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">
+            {(user.name || user.email).charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{user.name || '未设置昵称'}</p>
+            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+          </div>
+        </div>
+      </td>
+
+      {/* 角色 */}
+      <td className="px-4 py-3">
+        <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <Shield className="h-3 w-3" />
+          {ROLE_OPTIONS.find((r) => r.value === role)?.label ?? role}
+        </span>
+      </td>
+
+      {/* 会员等级 */}
+      <td className="px-4 py-3">
+        <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium', membership.color)}>
+          <Crown className="h-3 w-3" />
+          {membership.label}
+        </span>
+      </td>
+
+      {/* Token 用量 — 后续对接 wallet API */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Coins className="h-3.5 w-3.5" />
+          <span>—</span>
+        </div>
+      </td>
+
+      {/* 接口调用量 — 后续对接统计 API */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Activity className="h-3.5 w-3.5" />
+          <span>—</span>
+        </div>
+      </td>
+
+      {/* 最近活跃 */}
+      <td className="px-4 py-3 text-xs text-muted-foreground">
+        {last_active_at
+          ? new Date(last_active_at * 1000).toLocaleDateString('zh-CN')
+          : '—'}
+      </td>
+    </tr>
   );
 }

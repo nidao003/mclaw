@@ -19,6 +19,7 @@ const (
 	TransactionVMConsumption     TransactionKind = "vm_consumption"
 	TransactionModelConsumption  TransactionKind = "model_consumption"
 	TransactionMCPToolConsumption TransactionKind = "mcp_tool_consumption"
+	TransactionDataApiConsumption TransactionKind = "data_api_consumption" // 数据 API 按次调用扣费
 	TransactionProSubscription   TransactionKind = "pro_subscription"
 	TransactionProAutoRenew      TransactionKind = "pro_auto_renew"
 	TransactionUltraSubscription TransactionKind = "ultra_subscription"

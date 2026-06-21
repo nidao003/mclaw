@@ -1,92 +1,89 @@
 /**
  * Sidebar Component
- * Navigation sidebar with menu items.
- * No longer fixed - sits inside the flex layout below the title bar.
+ * 三栏布局：图标列(60px) + 内容列(240px)
+ * 参考设计图 docs/projects/assets/image_20260609123715926.png
+ * - 图标列：固定宽度，只显示图标 + tooltip
+ * - 内容列：固定宽度，含搜索 + 主功能列表 + Agent/历史会话
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Network,
   Bot,
   Puzzle,
   Clock,
   Settings as SettingsIcon,
-  PanelLeftClose,
-  PanelLeft,
-  Plus,
-  Terminal,
-  ExternalLink,
   Trash2,
   Pencil,
   Check,
   X,
   Cpu,
   ImagePlus,
-  Moon,
   ChevronRight,
   Loader2,
+  FlaskConical,
+  MessageSquare,
+  Plug,
+  Plus,
+  Brain,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isGatewayRestarting } from '@/lib/gateway-status';
-import { rendererExtensionRegistry } from '@/extensions/registry';
 import { useSettingsStore } from '@/stores/settings';
 import { useChatStore } from '@/stores/chat';
 import { useGatewayStore } from '@/stores/gateway';
 import { useAgentsStore } from '@/stores/agents';
 import { getSessionActivityMs, getSessionBucket, type SessionBucketKey } from './session-buckets';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { hostApi } from '@/lib/host-api';
-import { SIDEBAR_COLLAPSED_WIDTH, MAC_SIDEBAR_CHROME_HEIGHT } from '@shared/sidebar-layout';
+import { MAC_SIDEBAR_CHROME_HEIGHT } from '@shared/sidebar-layout';
 import { useTranslation } from 'react-i18next';
 import logoSvg from '@/assets/logo.svg';
 import { useNewChatAction } from './use-new-chat-action';
 
-interface NavItemProps {
-  to: string;
-  icon: React.ReactNode;
+// 三栏布局宽度（参考设计图）
+const ICON_RAIL_WIDTH = 140;    // 菜单列：固定 140px（图标+文字）
+// 对话列表列的拖动范围
+const HISTORY_PANE_MIN = 220;
+const HISTORY_PANE_MAX = 360;
+const HISTORY_PANE_DEFAULT = 260;
+
+// ── 菜单列项（横排：图标 + 文字） ─────────────────────────────
+interface IconRailItemProps {
+  to?: string;
+  icon: LucideIcon;
   label: string;
-  badge?: string;
-  collapsed?: boolean;
+  active?: boolean;
   onClick?: () => void;
   testId?: string;
 }
 
-function NavItem({ to, icon, label, badge, collapsed, onClick, testId }: NavItemProps) {
-  return (
-    <NavLink
-      to={to}
-      onClick={onClick}
+function IconRailItem({ to, icon: Icon, label, active, onClick, testId }: IconRailItemProps) {
+  const content = (
+    <div
+      className={cn(
+        'group/icon relative flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 transition-all duration-200',
+        active
+          ? 'bg-brand text-white shadow-sm'
+          : 'text-sidebar-foreground/80 hover:bg-sidebar-hover hover:text-sidebar-foreground',
+      )}
       data-testid={testId}
-      className={({ isActive }) =>
-        cn(
-          'sidebar-nav-text flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors',
-          'hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80',
-          isActive
-            ? 'bg-black/5 dark:bg-white/10 text-foreground'
-            : '',
-          collapsed && 'justify-center px-0'
-        )
-      }
     >
-      <>
-        <div className="flex shrink-0 items-center justify-center text-current [&_svg]:size-4">
-          {icon}
-        </div>
-        {!collapsed && (
-          <>
-            <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
-            {badge && (
-              <Badge variant="secondary" className="ml-auto shrink-0">
-                {badge}
-              </Badge>
-            )}
-          </>
-        )}
-      </>
-    </NavLink>
+      <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={active ? 2.4 : 2} />
+      <span className="text-meta font-medium truncate">{label}</span>
+    </div>
+  );
+
+  if (to) {
+    return (
+      <NavLink to={to} onClick={onClick} className="block no-drag w-full">
+        {content}
+      </NavLink>
+    );
+  }
+  return (
+    <button type="button" onClick={onClick} className="block no-drag w-full text-left">
+      {content}
+    </button>
   );
 }
 
@@ -106,24 +103,49 @@ function getAgentIdFromSessionKey(sessionKey: string): string {
 
 export function Sidebar() {
   const isMac = window.electron?.platform === 'darwin';
-  const sidebarCollapsed = useSettingsStore((state) => state.sidebarCollapsed);
-  const setSidebarCollapsed = useSettingsStore((state) => state.setSidebarCollapsed);
-  const sidebarWidth = useSettingsStore((state) => state.sidebarWidth);
-  const setSidebarWidth = useSettingsStore((state) => state.setSidebarWidth);
   const devModeUnlocked = useSettingsStore((state) => state.devModeUnlocked);
-  const [isResizing, setIsResizing] = useState(false);
-  const stopResizeRef = useRef<(() => void) | null>(null);
+  const setSettingsSheetOpen = useSettingsStore((state) => state.setSettingsSheetOpen);
+  const { t } = useTranslation(['common', 'chat']);
+  const handleNewChat = useNewChatAction();
+
+  // 对话历史列宽度（仅 / 路由使用）
+  const [historyPaneWidth, setHistoryPaneWidth] = useState(HISTORY_PANE_DEFAULT);
+  const historyResizeStopRef = useRef<(() => void) | null>(null);
+  const handleHistoryResizePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // 忽略
+    }
+    const onMove = (e: PointerEvent) => {
+      // 拖动条位置 = e.clientX - 菜单列宽。直接得到历史列的目标宽度。
+      const next = Math.max(HISTORY_PANE_MIN, Math.min(HISTORY_PANE_MAX, e.clientX - ICON_RAIL_WIDTH));
+      setHistoryPaneWidth(next);
+    };
+    const onUp = () => {
+      historyResizeStopRef.current?.();
+      historyResizeStopRef.current = null;
+    };
+    historyResizeStopRef.current = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }, []);
+
+  useEffect(() => () => historyResizeStopRef.current?.(), []);
 
   const sessions = useChatStore((s) => s.sessions);
   const currentSessionKey = useChatStore((s) => s.currentSessionKey);
   const sessionLabels = useChatStore((s) => s.sessionLabels);
   const sessionLastActivity = useChatStore((s) => s.sessionLastActivity);
   const switchSession = useChatStore((s) => s.switchSession);
-  const deleteSession = useChatStore((s) => s.deleteSession);
   const renameSession = useChatStore((s) => s.renameSession);
   const loadSessions = useChatStore((s) => s.loadSessions);
   const loadHistory = useChatStore((s) => s.loadHistory);
-  const handleNewChat = useNewChatAction();
 
   const gatewayStatus = useGatewayStore((s) => s.status);
   const isGatewayRunning = gatewayStatus.state === 'running';
@@ -154,35 +176,15 @@ export function Sidebar() {
   const agents = useAgentsStore((s) => s.agents);
   const fetchAgents = useAgentsStore((s) => s.fetchAgents);
 
-  useEffect(() => {
-    if (!isMac) return;
-    void hostApi.window.syncTrafficLightPosition(sidebarCollapsed);
-  }, [isMac, sidebarCollapsed]);
+
 
   const navigate = useNavigate();
-  const isOnChat = useLocation().pathname === '/';
+  const location = useLocation();
+  const isOnChat = location.pathname === '/';
 
   const getSessionLabel = (key: string, displayName?: string, label?: string) =>
     sessionLabels[key] ?? label ?? displayName ?? key;
 
-  const openControlUi = async (view?: 'dreams', label = 'OpenClaw Page') => {
-    try {
-      const result = await hostApi.gateway.controlUi(view);
-      if (result.success && result.url) {
-        await window.electron.openExternal(result.url);
-      } else {
-        console.error(`Failed to get ${label} URL:`, result.error);
-      }
-    } catch (err) {
-      console.error(`Error opening ${label}:`, err);
-    }
-  };
-
-  const openDevConsole = async () => {
-    await openControlUi(undefined, 'OpenClaw Page');
-  };
-
-  const { t } = useTranslation(['common', 'chat']);
   const [sessionToDelete, setSessionToDelete] = useState<{ key: string; label: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingSessionKey, setEditingSessionKey] = useState<string | null>(null);
@@ -247,45 +249,6 @@ export function Sidebar() {
     }));
   };
 
-  const stopResizing = useCallback(() => {
-    stopResizeRef.current?.();
-    stopResizeRef.current = null;
-    setIsResizing(false);
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-  }, []);
-
-  const handleResizePointerDown = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
-      if (sidebarCollapsed) return;
-      event.preventDefault();
-      event.stopPropagation();
-      try {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      } catch {
-        // Window listeners below keep dragging reliable even if capture is unavailable.
-      }
-
-      const onMove = (moveEvent: PointerEvent) => {
-        setSidebarWidth(moveEvent.clientX);
-      };
-      const onUp = () => stopResizing();
-
-      stopResizeRef.current = () => {
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onUp);
-      };
-      window.addEventListener('pointermove', onMove);
-      window.addEventListener('pointerup', onUp);
-      setIsResizing(true);
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-    },
-    [setSidebarWidth, sidebarCollapsed, stopResizing],
-  );
-
-  useEffect(() => stopResizing, [stopResizing]);
-
   const agentNameById = useMemo(
     () => Object.fromEntries((agents ?? []).map((agent) => [agent.id, agent.name])),
     [agents],
@@ -311,138 +274,218 @@ export function Sidebar() {
     sessionBucketMap[bucketKey].sessions.push(session);
   }
 
-  const hiddenRoutes = rendererExtensionRegistry.getHiddenRoutes();
-  const extraNavItems = rendererExtensionRegistry.getExtraNavItems();
-
-  const coreNavItems = [
-    { to: '/models', icon: <Cpu className="h-4 w-4" strokeWidth={2} />, label: t('sidebar.models'), testId: 'sidebar-nav-models' },
-    { to: '/agents', icon: <Bot className="h-4 w-4" strokeWidth={2} />, label: t('sidebar.agents'), testId: 'sidebar-nav-agents' },
-    { to: '/channels', icon: <Network className="h-4 w-4" strokeWidth={2} />, label: t('sidebar.channels'), testId: 'sidebar-nav-channels' },
-    { to: '/skills', icon: <Puzzle className="h-4 w-4" strokeWidth={2} />, label: t('sidebar.skills'), testId: 'sidebar-nav-skills' },
-    { to: '/cron', icon: <Clock className="h-4 w-4" strokeWidth={2} />, label: t('sidebar.cronTasks'), testId: 'sidebar-nav-cron' },
-    ...(devModeUnlocked
-      ? [
-        { to: '/image-generation', icon: <ImagePlus className="h-4 w-4" strokeWidth={2} />, label: t('common:sidebar.imageGeneration'), testId: 'sidebar-nav-image-generation' },
-        { to: '/dreams', icon: <Moon className="h-4 w-4" strokeWidth={2} />, label: t('common:sidebar.openClawDreams'), testId: 'sidebar-nav-dreams' },
-      ]
-      : []),
-  ];
-
-  const navItems = [
-    ...coreNavItems.filter((item) => !hiddenRoutes.has(item.to)),
-    ...extraNavItems.map((item) => ({
-      to: item.to,
-      icon: <item.icon className="h-4 w-4" strokeWidth={2} />,
-      label: item.labelI18nKey ? t(item.labelI18nKey) : item.label,
-      testId: item.testId,
-    })),
-  ];
+  // Sidebar 总宽：菜单列(140) + 对话路由额外历史列
+  const sidebarTotalWidth = ICON_RAIL_WIDTH + (isOnChat ? historyPaneWidth : 0);
 
   return (
     <aside
       data-testid="sidebar"
       className={cn(
-        'relative flex min-h-0 shrink-0 flex-col overflow-hidden bg-surface-sidebar',
-        isResizing ? 'transition-none' : 'transition-[width] duration-300',
+        'relative flex min-h-0 shrink-0 overflow-hidden bg-surface-sidebar',
       )}
-      style={{ width: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : sidebarWidth }}
+      style={{ width: sidebarTotalWidth }}
     >
       {isMac && (
         <div
           aria-hidden="true"
           data-testid="mac-sidebar-chrome"
-          className="drag-region shrink-0"
+          className="drag-region shrink-0 absolute inset-x-0 top-0"
           style={{ height: MAC_SIDEBAR_CHROME_HEIGHT }}
         />
       )}
 
-      {/* Top Header Toggle */}
+      {/* macOS traffic light 同步：图标列现在是固定宽度，不再需要同步 */}
+      {false && isMac && null}
+      {/* ── 左列：菜单导航（固定 140px，显示图标+文字） ──────── */}
       <div
-        className={cn(
-          'flex shrink-0 items-center p-2 h-8',
-          sidebarCollapsed ? 'justify-center' : 'justify-between',
-        )}
+        data-testid="sidebar-icon-rail"
+        className="flex shrink-0 flex-col gap-1 border-r border-border/40 bg-surface-sidebar py-2 px-2"
+        style={{ width: ICON_RAIL_WIDTH }}
       >
-        {!sidebarCollapsed && (
-          <div className="flex items-center gap-2 px-2 overflow-hidden">
-            <img src={logoSvg} alt="ClawX" className="h-5 w-auto shrink-0" />
-            <span className="text-sm font-semibold truncate whitespace-nowrap text-foreground/90">
-              ClawX
-            </span>
+        {/* macOS 顶部留白：避免 Logo 与 traffic lights 按钮重叠 */}
+        {isMac && <div aria-hidden className="shrink-0" style={{ height: MAC_SIDEBAR_CHROME_HEIGHT }} />}
+
+        {/* Logo 区 */}
+        <div className="flex items-center gap-2 h-9 mb-1 px-1.5">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-hover shadow-sm">
+            <img src={logoSvg} alt="mclaw" className="h-4 w-4 brightness-0 invert" />
           </div>
+          <span className="text-sm font-semibold text-sidebar-foreground truncate">mclaw</span>
+        </div>
+
+        {/* 主导航（无分组标题） */}
+        <IconRailItem to="/" icon={MessageSquare} label={t('sidebar.chat')} active={isOnChat} testId="sidebar-nav-chat" />
+        <IconRailItem to="/models" icon={Cpu} label={t('sidebar.models')} active={location.pathname.startsWith('/models')} testId="sidebar-nav-models" />
+        <IconRailItem to="/agents" icon={Bot} label={t('sidebar.agents')} active={location.pathname.startsWith('/agents')} testId="sidebar-nav-agents" />
+        <IconRailItem to="/cron" icon={Clock} label={t('sidebar.cronTasks')} active={location.pathname.startsWith('/cron')} testId="sidebar-nav-cron" />
+        <IconRailItem to="/skills" icon={Puzzle} label={t('sidebar.skills')} active={location.pathname.startsWith('/skills')} testId="sidebar-nav-skills" />
+        <IconRailItem to="/channels" icon={Plug} label={t('sidebar.channels')} active={location.pathname.startsWith('/channels')} testId="sidebar-nav-channels" />
+        <IconRailItem to="/dreams" icon={Brain} label={t('sidebar.openClawDreams')} active={location.pathname.startsWith('/dreams')} testId="sidebar-nav-dreams" />
+
+        {devModeUnlocked && (
+          <IconRailItem
+            to="/image-generation"
+            icon={ImagePlus}
+            label={t('common:sidebar.imageGeneration')}
+            active={location.pathname.startsWith('/image-generation')}
+            testId="sidebar-nav-image-generation"
+          />
         )}
-        <Button
-          data-testid="sidebar-collapse-toggle"
-          variant="ghost"
-          size="icon"
-          className={cn(
-            'no-drag h-8 w-8 shrink-0 rounded-lg text-foreground/80',
-            'hover:bg-black/5 hover:text-foreground/80 dark:hover:bg-white/5',
-          )}
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-        >
-          {sidebarCollapsed ? (
-            <PanelLeft className="h-[18px] w-[18px]" />
-          ) : (
-            <PanelLeftClose className="h-[18px] w-[18px]" />
-          )}
-        </Button>
+
+        {/* Lab 占位（暂未在路由中实现） */}
+        <IconRailItem icon={FlaskConical} label="Lab" />
+
+        {/* 中部留白推到底部 */}
+        <div className="flex-1" />
+
+        {/* 底部：仅设置（历史记录已合并到对话路由内的历史列） */}
+        <IconRailItem
+          icon={SettingsIcon}
+          label={t('sidebar.settings')}
+          onClick={() => setSettingsSheetOpen(true)}
+          testId="sidebar-nav-settings"
+        />
       </div>
 
-      {/* Navigation */}
-      <nav className="flex flex-col gap-1 px-2">
+      {/* ── 中间列：仅 / 路由显示，含搜索+新对话+历史列表（可拖宽） ── */}
+      {isOnChat && (
+        <ChatSidebarPane
+          width={historyPaneWidth}
+          sessions={sessions}
+          currentSessionKey={currentSessionKey}
+          isOnChat={isOnChat}
+          navigate={navigate}
+          loadHistory={loadHistory}
+          switchSession={switchSession}
+          bucketLabel={t('chat:historyBuckets', { returnObjects: true }) as Record<string, string>}
+          sessionBucketMap={sessionBucketMap}
+          expandedBuckets={expandedSessionBuckets}
+          toggleBucket={toggleSessionBucket}
+          agentNameById={agentNameById}
+          getSessionLabel={getSessionLabel}
+          editingSessionKey={editingSessionKey}
+          editingLabel={editingLabel}
+          setEditingLabel={setEditingLabel}
+          handleRenameKeyDown={handleRenameKeyDown}
+          handleRenameSubmit={handleRenameSubmit}
+          handleStartRename={handleStartRename}
+          handleRenameCancel={handleRenameCancel}
+          setSessionToDelete={setSessionToDelete}
+          setDeleteDialogOpen={setDeleteDialogOpen}
+          onNewChat={handleNewChat}
+          newChatLabel={t('sidebar.newChat')}
+          onResizeStart={handleHistoryResizePointerDown}
+          gatewayRestarting={gatewayRestarting}
+          gatewayLabel={t('common:gateway.restarting')}
+        />
+      )}
+    </aside>
+  );
+}
+
+// ── 对话侧栏面板（仅 / 路由显示，从上到下：搜索 → 新对话 → 历史列表） ──
+//   可拖动调整宽度（220-360px，默认 260px）
+interface ChatSidebarPaneProps {
+  width: number;
+  sessions: Array<{ key: string; displayName?: string; label?: string }>;
+  currentSessionKey: string | null;
+  isOnChat: boolean;
+  navigate: (to: string) => void;
+  loadHistory: (preserveInput: boolean) => Promise<void>;
+  switchSession: (key: string) => void;
+  bucketLabel: Record<string, string>;
+  sessionBucketMap: Record<SessionBucketKey, { key: SessionBucketKey; label: string; sessions: Array<{ key: string; displayName?: string; label?: string }> }>;
+  expandedBuckets: Record<SessionBucketKey, boolean>;
+  toggleBucket: (key: SessionBucketKey) => void;
+  agentNameById: Record<string, string>;
+  getSessionLabel: (key: string, displayName?: string, label?: string) => string;
+  editingSessionKey: string | null;
+  editingLabel: string;
+  setEditingLabel: (v: string) => void;
+  handleRenameKeyDown: (e: React.KeyboardEvent) => void;
+  handleRenameSubmit: () => Promise<void>;
+  handleStartRename: (key: string, label: string) => void;
+  handleRenameCancel: () => void;
+  setSessionToDelete: (s: { key: string; label: string } | null) => void;
+  setDeleteDialogOpen: (open: boolean) => void;
+  onNewChat: () => void;
+  newChatLabel: string;
+  onResizeStart: (e: React.PointerEvent<HTMLDivElement>) => void;
+  gatewayRestarting: boolean;
+  gatewayLabel: string;
+}
+
+function ChatSidebarPane(props: ChatSidebarPaneProps) {
+  const {
+    width,
+    sessions,
+    currentSessionKey,
+    isOnChat,
+    navigate,
+    loadHistory,
+    switchSession,
+    bucketLabel,
+    sessionBucketMap,
+    expandedBuckets,
+    toggleBucket,
+    agentNameById,
+    getSessionLabel,
+    editingSessionKey,
+    setEditingLabel,
+    handleRenameKeyDown,
+    handleRenameSubmit,
+    handleStartRename,
+    handleRenameCancel,
+    setSessionToDelete,
+    setDeleteDialogOpen,
+    onNewChat,
+    newChatLabel,
+    onResizeStart,
+    gatewayRestarting,
+    gatewayLabel,
+  } = props;
+
+  return (
+    <div
+      data-testid="chat-sidebar-pane"
+      className="relative flex min-w-0 shrink-0 flex-col overflow-hidden border-l border-border/40"
+      style={{ width }}
+    >
+      {/* 顶部：搜索框 + 新对话按钮（按设计图从上到下） */}
+      <div className="flex flex-col gap-2 p-2 border-b border-border/40 shrink-0">
+        <input
+          type="text"
+          placeholder="搜索"
+          className="w-full h-8 px-3 rounded-lg bg-sidebar-hover/60 border border-transparent text-meta text-sidebar-foreground placeholder:text-sidebar-muted focus:outline-none focus:bg-background focus:border-brand/40 focus:ring-2 focus:ring-brand/15 transition-all"
+        />
         <button
           type="button"
-          data-testid="sidebar-new-chat"
-          onClick={handleNewChat}
-          className={cn(
-            'sidebar-nav-text flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors',
-            'hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80',
-            sidebarCollapsed && 'justify-center px-0',
-          )}
+          onClick={onNewChat}
+          className="flex items-center justify-center gap-1.5 h-9 rounded-lg bg-gradient-to-r from-brand to-brand-hover text-white text-sm font-semibold shadow-sm hover:shadow-md hover:brightness-105 active:translate-y-px transition-all duration-200"
         >
-          <div className="flex shrink-0 items-center justify-center text-current [&_svg]:size-4">
-            <Plus className="h-4 w-4" strokeWidth={2} />
-          </div>
-          {!sidebarCollapsed && <span className="flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap">{t('sidebar.newChat')}</span>}
+          <Plus className="h-4 w-4" strokeWidth={2.5} />
+          <span>{newChatLabel}</span>
         </button>
+      </div>
 
-        {navItems.map((item) => (
-          <NavItem
-            key={item.to}
-            {...item}
-            collapsed={sidebarCollapsed}
-          />
-        ))}
-      </nav>
-
-      {/* Session list — below Settings, only when expanded */}
-      {!sidebarCollapsed && sessions.length > 0 && (
-        <div className="mt-4 flex-1 overflow-y-auto overflow-x-hidden px-2 pb-2 space-y-1">
-          {sessionBuckets.map((bucket) => {
-            const isBucketExpanded = expandedSessionBuckets[bucket.key] ?? false;
+      {sessions.length > 0 ? (
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2 space-y-1">
+          {(['today', 'withinWeek', 'withinMonth', 'older'] as SessionBucketKey[]).map((bk) => {
+            const bucket = sessionBucketMap[bk];
+            const isExpanded = expandedBuckets[bk] ?? false;
             return (
-              <div key={bucket.key} data-testid={`session-bucket-${bucket.key}`} className="pt-2">
+              <div key={bk} data-testid={`session-bucket-${bk}`}>
                 <button
                   type="button"
-                  data-testid={`session-bucket-toggle-${bucket.key}`}
-                  aria-expanded={isBucketExpanded}
-                  onClick={() => toggleSessionBucket(bucket.key)}
-                  className={cn(
-                    'flex w-full items-center gap-1 rounded-md px-2.5 py-1 text-left text-tiny font-medium',
-                    'text-muted-foreground/60 tracking-tight transition-colors',
-                    'hover:bg-black/5 hover:text-muted-foreground dark:hover:bg-white/5',
-                  )}
+                  data-testid={`session-bucket-toggle-${bk}`}
+                  aria-expanded={isExpanded}
+                  onClick={() => toggleBucket(bk)}
+                  className="flex w-full items-center gap-1 rounded-md px-2.5 py-1 text-left text-tiny font-medium text-sidebar-muted tracking-tight transition-colors hover:bg-sidebar-hover hover:text-sidebar-foreground"
                 >
-                  <ChevronRight
-                    className={cn(
-                      'h-3 w-3 shrink-0 transition-transform',
-                      isBucketExpanded && 'rotate-90',
-                    )}
-                  />
-                  <span>{bucket.label}</span>
+                  <ChevronRight className={cn('h-3 w-3 shrink-0 transition-transform', isExpanded && 'rotate-90')} />
+                  <span>{bucketLabel[bk] ?? bucket.label}</span>
                 </button>
-                {isBucketExpanded && bucket.sessions.map((s) => {
+                {isExpanded && bucket.sessions.map((s) => {
                   const agentId = getAgentIdFromSessionKey(s.key);
                   const agentName = agentNameById[agentId] || agentId;
                   const isEditing = editingSessionKey === s.key;
@@ -453,24 +496,21 @@ export function Sidebar() {
                         <div className="flex w-full items-center gap-1 px-1.5 py-1">
                           <Input
                             autoFocus
-                            value={editingLabel}
+                            value={props.editingLabel}
                             onChange={(e) => setEditingLabel(e.target.value)}
                             onKeyDown={handleRenameKeyDown}
                             onBlur={() => void handleRenameSubmit()}
                             className="h-7 min-w-0 flex-1 text-meta"
-                            aria-label={t('common:sidebar.renameSessionPlaceholder')}
                           />
                           <button
-                            aria-label={t('common:sidebar.saveSessionRename')}
                             onMouseDown={(e) => { e.preventDefault(); void handleRenameSubmit(); }}
-                            className="flex shrink-0 items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground"
+                            className="flex shrink-0 items-center justify-center rounded p-0.5 text-sidebar-muted hover:text-brand"
                           >
                             <Check className="h-3.5 w-3.5" />
                           </button>
                           <button
-                            aria-label={t('common:sidebar.cancelSessionRename')}
                             onMouseDown={(e) => { e.preventDefault(); handleRenameCancel(); }}
-                            className="flex shrink-0 items-center justify-center rounded p-0.5 text-muted-foreground hover:text-destructive"
+                            className="flex shrink-0 items-center justify-center rounded p-0.5 text-sidebar-muted hover:text-red-500"
                           >
                             <X className="h-3.5 w-3.5" />
                           </button>
@@ -488,46 +528,40 @@ export function Sidebar() {
                             }}
                             onDoubleClick={() => handleStartRename(s.key, sessionLabel)}
                             className={cn(
-                              'w-full text-left rounded-lg px-2.5 py-1.5 text-meta transition-colors pr-16',
-                              'hover:bg-black/5 dark:hover:bg-white/5',
+                              'w-full text-left rounded-lg px-2.5 py-1.5 text-meta transition-colors pr-14',
+                              'hover:bg-sidebar-hover text-sidebar-foreground/85',
                               isOnChat && currentSessionKey === s.key
-                                ? 'bg-black/5 dark:bg-white/10 text-foreground font-medium'
-                                : 'text-foreground/75',
+                                ? 'bg-brand/10 text-brand font-semibold'
+                                : '',
                             )}
                           >
                             <div className="flex min-w-0 items-center gap-2">
-                              <span className="shrink-0 rounded-full bg-black/[0.04] px-2 py-0.5 text-2xs font-medium text-foreground/70 dark:bg-white/[0.08]">
+                              <span className={cn(
+                                'shrink-0 rounded-full px-2 py-0.5 text-2xs font-medium',
+                                isOnChat && currentSessionKey === s.key
+                                  ? 'bg-brand/20 text-brand-hover'
+                                  : 'bg-sidebar-foreground/8 text-sidebar-muted',
+                              )}>
                                 {agentName}
                               </span>
                               <span className="truncate">{sessionLabel}</span>
                             </div>
                           </button>
-                          <div className={cn(
-                            'absolute right-1 flex items-center gap-0.5 transition-opacity',
-                            'opacity-0 group-hover:opacity-100',
-                          )}>
+                          <div className="absolute right-1 flex items-center gap-0.5 transition-opacity opacity-0 group-hover:opacity-100">
                             <button
-                              aria-label={t('common:sidebar.renameSession')}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStartRename(s.key, sessionLabel);
-                              }}
-                              className="flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
+                              onClick={(e) => { e.stopPropagation(); handleStartRename(s.key, sessionLabel); }}
+                              className="flex items-center justify-center rounded p-0.5 text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-hover"
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
                               data-testid={`sidebar-session-delete-${s.key}`}
-                              aria-label={t('common:sidebar.deleteSession')}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSessionToDelete({
-                                  key: s.key,
-                                  label: sessionLabel,
-                                });
+                                setSessionToDelete({ key: s.key, label: sessionLabel });
                                 setDeleteDialogOpen(true);
                               }}
-                              className="flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              className="flex items-center justify-center rounded p-0.5 text-sidebar-muted hover:text-red-500 hover:bg-red-500/10"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
@@ -541,117 +575,48 @@ export function Sidebar() {
             );
           })}
         </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+          <p className="text-meta text-sidebar-muted">暂无历史对话</p>
+          <p className="text-2xs text-sidebar-muted/70 mt-1">开启一段新对话试试</p>
+        </div>
       )}
 
-      {/* Footer */}
-      <div className="mt-auto flex flex-col gap-1 p-2">
-        <div
-          data-testid="sidebar-gateway-restarting"
-          data-state={gatewayRestarting ? 'visible' : 'hidden'}
-          aria-hidden={!gatewayRestarting}
-          className={cn(
-            'overflow-hidden transition-[max-height,opacity,transform] duration-200 ease-out',
-            gatewayRestarting ? 'max-h-12 translate-y-0 opacity-100' : 'max-h-0 translate-y-1 opacity-0',
-          )}
-        >
-          <div
-            aria-live="polite"
-            aria-label={t('common:gateway.restarting')}
-            title={t('common:gateway.restarting')}
-            className={cn(
-              'sidebar-nav-text flex items-center gap-2 rounded-lg px-2.5 py-1.5',
-              'border border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
-              sidebarCollapsed && 'justify-center px-0',
-            )}
-          >
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-            {!sidebarCollapsed && (
-              <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                {t('common:gateway.restarting')}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <NavLink
-            to="/settings"
-            data-testid="sidebar-nav-settings"
-            className={({ isActive }) =>
-              cn(
-                'sidebar-nav-text flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors',
-                'hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80',
-                isActive && 'bg-black/5 dark:bg-white/10 text-foreground',
-                sidebarCollapsed ? 'justify-center px-0' : ''
-              )
-            }
-          >
-          <>
-            <div className="flex shrink-0 items-center justify-center text-current [&_svg]:size-4">
-              <SettingsIcon className="h-4 w-4" strokeWidth={2} />
-            </div>
-            {!sidebarCollapsed && <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{t('sidebar.settings')}</span>}
-          </>
-        </NavLink>
-
-        {devModeUnlocked && (
-          <Button
-            data-testid="sidebar-open-dev-console"
-            variant="ghost"
-            className={cn(
-              'sidebar-nav-text flex h-auto w-full items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors',
-              'hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80',
-              sidebarCollapsed ? 'justify-center px-0' : 'justify-start'
-            )}
-            onClick={openDevConsole}
-          >
-            <div className="flex shrink-0 items-center justify-center text-current [&_svg]:size-4">
-              <Terminal className="h-4 w-4" strokeWidth={2} />
-            </div>
-            {!sidebarCollapsed && (
-              <>
-                <span className="flex-1 text-left overflow-hidden text-ellipsis whitespace-nowrap">{t('common:sidebar.openClawPage')}</span>
-                <ExternalLink className="ml-auto h-3 w-3 shrink-0 opacity-50 text-current" />
-              </>
-            )}
-          </Button>
+      {/* Gateway 重启提示（底部） */}
+      <div
+        data-testid="chat-pane-gateway-restarting"
+        data-state={gatewayRestarting ? 'visible' : 'hidden'}
+        aria-hidden={!gatewayRestarting}
+        className={cn(
+          'overflow-hidden transition-[max-height,opacity,transform] duration-200 ease-out border-t border-border/40',
+          gatewayRestarting ? 'max-h-12 translate-y-0 opacity-100' : 'max-h-0 translate-y-1 opacity-0',
         )}
+      >
+        <div
+          aria-live="polite"
+          aria-label={gatewayLabel}
+          title={gatewayLabel}
+          className="flex items-center gap-2 px-2.5 py-1.5 m-2 rounded-lg border border-yellow-500/25 bg-yellow-500/10 text-yellow-700 dark:border-yellow-500/30 dark:text-yellow-400"
+        >
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+          <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-meta">{gatewayLabel}</span>
+        </div>
       </div>
 
-      {!sidebarCollapsed && (
-        <div
-          data-testid="sidebar-resize-handle"
-          role="separator"
-          aria-orientation="vertical"
-          aria-valuemin={220}
-          aria-valuemax={420}
-          aria-valuenow={sidebarWidth}
-          title="Drag to resize sidebar"
-          onPointerDown={handleResizePointerDown}
-          className="no-drag group absolute inset-y-0 right-0 z-20 w-2 translate-x-1/2 cursor-col-resize select-none"
-        >
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-transparent transition-colors group-hover:bg-primary/40"
-          />
-        </div>
-      )}
-
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        title={t('common:actions.confirm')}
-        message={t('common:sidebar.deleteSessionConfirm', { label: sessionToDelete?.label ?? '' })}
-        confirmLabel={t('common:actions.delete')}
-        cancelLabel={t('common:actions.cancel')}
-        variant="destructive"
-        onConfirm={async () => {
-          const targetSession = sessionToDelete;
-          if (!targetSession) return;
-          await deleteSession(targetSession.key);
-          if (currentSessionKey === targetSession.key) navigate('/');
-          setDeleteDialogOpen(false);
-        }}
-        onCancel={() => setDeleteDialogOpen(false)}
-      />
-    </aside>
+      {/* 拖动条 */}
+      <div
+        data-testid="chat-pane-resize"
+        role="separator"
+        aria-orientation="vertical"
+        title="拖动调整宽度"
+        onPointerDown={onResizeStart}
+        className="no-drag absolute inset-y-0 right-0 z-20 w-1.5 translate-x-1/2 cursor-col-resize select-none group"
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-transparent transition-colors group-hover:bg-brand/50"
+        />
+      </div>
+    </div>
   );
 }

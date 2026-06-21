@@ -80,13 +80,13 @@ const htmlFileHistory = [
     timestamp: Date.now(),
   },
 ];
-test.describe('ClawX chat file changes', () => {
+test.describe('mclaw chat file changes', () => {
   test('shows line stats on generated file cards', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -109,7 +109,7 @@ test.describe('ClawX chat file changes', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {
@@ -176,7 +176,7 @@ test.describe('ClawX chat file changes', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -199,7 +199,7 @@ test.describe('ClawX chat file changes', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {
@@ -270,7 +270,7 @@ test.describe('ClawX chat file changes', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -293,7 +293,7 @@ test.describe('ClawX chat file changes', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

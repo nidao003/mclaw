@@ -1,11 +1,13 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore, canReview, canManageUsers } from '@shared';
-import { Shield, ClipboardCheck, Upload, Users } from 'lucide-react';
+import { Shield, ClipboardCheck, Upload, Users, LayoutDashboard, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ADMIN_NAV: { to: string; label: string; icon: typeof ClipboardCheck }[] = [
+  { to: '/admin/overview', label: '概览', icon: LayoutDashboard },
   { to: '/admin/skills', label: '技能审核', icon: ClipboardCheck },
   { to: '/admin/users', label: '用户管理', icon: Users },
+  { to: '/admin/models', label: '模型管理', icon: Bot },
   { to: '/admin/create', label: '上传技能', icon: Upload },
 ];
 

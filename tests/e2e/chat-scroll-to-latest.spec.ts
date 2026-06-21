@@ -17,13 +17,13 @@ const seededHistory = Array.from({ length: 36 }, (_, idx) => ({
   timestamp: Date.now() + idx,
 }));
 
-test.describe('ClawX chat scroll-to-latest affordance', () => {
+test.describe('mclaw chat scroll-to-latest affordance', () => {
   test('shows a jump button when reading older messages and returns to the latest message', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -46,7 +46,7 @@ test.describe('ClawX chat scroll-to-latest affordance', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

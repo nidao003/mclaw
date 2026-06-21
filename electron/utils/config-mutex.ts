@@ -1,8 +1,8 @@
 /**
  * Async mutex for serializing read-modify-write operations on
- * ~/.openclaw/openclaw.json.
+ * ~/.mclaw/openclaw.json.
  *
- * Multiple code paths (channel-config, openclaw-auth, openclaw-proxy,
+ * Multiple code paths (channel-config, mclaw-auth, mclaw-proxy,
  * skill-config, agent-config) perform async read → modify → write against
  * the same JSON file.  Without coordination, Node's event-loop can
  * interleave two I/O sequences so that the second writer reads stale data

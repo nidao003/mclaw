@@ -5,3 +5,7 @@ export { subscriptionApi } from './subscription';
 export { authApi } from './auth';
 export { apiKeyApi } from './apikey';
 export { expertApi } from './expert';
+export { dataDocApi } from './dataDoc';
+export type { ApiDocItem, ApiDocGroup, ApiDocSubGroup, ApiDocsResp, ApiField } from './dataDoc';
+export { walletApi } from './wallet';
+export { teamApi } from './team';

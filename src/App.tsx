@@ -9,12 +9,14 @@ import { Toaster } from 'sonner';
 import i18n from './i18n';
 import { MainLayout } from './components/layout/MainLayout';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Models } from './pages/Models';
 import { Chat } from './pages/Chat';
 import { Agents } from './pages/Agents';
 import { Channels } from './pages/Channels';
 import { Skills } from './pages/Skills';
 import { Cron } from './pages/Cron';
+import ExtensionsPage from './pages/Extensions';
 import { Dreams } from './pages/Dreams';
 import { ImageGenerationPage } from './pages/ImageGeneration';
 import { Settings } from './pages/Settings';
@@ -92,6 +94,23 @@ class ErrorBoundary extends Component<
     }
     return this.props.children;
   }
+}
+
+function SettingsDialog() {
+  const open = useSettingsStore((state) => state.settingsSheetOpen);
+  const setOpen = useSettingsStore((state) => state.setSettingsSheetOpen);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="w-[calc(100%-2rem)] max-w-4xl max-h-[90vh] flex flex-col rounded-3xl border-0 shadow-2xl bg-surface-modal overflow-hidden p-0">
+        <DialogTitle className="sr-only">Settings</DialogTitle>
+        <DialogDescription className="sr-only">Application settings</DialogDescription>
+        <div className="flex-1 overflow-y-auto">
+          <Settings />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function App() {
@@ -209,6 +228,7 @@ function App() {
             <Route path="/agents" element={<Agents />} />
             <Route path="/channels" element={<Channels />} />
             <Route path="/skills" element={<Skills />} />
+            <Route path="/extensions" element={<ExtensionsPage />} />
             <Route path="/cron" element={<Cron />} />
             <Route path="/image-generation" element={devModeUnlocked ? <ImageGenerationPage /> : <Navigate to="/" replace />} />
             <Route path="/dreams" element={devModeUnlocked ? <Dreams /> : <Navigate to="/" replace />} />
@@ -220,6 +240,9 @@ function App() {
         </Routes>
 
         <UpdateNotifier />
+
+        {/* Settings Dialog — centered modal */}
+        <SettingsDialog />
 
         {/* Global toast notifications */}
         <Toaster

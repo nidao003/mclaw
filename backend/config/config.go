@@ -81,11 +81,20 @@ type Config struct {
 	Doubao Doubao `mapstructure:"doubao"`
 
 	ReviewAgent ReviewAgent `mapstructure:"review_agent"`
+
+	// npm 发布配置（技能审核通过后自动发布到 npm registry）
+	Npm NpmConfig `mapstructure:"npm"`
 }
 
 type ReviewAgent struct {
 	ModelID string `mapstructure:"model_id"`
 	Image   string `mapstructure:"image"`
+}
+
+// NpmConfig npm 发布配置（技能审核通过后自动发布到 npm registry）。
+type NpmConfig struct {
+	Token    string `mapstructure:"token"`     // npm access token（为空则禁用自动发布）
+	Registry string `mapstructure:"registry"`  // npm registry URL
 }
 
 // NLS 阿里云语音识别配置
@@ -204,6 +213,7 @@ type ClickHouse struct {
 	Database        string `mapstructure:"database"`
 	Table           string `mapstructure:"table"`
 	ModelUsageTable string `mapstructure:"model_usage_table"`
+	DataApiUsageTable string `mapstructure:"data_api_usage_table"`
 	InitEnabled     bool   `mapstructure:"init_enabled"`
 	Username        string `mapstructure:"username"`
 	Password        string `mapstructure:"password"`
@@ -253,6 +263,15 @@ type Database struct {
 	MaxOpenConns    int    `mapstructure:"max_open_conns"`
 	MaxIdleConns    int    `mapstructure:"max_idle_conns"`
 	ConnMaxLifetime int    `mapstructure:"conn_max_lifetime"`
+	// OohData 数据 API 查询用的远程只读 MySQL（ooh_data 库）
+	OohData OohDataDS `mapstructure:"ooh_data"`
+}
+
+// OohDataDS 是 ooh_data 远程只读库的数据源配置（照搬 Java application-dev.yml）
+type OohDataDS struct {
+	DSN          string `mapstructure:"dsn"`
+	MaxOpenConns int    `mapstructure:"max_open_conns"`
+	MaxIdleConns int    `mapstructure:"max_idle_conns"`
 }
 
 func Init(dir string) (*Config, error) {
@@ -260,6 +279,13 @@ func Init(dir string) (*Config, error) {
 	v.AutomaticEnv()
 	v.SetEnvPrefix("MCAI")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	// ooh_data 远程只读库：Unmarshal 不会为 config 文件里缺失的 key 查 AutomaticEnv，
+	// 这里显式 BindEnv 把三段下划线 env（MCAI_DATABASE_OOH_DATA_DSN 等）绑到
+	// database.ooh_data.* 上，否则容器注入的 env 进不来，数据 API 报 not configured。
+	v.BindEnv("database.ooh_data.dsn", "MCAI_DATABASE_OOH_DATA_DSN")
+	v.BindEnv("database.ooh_data.max_open_conns", "MCAI_DATABASE_OOH_DATA_MAX_OPEN_CONNS")
+	v.BindEnv("database.ooh_data.max_idle_conns", "MCAI_DATABASE_OOH_DATA_MAX_IDLE_CONNS")
 
 	v.SetDefault("debug", false)
 	v.SetDefault("server.addr", ":8888")
@@ -269,6 +295,7 @@ func Init(dir string) (*Config, error) {
 	v.SetDefault("clickhouse.database", "")
 	v.SetDefault("clickhouse.table", "task_logs")
 	v.SetDefault("clickhouse.model_usage_table", "model_usage_events")
+	v.SetDefault("clickhouse.data_api_usage_table", "data_api_usage_events")
 	v.SetDefault("clickhouse.init_enabled", false)
 	v.SetDefault("clickhouse.username", "")
 	v.SetDefault("clickhouse.password", "")
@@ -326,6 +353,8 @@ func Init(dir string) (*Config, error) {
 	v.SetDefault("object_storage.repo_prefix", "repo")
 	v.SetDefault("object_storage.temp_prefix", "temp")
 	v.SetDefault("object_storage.skill_prefix", "skills")
+	v.SetDefault("npm.token", "")
+	v.SetDefault("npm.registry", "https://registry.npmjs.org")
 	v.SetDefault("static_files.enabled", true)
 	v.SetDefault("static_files.dir", "/app/static")
 	v.SetDefault("static_files.route_prefix", "/static")

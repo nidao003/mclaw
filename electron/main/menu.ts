@@ -207,14 +207,14 @@ export async function createMenu(language?: string): Promise<void> {
         {
           label: labels.help.reportIssue,
           click: async () => {
-            await shell.openExternal('https://github.com/ValueCell-ai/ClawX/issues');
+            await shell.openExternal('https://github.com/ValueCell-ai/mclaw/issues');
           },
         },
         { type: 'separator' },
         {
           label: labels.help.openClawDocumentation,
           click: async () => {
-            await shell.openExternal('https://docs.openclaw.ai');
+            await shell.openExternal('https://docs.mclaw.ai');
           },
         },
       ],

@@ -3,7 +3,7 @@ import { closeElectronApp, expect, getStableWindow, test } from './fixtures/elec
 const alphaModelRef = 'custom-alpha123/model-alpha';
 const betaModelRef = 'custom-beta5678/provider/model-beta';
 
-test.describe('ClawX chat model picker', () => {
+test.describe('mclaw chat model picker', () => {
   test('switches the current agent model without requesting a gateway refresh', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
@@ -33,8 +33,8 @@ test.describe('ClawX chat model picker', () => {
             modelRef: currentModelRef,
             overrideModelRef: currentModelRef,
             inheritedModel: false,
-            workspace: '~/.openclaw/workspace',
-            agentDir: '~/.openclaw/agents/main/agent',
+            workspace: '~/.mclaw/workspace',
+            agentDir: '~/.mclaw/agents/main/agent',
             mainSessionKey: 'agent:main:main',
             channelTypes: [],
           }],
@@ -46,7 +46,7 @@ test.describe('ClawX chat model picker', () => {
         });
 
         ipcMain.removeHandler('gateway:status');
-        ipcMain.handle('gateway:status', async () => ({ state: 'running', port: 18789, pid: 12345 }));
+        ipcMain.handle('gateway:status', async () => ({ state: 'running', port: 18999, pid: 12345 }));
 
         ipcMain.removeHandler('gateway:rpc');
         ipcMain.handle('gateway:rpc', async (_event: unknown, method: string, params: unknown) => {
@@ -75,7 +75,7 @@ test.describe('ClawX chat model picker', () => {
           });
 
           if (request?.module === 'gateway' && request.action === 'status') {
-            return makeResponse(request.id, { state: 'running', port: 18789, pid: 12345, gatewayReady: true });
+            return makeResponse(request.id, { state: 'running', port: 18999, pid: 12345, gatewayReady: true });
           }
           if (request?.module === 'gateway' && request.action === 'rpc') {
             const method = typeof body?.method === 'string' ? body.method : '';
@@ -159,7 +159,7 @@ test.describe('ClawX chat model picker', () => {
       await expect(page.getByTestId('main-layout')).toBeVisible();
       await app.evaluate(({ BrowserWindow }) => {
         const win = BrowserWindow.getAllWindows()[0];
-        win?.webContents.send('gateway:status-changed', { state: 'running', port: 18789, pid: 12345, gatewayReady: true });
+        win?.webContents.send('gateway:status-changed', { state: 'running', port: 18999, pid: 12345, gatewayReady: true });
       });
 
       await expect(page.getByTestId('chat-model-picker-button')).toContainText('model-alpha');

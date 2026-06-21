@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ──────────────────────────────────────────────────────────────────────────
- * ClawX design tokens — CSS variable layer
+ * mclaw design tokens — CSS variable layer
  * ──────────────────────────────────────────────────────────────────────────
  *
  * This file is the *CSS variable layer only*. HSL channel triplets are
@@ -16,9 +16,9 @@
  *      / ...). The standard shadcn/ui palette — do not rename or remove,
  *      Radix-driven components read these directly.
  *
- *   2. ClawX surface tokens (--surface-modal / --surface-input /
+ *   2. mclaw surface tokens (--surface-modal / --surface-input /
  *      --surface-sidebar). Three light-mode "cream paper" layers added
- *      by ClawX. In dark mode each one is redirected to an existing
+ *      by mclaw. In dark mode each one is redirected to an existing
  *      shadcn token (--card / --muted / --background) so we don't have
  *      to maintain a second dark-cream palette.
  *
@@ -108,102 +108,101 @@
  *   PRIMARY CTA
  *   ─────────────────────────────────────────────────────────────────────
  *     Use the default <Button> styling (variant="default", which renders
- *     `bg-primary`). Do not hand-apply `bg-brand` to action buttons —
- *     `bg-brand` / `bg-brand-hover` are reserved for branded surfaces
- *     where a divergent Apple-blue is explicitly desired (rare).
+ *     `bg-primary` — coral orange #EE7C4B). Do not hand-apply `bg-brand`
+ *     to action buttons — `bg-brand` / `bg-brand-hover` are reserved for
+ *     branded surfaces where a divergent warm orange gradient is explicitly
+ *     desired (splash pages, hero sections, branded CTAs).
  *     Reference: pages/Models "+ Add Provider" trigger.
  * ────────────────────────────────────────────────────────────────────────── */
 
 @layer base {
   :root {
-    /* ── shadcn semantic tokens (light) ─────────────────────────── */
-    /* Lightened ClawX cream page background; gentler than pure white
-     *           for long sessions in front of the editor. */
-    --background: 45 30% 96.6%;
-    --foreground: 222.2 84% 4.9%;
+    /* ── shadcn semantic tokens (light) ───────────────────────────
+     *
+     * mclaw brand: stone neutral base + warm orange primary.
+     * Stone (hue 30) replaces the old cream (hue 45) for a more
+     * neutral, modern backdrop. Coral orange (#EE7C4B, hue 18)
+     * forms the primary accent — warm, distinctive, aggressive. */
+
+    /* stone-50 — warm off-white page background */
+    --background: 30 5% 97%;
+    --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 20 14.3% 4.1%;
+
+    /* coral-orange primary (#EE7C4B) — mclaw brand accent */
+    --primary: 18 83% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 5% 93%;
+    --secondary-foreground: 20 14.3% 4.1%;
+    --muted: 30 5% 93%;
+    --muted-foreground: 25 5% 45%;
+    --accent: 30 5% 90%;
+    --accent-foreground: 20 14.3% 4.1%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 5% 88%;
+    --input: 30 5% 88%;
+    --ring: 18 83% 55%;
+    --radius: 0.75rem;
 
-    /* ── ClawX cream surfaces (light) ────────────────────────────
+    /* ── mclaw stone surfaces (light) ────────────────────────────
      *
-     * Three stacked cream layers — think "a cream paper laid on top
-     * of a slightly paler cream paper". The contrast between layers
-     * is deliberately low so we can suggest hierarchy without using
-     * heavy shadows. Pixel values are extracted from the hex literals
-     * that used to be sprinkled across components.
+     * Three stacked stone layers to suggest visual hierarchy without
+     * heavy shadows. Contrast is deliberately subtle:
      *
-     *   --surface-modal   = lifted cream   large rounded modal panels (top);
-     *                                      slightly lighter than --background
-     *                                      so dialogs feel raised
-     *   --surface-input   = recessed cream inputs / selects / code panes;
-     *                                      slightly darker than --background
-     *                                      so fields feel inset
-     *   --surface-sidebar = sidebar cream  left navigation rail (often /60)
-     * ─────────────────────────────────────────────────────────── */
-    --surface-modal: 45 30% 97.6%;
-    --surface-input: 45 22% 94%;
-    --surface-sidebar: 45 16% 94%;
+     *   --surface-modal   = white card on stone bg → feels raised
+     *   --surface-input   = stone-100 recessed inset → feels incoming
+     *   --surface-sidebar = between stone-50/100 → navigation zone */
+    --surface-modal: 0 0% 100%;
+    --surface-input: 30 5% 93%;
+    /* 浅色温暖侧边栏（参考设计图） — cream paper 风格，柔和不刺眼 */
+    --surface-sidebar: 30 25% 97%;
+    /* 侧边栏文字色 — 深色 zinc-800，亮色背景下保证对比度 */
+    --sidebar-foreground: 240 6% 12%;
+    --sidebar-foreground-muted: 240 4% 38%;
+    --sidebar-hover: 30 20% 93%;
+    --sidebar-active: 18 81% 62%;
 
-    /* ── ClawX usage accents (light) ─────────────────────────────
-     *
-     * Three semantic accents reused everywhere that we visualise
-     * token usage / activity. Mirrors the Cron page convention so
-     * the Models bar chart, legend dots, and any future "input /
-     * output / cache" indicator pulls from the same palette:
-     *
-     *   --usage-input  = blue   (matches Cron "Total" tile / primary)
-     *   --usage-output = green  (matches Cron "Active" tile / `bg-green-500`)
-     *   --usage-cache  = yellow (matches Cron "Paused" tile)
-     *
-     * Anchored to Tailwind's *-500 shades so chart bars read at the
-     * same brightness as the `bg-green-500` "configured" status dot
-     * and the Cron stat-tile icon halos. Going darker (*-600/*-700)
-     * makes the bars look duller than the dots they sit next to.
-     * ─────────────────────────────────────────────────────────── */
-    --usage-input: 217 91% 60%;
+    /* ── mclaw usage accents (light) ─────────────────────────────
+     *   --usage-input  = warm orange (primary accent)
+     *   --usage-output = green (success / active)
+     *   --usage-cache  = amber (warm / caching) */
+    --usage-input: 18 83% 55%;
     --usage-output: 142 71% 45%;
     --usage-cache: 48 96% 53%;
   }
 
-  /* Neutral deep-gray dark palette */
+  /* Warm deep dark palette — hue 20 (warm brown) replaces the old
+   * hue 240 (cold blue-gray) for a "premium warm dark" feel. */
   .dark {
-    --background: 240 4% 11%;
-    --foreground: 210 20% 96%;
-    --card: 240 3% 14%;
-    --card-foreground: 210 20% 96%;
-    --popover: 240 3% 14%;
-    --popover-foreground: 210 20% 96%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 240 3% 18%;
-    --secondary-foreground: 210 20% 96%;
-    --muted: 240 3% 18%;
-    --muted-foreground: 220 8% 72%;
-    --accent: 240 3% 22%;
-    --accent-foreground: 210 20% 96%;
-    --destructive: 0 65% 42%;
-    --destructive-foreground: 210 20% 96%;
-    --border: 240 3% 24%;
-    --input: 240 3% 18%;
-    --ring: 217.2 91.2% 59.8%;
+    --background: 20 14.3% 8%;
+    --foreground: 30 5% 93%;
+    --card: 20 14.3% 11%;
+    --card-foreground: 30 5% 93%;
+    --popover: 20 14.3% 11%;
+    --popover-foreground: 30 5% 93%;
 
-    /* In dark mode the three cream surfaces collapse onto existing
+    /* Brighter coral for dark mode legibility */
+    --primary: 18 83% 65%;
+    --primary-foreground: 20 14.3% 4.1%;
+
+    --secondary: 20 14.3% 16%;
+    --secondary-foreground: 30 5% 93%;
+    --muted: 20 14.3% 16%;
+    --muted-foreground: 25 5% 60%;
+    --accent: 20 14.3% 22%;
+    --accent-foreground: 30 5% 93%;
+    --destructive: 0 65% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 20 14.3% 20%;
+    --input: 20 14.3% 16%;
+    --ring: 18 83% 65%;
+
+    /* In dark mode the three stone surfaces collapse onto existing
      * shadcn tokens:
      *     modal   → card
      *     input   → muted
@@ -211,14 +210,17 @@
      * This way every `bg-surface-*` utility resolves correctly in
      * both themes, and components no longer need `dark:bg-card`-style
      * companion classes for theme switching. */
-    --surface-modal: 240 3% 14%;
-    --surface-input: 240 3% 18%;
-    --surface-sidebar: 240 4% 11%;
+    --surface-modal: 20 14.3% 11%;
+    --surface-input: 20 14.3% 16%;
+    /* Dark 模式下侧边栏保持深色 — 温暖深棕 */
+    --surface-sidebar: 20 14% 9%;
+    --sidebar-foreground: 30 5% 93%;
+    --sidebar-foreground-muted: 25 5% 65%;
+    --sidebar-hover: 20 14% 16%;
+    --sidebar-active: 18 83% 65%;
 
-    /* Usage accents — lifted *-400-ish shades so bars stay vivid
-     * against the deep-gray dark surfaces (see light block above
-     * for semantic mapping). */
-    --usage-input: 217 91% 65%;
+    /* Usage accents — lifted for dark mode vibrancy */
+    --usage-input: 18 83% 70%;
     --usage-output: 142 71% 52%;
     --usage-cache: 48 96% 60%;
   }
@@ -240,42 +242,42 @@
     @apply text-sm font-normal leading-4;
   }
 
-  .clawx-dialog-overlay {
+  .mclaw-dialog-overlay {
     @apply fixed inset-0 z-50 bg-black/30 dark:bg-black/60;
   }
 
-  .clawx-dialog-content {
+  .mclaw-dialog-content {
     @apply fixed left-1/2 top-1/2 z-50 w-full outline-none;
     transform: translate(-50%, -50%);
     transform-origin: center;
     will-change: opacity, transform;
   }
 
-  .clawx-dialog-overlay[data-state='open'] {
-    animation: clawx-dialog-overlay-in 100ms ease-out both;
+  .mclaw-dialog-overlay[data-state='open'] {
+    animation: mclaw-dialog-overlay-in 100ms ease-out both;
   }
 
-  .clawx-dialog-overlay[data-state='closed'] {
-    animation: clawx-dialog-overlay-out 80ms ease-in both;
+  .mclaw-dialog-overlay[data-state='closed'] {
+    animation: mclaw-dialog-overlay-out 80ms ease-in both;
   }
 
-  .clawx-dialog-content[data-state='open'] {
-    animation: clawx-dialog-content-in 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  .mclaw-dialog-content[data-state='open'] {
+    animation: mclaw-dialog-content-in 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .clawx-dialog-content[data-state='closed'] {
-    animation: clawx-dialog-content-out 80ms ease-in both;
+  .mclaw-dialog-content[data-state='closed'] {
+    animation: mclaw-dialog-content-out 80ms ease-in both;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .clawx-dialog-overlay[data-state],
-    .clawx-dialog-content[data-state] {
+    .mclaw-dialog-overlay[data-state],
+    .mclaw-dialog-content[data-state] {
       animation: none;
     }
   }
 }
 
-@keyframes clawx-dialog-overlay-in {
+@keyframes mclaw-dialog-overlay-in {
   from {
     opacity: 0;
   }
@@ -285,7 +287,7 @@
   }
 }
 
-@keyframes clawx-dialog-overlay-out {
+@keyframes mclaw-dialog-overlay-out {
   from {
     opacity: 1;
   }
@@ -295,7 +297,7 @@
   }
 }
 
-@keyframes clawx-dialog-content-in {
+@keyframes mclaw-dialog-content-in {
   from {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.985);
@@ -307,7 +309,7 @@
   }
 }
 
-@keyframes clawx-dialog-content-out {
+@keyframes mclaw-dialog-content-out {
   from {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -350,13 +352,13 @@
   @apply bg-muted-foreground/30;
 }
 
-/* Monaco's default light diff theme is pure white; keep it aligned with ClawX's cream app background. */
-:root:not(.dark) .clawx-diff-editor .monaco-diff-editor,
-:root:not(.dark) .clawx-diff-editor .monaco-editor,
-:root:not(.dark) .clawx-diff-editor .monaco-editor-background,
-:root:not(.dark) .clawx-diff-editor .monaco-editor .margin,
-:root:not(.dark) .clawx-diff-editor .monaco-editor .gutter,
-:root:not(.dark) .clawx-diff-editor .diffOverview {
+/* Monaco's default light diff theme is pure white; keep it aligned with mclaw's cream app background. */
+:root:not(.dark) .mclaw-diff-editor .monaco-diff-editor,
+:root:not(.dark) .mclaw-diff-editor .monaco-editor,
+:root:not(.dark) .mclaw-diff-editor .monaco-editor-background,
+:root:not(.dark) .mclaw-diff-editor .monaco-editor .margin,
+:root:not(.dark) .mclaw-diff-editor .monaco-editor .gutter,
+:root:not(.dark) .mclaw-diff-editor .diffOverview {
   background-color: hsl(var(--background)) !important;
 }
 
@@ -450,3 +452,196 @@
     transform: translateY(-4px);
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * mclaw dark mode premium polish
+ * ──────────────────────────────────────────────────────────────────────────
+ *
+ * Three layers of depth that make the dark theme feel "premium" rather
+ * than "flat gray":
+ *   1. Warm shadows     — shadows tinted with a warm brown instead of
+ *                         pure black, creating natural depth perception
+ *   2. Coral focus glow — branded focus rings that replace the old blue
+ *   3. Sidebar glass    — subtle backdrop-blur on the nav rail for a
+ *                         layered-glass feel (with solid fallback) */
+
+/* Warm-tinted shadows for dark mode depth perception */
+.dark {
+  --shadow-color: 20 14.3% 4%;
+}
+
+/* Coral-orange focus ring glow for branded interactions */
+.dark .focus-ring,
+.dark :focus-visible {
+  --tw-ring-color: hsl(18 83% 65% / 0.35);
+}
+
+/* Sidebar glass effect — only when backdrop-filter is supported */
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+  .dark .sidebar-glass {
+    background: hsl(20 14.3% 8% / 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+/* Gateway status pulse — subtle breathing effect for the connected dot */
+@keyframes gateway-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.gateway-connected {
+  animation: gateway-pulse 2s ease-in-out infinite;
+}
+
+/* Brand gradient text — for hero headings and special emphasis */
+.brand-gradient-text {
+  background: linear-gradient(135deg, #EE7C4B, #F59E0B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * mclaw visual signature — high-impact brand elements
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/* Sidebar brand accent — warm gradient bar at the top of the nav rail */
+.sidebar-brand-accent {
+  background: linear-gradient(135deg, #EE7C4B, #F59E0B);
+  height: 2px;
+}
+
+/* Primary button gradient — replaces flat color for visual pop */
+.btn-primary-gradient {
+  background: linear-gradient(135deg, #EE7C4B, #D95A2B);
+  color: white;
+  border: none;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+.btn-primary-gradient:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Chat input focus glow — coral ring when the composer is active */
+.chat-input-glow:focus-within {
+  box-shadow: 0 0 0 2px hsl(18 83% 55% / 0.25), 0 4px 16px hsl(18 83% 55% / 0.08);
+  border-color: hsl(18 83% 55% / 0.35);
+}
+
+/* Welcome orb animation — slow floating motion */
+@keyframes orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(15px, -10px) scale(1.05); }
+  66% { transform: translate(-10px, 5px) scale(0.97); }
+}
+.welcome-orb {
+  animation: orb-float 8s ease-in-out infinite;
+}
+.welcome-orb-delayed {
+  animation: orb-float 10s ease-in-out infinite reverse;
+}
+
+/* Subtle lift on hover for cards and interactive surfaces */
+.hover-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(var(--shadow-color, 20 14.3% 4%) / 0.08);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * 品牌橙工具类 (Tailwind 不支持的 brand 透明度)
+ * 与 tailwind.config.js 中 brand 配色保持一致（#EE7C4B / #D95A2B）
+ * ────────────────────────────────────────────────────────────────────────── */
+.bg-brand\/8 { background-color: hsl(18 81% 62% / 0.08); }
+.bg-brand\/12 { background-color: hsl(18 81% 62% / 0.12); }
+.bg-brand\/15 { background-color: hsl(18 81% 62% / 0.15); }
+.bg-brand\/18 { background-color: hsl(18 81% 62% / 0.18); }
+.bg-brand\/22 { background-color: hsl(18 81% 62% / 0.22); }
+
+.hover\:bg-brand\/8:hover { background-color: hsl(18 81% 62% / 0.08); }
+.hover\:bg-brand\/18:hover { background-color: hsl(18 81% 62% / 0.18); }
+.hover\:bg-brand\/22:hover { background-color: hsl(18 81% 62% / 0.22); }
+
+.dark .dark\:bg-brand\/12 { background-color: hsl(18 81% 62% / 0.12); }
+.dark .dark\:bg-brand\/15 { background-color: hsl(18 81% 62% / 0.15); }
+.dark .dark\:bg-brand\/20 { background-color: hsl(18 81% 62% / 0.20); }
+.dark .dark\:hover\:bg-brand\/22:hover { background-color: hsl(18 81% 62% / 0.22); }
+
+/* 品牌橙色文字 (色相比主色稍深，参考品牌色 hover) */
+.text-brand-hover { color: #D95A2B; }
+.dark .dark\:text-brand-hover { color: #F5976B; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * 现代化交互细节（参考设计图柔和阴影 + 轻悬停反馈）
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/* 卡片悬停浮起：阴影 + 轻微上移 */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px hsl(18 30% 25% / 0.08);
+}
+
+/* 主内容区柔和内阴影边框 */
+.main-panel-soft {
+  background: linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background)));
+  box-shadow: inset 1px 0 0 hsl(var(--border) / 0.4);
+}
+
+/* 侧边导航项悬停：背景从透明渐入 + 微微缩进 */
+.nav-item-smooth {
+  transition: background-color 0.18s ease, color 0.18s ease, padding-left 0.18s ease;
+}
+.nav-item-smooth:hover {
+  padding-left: 0.75rem;
+}
+.nav-item-smooth.active {
+  background: linear-gradient(90deg, hsl(18 81% 62% / 0.18), hsl(18 81% 62% / 0.06));
+  color: #fff;
+  box-shadow: inset 2px 0 0 #EE7C4B;
+}
+
+/* 输入框聚焦时品牌色光环 */
+.input-brand-focus:focus,
+.input-brand-focus:focus-within {
+  border-color: hsl(18 81% 62% / 0.45);
+  box-shadow: 0 0 0 3px hsl(18 81% 62% / 0.15);
+  outline: none;
+}
+
+/* 标题栏按钮悬停时的橙红警示（仅在 Windows） */
+.titlebar-btn {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.titlebar-btn:hover {
+  background-color: hsl(0 0% 0% / 0.06);
+}
+.dark .titlebar-btn:hover {
+  background-color: hsl(0 0% 100% / 0.08);
+}
+.titlebar-btn-close:hover {
+  background-color: #E11D48;
+  color: #fff;
+}
+
+/* 渐入动画 — 给空状态卡片入场用 */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+.animate-fade-up-delay-1 { animation-delay: 0.06s; }
+.animate-fade-up-delay-2 { animation-delay: 0.12s; }
+.animate-fade-up-delay-3 { animation-delay: 0.18s; }
+.animate-fade-up-delay-4 { animation-delay: 0.24s; }
+

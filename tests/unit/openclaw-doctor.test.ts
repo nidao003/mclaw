@@ -42,7 +42,7 @@ vi.mock('electron', () => ({
 
 vi.mock('@electron/utils/paths', () => ({
   getOpenClawDir: () => '/tmp/openclaw',
-  getOpenClawEntryPath: () => '/tmp/openclaw/openclaw-entry.js',
+  getOpenClawEntryPath: () => '/tmp/mclaw/mclaw-entry.js',
 }));
 
 vi.mock('@electron/utils/uv-env', () => ({
@@ -76,7 +76,7 @@ describe('openclaw doctor output handling', () => {
     const child = new MockUtilityChild();
     mockFork.mockReturnValue(child);
 
-    const { runOpenClawDoctor } = await import('@electron/utils/openclaw-doctor');
+    const { runOpenClawDoctor } = await import('@electron/utils/mclaw-doctor');
     const resultPromise = runOpenClawDoctor();
 
     await vi.waitFor(() => {
@@ -97,7 +97,7 @@ describe('openclaw doctor output handling', () => {
     const child = new MockUtilityChild();
     mockFork.mockReturnValue(child);
 
-    const { runOpenClawDoctor } = await import('@electron/utils/openclaw-doctor');
+    const { runOpenClawDoctor } = await import('@electron/utils/mclaw-doctor');
     const resultPromise = runOpenClawDoctor();
 
     await vi.waitFor(() => {
@@ -118,7 +118,7 @@ describe('openclaw doctor output handling', () => {
     const child = new MockUtilityChild();
     mockFork.mockReturnValue(child);
 
-    const { runOpenClawDoctor } = await import('@electron/utils/openclaw-doctor');
+    const { runOpenClawDoctor } = await import('@electron/utils/mclaw-doctor');
     const resultPromise = runOpenClawDoctor();
 
     await vi.waitFor(() => {
@@ -137,7 +137,7 @@ describe('openclaw doctor output handling', () => {
     const child = new MockUtilityChild();
     mockFork.mockReturnValue(child);
 
-    const { runOpenClawDoctor } = await import('@electron/utils/openclaw-doctor');
+    const { runOpenClawDoctor } = await import('@electron/utils/mclaw-doctor');
     const resultPromise = runOpenClawDoctor();
 
     await vi.waitFor(() => {
@@ -160,7 +160,7 @@ describe('openclaw doctor output handling', () => {
     const child = new MockUtilityChild();
     mockFork.mockReturnValue(child);
 
-    const { runOpenClawDoctor } = await import('@electron/utils/openclaw-doctor');
+    const { runOpenClawDoctor } = await import('@electron/utils/mclaw-doctor');
     const resultPromise = runOpenClawDoctor();
 
     await vi.waitFor(() => {

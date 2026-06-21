@@ -12,7 +12,7 @@ const { gatewayRpcMock, agentsState, hostApiFetchMock } = vi.hoisted(() => ({
 vi.mock('@/stores/gateway', () => ({
   useGatewayStore: {
     getState: () => ({
-      status: { state: 'running', port: 18789, connectedAt: Date.now() },
+      status: { state: 'running', port: 18999, connectedAt: Date.now() },
       rpc: gatewayRpcMock,
     }),
   },
@@ -532,7 +532,7 @@ describe('useChatStore startup history retry', () => {
         {
           id: 'assistant-tool',
           role: 'assistant',
-          content: [{ type: 'toolCall', id: 'tool-1', name: 'read', arguments: { path: '~/.openclaw/workspace/HEARTBEAT.md' } }],
+          content: [{ type: 'toolCall', id: 'tool-1', name: 'read', arguments: { path: '~/.mclaw/workspace/HEARTBEAT.md' } }],
           stopReason: 'toolUse',
           timestamp: 1_100,
         },
@@ -684,7 +684,7 @@ describe('useChatStore startup history retry', () => {
     vi.doMock('@/stores/gateway', () => ({
       useGatewayStore: {
         getState: () => ({
-          status: { state: 'running', port: 18789, connectedAt: Date.now() + 5_000 },
+          status: { state: 'running', port: 18999, connectedAt: Date.now() + 5_000 },
           rpc: gatewayRpcMock,
         }),
       },

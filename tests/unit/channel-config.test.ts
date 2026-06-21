@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { testHome, testUserData, mockLoggerWarn, mockLoggerInfo, mockLoggerError } = vi.hoisted(() => {
   const suffix = Math.random().toString(36).slice(2);
   return {
-    testHome: `/tmp/clawx-channel-config-${suffix}`,
-    testUserData: `/tmp/clawx-channel-config-user-data-${suffix}`,
+    testHome: `/tmp/mclaw-channel-config-${suffix}`,
+    testUserData: `/tmp/mclaw-channel-config-user-data-${suffix}`,
     mockLoggerWarn: vi.fn(),
     mockLoggerInfo: vi.fn(),
     mockLoggerError: vi.fn(),
@@ -42,7 +42,7 @@ vi.mock('@electron/utils/logger', () => ({
 }));
 
 async function readOpenClawJson(): Promise<Record<string, unknown>> {
-  const content = await readFile(join(testHome, '.openclaw', 'openclaw.json'), 'utf8');
+  const content = await readFile(join(testHome, '.mclaw', 'openclaw.json'), 'utf8');
   return JSON.parse(content) as Record<string, unknown>;
 }
 
@@ -159,17 +159,17 @@ describe('WeCom plugin configuration', () => {
     expect(plugins.entries['wecom'].enabled).toBe(true);
   });
 
-  it('normalizes feishu plugin registration to openclaw-lark and removes built-in feishu on save', async () => {
+  it('normalizes feishu plugin registration to mclaw-lark and removes built-in feishu on save', async () => {
     const { saveChannelConfig, writeOpenClawConfig } = await import('@electron/utils/channel-config');
 
     await writeOpenClawConfig({
       plugins: {
         enabled: true,
-        allow: ['custom-plugin', 'feishu', 'feishu-openclaw-plugin'],
+        allow: ['custom-plugin', 'feishu', 'feishu-mclaw-plugin'],
         entries: {
           'custom-plugin': { enabled: true },
           feishu: { enabled: true },
-          'feishu-openclaw-plugin': { enabled: true },
+          'feishu-mclaw-plugin': { enabled: true },
         },
       },
     });
@@ -180,12 +180,12 @@ describe('WeCom plugin configuration', () => {
     const plugins = config.plugins as { allow: string[]; entries: Record<string, { enabled?: boolean }> };
 
     expect(plugins.allow).toContain('custom-plugin');
-    expect(plugins.allow).toContain('openclaw-lark');
+    expect(plugins.allow).toContain('mclaw-lark');
     expect(plugins.allow).not.toContain('feishu');
-    expect(plugins.allow).not.toContain('feishu-openclaw-plugin');
-    expect(plugins.entries['openclaw-lark']).toEqual({ enabled: true });
+    expect(plugins.allow).not.toContain('feishu-mclaw-plugin');
+    expect(plugins.entries['mclaw-lark']).toEqual({ enabled: true });
     expect(plugins.entries.feishu).toBeUndefined();
-    expect(plugins.entries['feishu-openclaw-plugin']).toBeUndefined();
+    expect(plugins.entries['feishu-mclaw-plugin']).toBeUndefined();
   });
 
   it('saves whatsapp as an external plugin-backed channel', async () => {
@@ -325,30 +325,30 @@ describe('WeChat dangling plugin cleanup', () => {
     await rm(testUserData, { recursive: true, force: true });
   });
 
-  it('removes dangling openclaw-weixin plugin registration and state when no channel config exists', async () => {
+  it('removes dangling mclaw-weixin plugin registration and state when no channel config exists', async () => {
     const { cleanupDanglingWeChatPluginState, writeOpenClawConfig } = await import('@electron/utils/channel-config');
 
     await writeOpenClawConfig({
       plugins: {
         enabled: true,
-        allow: ['openclaw-weixin'],
+        allow: ['mclaw-weixin'],
         entries: {
-          'openclaw-weixin': { enabled: true },
+          'mclaw-weixin': { enabled: true },
         },
       },
     });
 
-    const staleStateDir = join(testHome, '.openclaw', 'openclaw-weixin', 'accounts');
+    const staleStateDir = join(testHome, '.mclaw', 'mclaw-weixin', 'accounts');
     await mkdir(staleStateDir, { recursive: true });
     await writeFile(join(staleStateDir, 'bot-im-bot.json'), JSON.stringify({ token: 'stale-token' }), 'utf8');
-    await writeFile(join(testHome, '.openclaw', 'openclaw-weixin', 'accounts.json'), JSON.stringify(['bot-im-bot']), 'utf8');
+    await writeFile(join(testHome, '.mclaw', 'mclaw-weixin', 'accounts.json'), JSON.stringify(['bot-im-bot']), 'utf8');
 
     const result = await cleanupDanglingWeChatPluginState();
     expect(result.cleanedDanglingState).toBe(true);
 
     const config = await readOpenClawJson();
     expect(config.plugins).toBeUndefined();
-    expect(existsSync(join(testHome, '.openclaw', 'openclaw-weixin'))).toBe(false);
+    expect(existsSync(join(testHome, '.mclaw', 'mclaw-weixin'))).toBe(false);
   });
 });
 

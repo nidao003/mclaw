@@ -45,7 +45,7 @@ vi.mock('@electron/utils/provider-registry', () => ({
   getProviderDefaultModel: mocks.getProviderDefaultModel,
 }));
 
-vi.mock('@electron/utils/openclaw-auth', () => ({
+vi.mock('@electron/utils/mclaw-auth', () => ({
   removeProviderFromOpenClaw: mocks.removeProviderFromOpenClaw,
   removeProviderKeyFromOpenClaw: mocks.removeProviderKeyFromOpenClaw,
   saveOAuthTokenToOpenClaw: mocks.saveOAuthTokenToOpenClaw,

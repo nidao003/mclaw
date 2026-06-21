@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const runtimeStatus = {
   state: 'running',
-  port: 18789,
+  port: 18999,
   connectedAt: 0,
 };
 

@@ -7,7 +7,7 @@ const trackUiEventMock = vi.fn();
 
 const { gatewayState, settingsState } = vi.hoisted(() => ({
   gatewayState: {
-    status: { state: 'running', port: 18789, connectedAt: 1, pid: 1234 },
+    status: { state: 'running', port: 18999, connectedAt: 1, pid: 1234 },
   },
   settingsState: {
     devModeUnlocked: false,
@@ -71,7 +71,7 @@ describe('Models page auto refresh', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
-    gatewayState.status = { state: 'running', port: 18789, connectedAt: 1, pid: 1234 };
+    gatewayState.status = { state: 'running', port: 18999, connectedAt: 1, pid: 1234 };
     Object.defineProperty(document, 'visibilityState', {
       configurable: true,
       value: 'visible',

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 
 const { gatewayState, agentsState } = vi.hoisted(() => ({
-  gatewayState: { status: { state: 'running', port: 18789 } },
+  gatewayState: { status: { state: 'running', port: 18999 } },
   agentsState: {
     agents: [{ id: 'main', name: 'main' }] as Array<Record<string, unknown>>,
     fetchAgents: vi.fn(),

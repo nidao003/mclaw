@@ -79,7 +79,7 @@ const getDefaultSkills = (t: TFunction): DefaultSkill[] => [
   { id: 'terminal', name: t('defaultSkills.terminal.name'), description: t('defaultSkills.terminal.description') },
 ];
 
-import clawxIcon from '@/assets/logo.svg';
+import mclawIcon from '@/assets/logo.svg';
 
 // NOTE: Channel types moved to Settings > Channels page
 // NOTE: Skill bundles moved to Settings > Skills page - auto-install essential skills during setup
@@ -267,7 +267,7 @@ function WelcomeContent() {
   return (
     <div data-testid="setup-welcome-step" className="text-center space-y-4">
       <div className="mb-4 flex justify-center">
-        <img src={clawxIcon} alt="ClawX" className="h-16 w-16" />
+        <img src={mclawIcon} alt="mclaw" className="h-16 w-16" />
       </div>
       <h2 className="text-xl font-serif font-normal tracking-tight">{t('welcome.title')}</h2>
       <p className="text-muted-foreground">
@@ -285,8 +285,8 @@ function WelcomeContent() {
             className={cn(
               'h-7 text-xs',
               language === lang.code
-                ? 'bg-black/5 dark:bg-white/10 text-foreground'
-                : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5',
+                ? 'bg-accent/50 text-foreground'
+                : 'text-muted-foreground hover:bg-accent/50',
             )}
           >
             {lang.label}
@@ -574,7 +574,7 @@ function RuntimeContent({ onStatusChange }: RuntimeContentProps) {
         </div>
         <div className="grid grid-cols-[1fr_auto] items-center gap-4 p-3 rounded-lg bg-surface-input/50">
           <div className="text-left min-w-0">
-            <span>{t('runtime.openclaw')}</span>
+            <span>{t('runtime.mclaw')}</span>
             {openclawDir && (
               <p className="text-xs text-muted-foreground mt-0.5 font-mono break-all">
                 {openclawDir}
@@ -629,7 +629,7 @@ function RuntimeContent({ onStatusChange }: RuntimeContentProps) {
               </Button>
             </div>
           </div>
-          <pre className="text-xs text-foreground/80 bg-black/5 dark:bg-white/10 p-3 rounded max-h-60 overflow-auto whitespace-pre-wrap font-mono">
+          <pre className="text-xs text-foreground/80 bg-accent/50 p-3 rounded max-h-60 overflow-auto whitespace-pre-wrap font-mono">
             {logContent || t('runtime.logs.noLogs')}
           </pre>
         </div>
@@ -788,7 +788,7 @@ function InstallingContent({ skills, onComplete, onSkip }: InstallingContentProp
             <AlertCircle className="h-5 w-5 text-red-700 dark:text-red-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-semibold">{t('installing.error')}</p>
-              <pre className="text-xs bg-black/5 dark:bg-white/5 p-2 rounded overflow-x-auto whitespace-pre-wrap font-mono">
+              <pre className="text-xs bg-accent/50 p-2 rounded overflow-x-auto whitespace-pre-wrap font-mono">
                 {errorMessage}
               </pre>
               <Button

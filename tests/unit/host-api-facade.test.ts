@@ -8,7 +8,7 @@ beforeEach(() => {
   hostInvoke.mockReset();
   vi.resetModules();
   vi.stubGlobal('window', {
-    clawx: { hostInvoke },
+    mclaw: { hostInvoke },
   });
 });
 
@@ -59,14 +59,14 @@ describe('hostApi facade', () => {
 
   it('routes openclaw, shell, dialog, window, and updates methods through hostInvoke', async () => {
     hostInvoke
-      .mockResolvedValueOnce({ id: 'req-1', ok: true, data: { packageExists: true, isBuilt: true, entryPath: '/openclaw/openclaw.mjs', dir: '/openclaw' } })
+      .mockResolvedValueOnce({ id: 'req-1', ok: true, data: { packageExists: true, isBuilt: true, entryPath: '/mclaw/openclaw.mjs', dir: '/openclaw' } })
       .mockResolvedValueOnce({ id: 'req-2', ok: true, data: '' })
       .mockResolvedValueOnce({ id: 'req-3', ok: true, data: { canceled: false, filePaths: ['/tmp/a.txt'] } })
       .mockResolvedValueOnce({ id: 'req-4', ok: true, data: undefined })
       .mockResolvedValueOnce({ id: 'req-5', ok: true, data: { success: true, status: { status: 'not-available' } } });
     const { hostApi } = await import('@/lib/host-api');
 
-    await hostApi.openclaw.status();
+    await hostApi.mclaw.status();
     await hostApi.shell.openPath('/tmp/a.txt');
     await hostApi.dialog.open({ properties: ['openFile'] });
     await hostApi.window.maximize();
@@ -111,11 +111,11 @@ describe('hostApi facade', () => {
     hostInvoke.mockResolvedValueOnce({ id: 'req', ok: true, data: { content: 'tail' } });
     const { hostApi } = await import('@/lib/host-api');
 
-    await expect(hostApi.logs.readFile('/tmp/clawx.log', 50)).resolves.toEqual({ content: 'tail' });
+    await expect(hostApi.logs.readFile('/tmp/mclaw.log', 50)).resolves.toEqual({ content: 'tail' });
     expect(hostInvoke).toHaveBeenCalledWith(expect.objectContaining({
       module: 'logs',
       action: 'readFile',
-      payload: { path: '/tmp/clawx.log', tailLines: 50 },
+      payload: { path: '/tmp/mclaw.log', tailLines: 50 },
     }));
   });
 

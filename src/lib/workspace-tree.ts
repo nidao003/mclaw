@@ -2,10 +2,10 @@
  * Agent workspace file tree.
  *
  * Loads the directory tree rooted at `agent.workspace` (e.g.
- * `~/.openclaw/workspace` for the default agent) for the
+ * `~/.mclaw/workspace` for the default agent) for the
  * `WorkspaceBrowserBody` / artifact-panel browser tab.  Strictly scoped to that one directory
  * so sibling configuration paths (`runs/`, `agents/`,
- * `auth-profiles.json`, …) under `~/.openclaw` are never exposed.
+ * `auth-profiles.json`, …) under `~/.mclaw` are never exposed.
  */
 import { listTree, type TreeNode } from './file-preview-client';
 import {

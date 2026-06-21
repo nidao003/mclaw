@@ -11,13 +11,13 @@ function stableStringify(value: unknown): string {
   return `{${entries.join(',')}}`;
 }
 
-test.describe('ClawX chat skill trigger', () => {
+test.describe('mclaw chat skill trigger', () => {
   test('renders the localized Chinese skill label after the @ trigger', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -40,7 +40,7 @@ test.describe('ClawX chat skill trigger', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/settings', 'GET'])]: {
@@ -130,7 +130,7 @@ test.describe('ClawX chat skill trigger', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -153,7 +153,7 @@ test.describe('ClawX chat skill trigger', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/settings', 'GET'])]: {

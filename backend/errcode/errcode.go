@@ -3,6 +3,7 @@ package errcode
 
 import (
 	"embed"
+	"errors"
 	"net/http"
 
 	"github.com/GoYoko/web"
@@ -150,4 +151,44 @@ var (
 
 		// 专家错误 (11400-11410)
 		ErrExpertNotFound = web.NewErr(http.StatusOK, 11400, "err-expert-not-found")
+
+		// 数据 API 错误 (11500-11510)
+		ErrDataApiUnavailable    = web.NewErr(http.StatusServiceUnavailable, 11500, "err-data-api-unavailable")    // 数据源未配置/不可用
+		ErrDataApiStationNotFound = web.NewErr(http.StatusOK, 11501, "err-data-station-not-found")                  // 车站不存在
+		ErrDataApiInsufficientCredit = web.NewErr(http.StatusPaymentRequired, 11502, "err-data-insufficient-credit") // 积分不足
+		ErrDataApiInvalidParam   = web.NewErr(http.StatusOK, 11503, "err-data-invalid-param")                        // 参数错误
 )
+
+// EncodeErr 把 *web.Err 编码为 (httpStatus, businessCode, message)。
+// 背景：web.Err 的 code/id/err 字段未导出，包外拿不到；而中间件（如计费）裸返回 *web.Err 时
+// 会绕过 ctx.Failed 落到 echo 默认错误处理器吐 500。本函数供 HTTPErrorHandler 把已知 errcode
+// 还原成标准 envelope：业务码按 errcode 身份映射，未知 *web.Err 用 httpStatus 兜底。
+func EncodeErr(err error) (status, code int, msg string, ok bool) {
+	var we *web.Err
+	if err == nil || !errors.As(err, &we) {
+		return 0, 0, "", false
+	}
+	status = we.Status
+	msg = we.Error()
+	code = status // 兜底：未知业务码用 HTTP 状态码
+	switch we {
+	case ErrUnauthorized:
+		code = http.StatusUnauthorized
+	case ErrForbidden:
+		code = http.StatusForbidden
+	case ErrBadRequest:
+		code = http.StatusBadRequest
+	case ErrDataApiUnavailable:
+		code = 11500
+	case ErrDataApiStationNotFound:
+		code = 11501
+	case ErrDataApiInsufficientCredit:
+		code = 11502
+	case ErrDataApiInvalidParam:
+		code = 11503
+	}
+	if msg == "" {
+		msg = http.StatusText(status)
+	}
+	return status, code, msg, true
+}

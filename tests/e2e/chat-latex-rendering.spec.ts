@@ -39,13 +39,13 @@ const seededHistory = [
   },
 ];
 
-test.describe('ClawX chat LaTeX rendering', () => {
+test.describe('mclaw chat LaTeX rendering', () => {
   test('renders KaTeX markup for $...$, $$...$$, \\(...\\) and \\[...\\] delimiters', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -68,7 +68,7 @@ test.describe('ClawX chat LaTeX rendering', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

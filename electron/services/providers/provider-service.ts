@@ -32,7 +32,7 @@ import {
   getActiveOpenClawProviders,
   getOpenClawProvidersConfig,
   getProviderApiKeyFromOpenClaw,
-} from '../../utils/openclaw-auth';
+} from '../../utils/mclaw-auth';
 import {
   filterActiveProviderKeysForUi,
   getAliasSourceTypes,
@@ -451,7 +451,7 @@ export class ProviderService {
   // ── Legacy public API (logs deprecation warning once per method) ─
   // These exist solely for backward compatibility with external clients
   // (older Gateway code, third-party tooling, in-flight tests). Internal
-  // ClawX callers should use the internal/clean methods above.
+  // mclaw callers should use the internal/clean methods above.
 
   /**
    * @deprecated Use listAccounts() and map account data in callers.

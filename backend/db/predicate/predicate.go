@@ -12,6 +12,9 @@ type Audit func(*sql.Selector)
 // CheckIn is the predicate function for checkin builders.
 type CheckIn func(*sql.Selector)
 
+// DataApiPricing is the predicate function for dataapipricing builders.
+type DataApiPricing func(*sql.Selector)
+
 // ExchangeCode is the predicate function for exchangecode builders.
 type ExchangeCode func(*sql.Selector)
 

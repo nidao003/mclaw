@@ -55,6 +55,51 @@ var (
 			},
 		},
 	}
+	// DataAPIPricingsColumns holds the columns for the "data_api_pricings" table.
+	DataAPIPricingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "api_code", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "group", Type: field.TypeString, Default: "车站画像"},
+		{Name: "category", Type: field.TypeString},
+		{Name: "method", Type: field.TypeString, Default: "GET"},
+		{Name: "path", Type: field.TypeString},
+		{Name: "summary", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "credits_per_call", Type: field.TypeInt64, Default: 1},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "need_api_key", Type: field.TypeBool, Default: true},
+		{Name: "params", Type: field.TypeJSON, Nullable: true},
+		{Name: "response_fields", Type: field.TypeJSON, Nullable: true},
+		{Name: "example_request", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "example_response", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// DataAPIPricingsTable holds the schema information for the "data_api_pricings" table.
+	DataAPIPricingsTable = &schema.Table{
+		Name:       "data_api_pricings",
+		Columns:    DataAPIPricingsColumns,
+		PrimaryKey: []*schema.Column{DataAPIPricingsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dataapipricing_group",
+				Unique:  false,
+				Columns: []*schema.Column{DataAPIPricingsColumns[3]},
+			},
+			{
+				Name:    "dataapipricing_category",
+				Unique:  false,
+				Columns: []*schema.Column{DataAPIPricingsColumns[4]},
+			},
+			{
+				Name:    "dataapipricing_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{DataAPIPricingsColumns[10]},
+			},
+		},
+	}
 	// ExchangeCodesColumns holds the columns for the "exchange_codes" table.
 	ExchangeCodesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -1827,6 +1872,7 @@ var (
 	Tables = []*schema.Table{
 		AuditsTable,
 		CheckInsTable,
+		DataAPIPricingsTable,
 		ExchangeCodesTable,
 		ExpertsTable,
 		GitBotsTable,
@@ -1889,6 +1935,9 @@ func init() {
 	}
 	CheckInsTable.Annotation = &entsql.Annotation{
 		Table: "check_ins",
+	}
+	DataAPIPricingsTable.Annotation = &entsql.Annotation{
+		Table: "data_api_pricings",
 	}
 	ExchangeCodesTable.Annotation = &entsql.Annotation{
 		Table: "exchange_codes",

@@ -61,11 +61,11 @@ describe('gateway store event wiring', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    hostApiMock.gateway.status.mockResolvedValue({ state: 'running', port: 18789 });
+    hostApiMock.gateway.status.mockResolvedValue({ state: 'running', port: 18999 });
   });
 
   it('subscribes to typed host events on init', async () => {
-    hostApiMock.gateway.status.mockResolvedValueOnce({ state: 'running', port: 18789 });
+    hostApiMock.gateway.status.mockResolvedValueOnce({ state: 'running', port: 18999 });
 
     const handlers = new Map<string, (payload: unknown) => void>();
     hostEventSubscriptionMock.mockImplementation((eventName: string, handler: (payload: unknown) => void) => {
@@ -85,18 +85,18 @@ describe('gateway store event wiring', () => {
     expect(hostEventSubscriptionMock).toHaveBeenCalledWith('chat:runtime-event', expect.any(Function));
     expect(hostEventSubscriptionMock).toHaveBeenCalledWith('gateway:channel-status', expect.any(Function));
 
-    handlers.get('gateway:status')?.({ state: 'stopped', port: 18789 });
+    handlers.get('gateway:status')?.({ state: 'stopped', port: 18999 });
     expect(useGatewayStore.getState().status.state).toBe('stopped');
 
     handlers.get('gateway:health')?.({ ok: true, ts: 1 });
-    expect(useGatewayStore.getState().health?.openclawHealth).toEqual({ ok: true, ts: 1 });
+    expect(useGatewayStore.getState().health?.mclawHealth).toEqual({ ok: true, ts: 1 });
 
     handlers.get('gateway:presence')?.([{ mode: 'gateway', ts: 2 }]);
     expect(useGatewayStore.getState().health?.presence).toEqual([{ mode: 'gateway', ts: 2 }]);
   });
 
   it('propagates gatewayReady field from status events', async () => {
-    hostApiMock.gateway.status.mockResolvedValueOnce({ state: 'running', port: 18789, gatewayReady: false });
+    hostApiMock.gateway.status.mockResolvedValueOnce({ state: 'running', port: 18999, gatewayReady: false });
 
     const handlers = new Map<string, (payload: unknown) => void>();
     hostEventSubscriptionMock.mockImplementation((eventName: string, handler: (payload: unknown) => void) => {
@@ -111,12 +111,12 @@ describe('gateway store event wiring', () => {
     expect(useGatewayStore.getState().status.gatewayReady).toBe(false);
 
     // Simulate gateway.ready event setting gatewayReady=true
-    handlers.get('gateway:status')?.({ state: 'running', port: 18789, gatewayReady: true });
+    handlers.get('gateway:status')?.({ state: 'running', port: 18999, gatewayReady: true });
     expect(useGatewayStore.getState().status.gatewayReady).toBe(true);
   });
 
   it('treats undefined gatewayReady as ready for backwards compatibility', async () => {
-    hostApiMock.gateway.status.mockResolvedValueOnce({ state: 'running', port: 18789 });
+    hostApiMock.gateway.status.mockResolvedValueOnce({ state: 'running', port: 18999 });
 
     const handlers = new Map<string, (payload: unknown) => void>();
     hostEventSubscriptionMock.mockImplementation((eventName: string, handler: (payload: unknown) => void) => {

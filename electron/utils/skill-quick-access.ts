@@ -243,7 +243,7 @@ async function resolveLegacyRoots(explicitRoots?: string[]): Promise<string[]> {
 
   const openClawDir = getOpenClawResolvedDir();
   const extensionSkillRoots = await discoverExtensionSkillRoots([
-    join(homedir(), '.openclaw', 'extensions'),
+    join(homedir(), '.mclaw', 'extensions'),
     join(openClawDir, 'extensions'),
     join(openClawDir, 'dist', 'extensions'),
   ]);

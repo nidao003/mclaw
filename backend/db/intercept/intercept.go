@@ -10,6 +10,7 @@ import (
 	"github.com/nidao003/mclaw/backend/db"
 	"github.com/nidao003/mclaw/backend/db/audit"
 	"github.com/nidao003/mclaw/backend/db/checkin"
+	"github.com/nidao003/mclaw/backend/db/dataapipricing"
 	"github.com/nidao003/mclaw/backend/db/exchangecode"
 	"github.com/nidao003/mclaw/backend/db/expert"
 	"github.com/nidao003/mclaw/backend/db/gitbot"
@@ -173,6 +174,33 @@ func (f TraverseCheckIn) Traverse(ctx context.Context, q db.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *db.CheckInQuery", q)
+}
+
+// The DataApiPricingFunc type is an adapter to allow the use of ordinary function as a Querier.
+type DataApiPricingFunc func(context.Context, *db.DataApiPricingQuery) (db.Value, error)
+
+// Query calls f(ctx, q).
+func (f DataApiPricingFunc) Query(ctx context.Context, q db.Query) (db.Value, error) {
+	if q, ok := q.(*db.DataApiPricingQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *db.DataApiPricingQuery", q)
+}
+
+// The TraverseDataApiPricing type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseDataApiPricing func(context.Context, *db.DataApiPricingQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseDataApiPricing) Intercept(next db.Querier) db.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseDataApiPricing) Traverse(ctx context.Context, q db.Query) error {
+	if q, ok := q.(*db.DataApiPricingQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *db.DataApiPricingQuery", q)
 }
 
 // The ExchangeCodeFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1586,6 +1614,8 @@ func NewQuery(q db.Query) (Query, error) {
 		return &query[*db.AuditQuery, predicate.Audit, audit.OrderOption]{typ: db.TypeAudit, tq: q}, nil
 	case *db.CheckInQuery:
 		return &query[*db.CheckInQuery, predicate.CheckIn, checkin.OrderOption]{typ: db.TypeCheckIn, tq: q}, nil
+	case *db.DataApiPricingQuery:
+		return &query[*db.DataApiPricingQuery, predicate.DataApiPricing, dataapipricing.OrderOption]{typ: db.TypeDataApiPricing, tq: q}, nil
 	case *db.ExchangeCodeQuery:
 		return &query[*db.ExchangeCodeQuery, predicate.ExchangeCode, exchangecode.OrderOption]{typ: db.TypeExchangeCode, tq: q}, nil
 	case *db.ExpertQuery:

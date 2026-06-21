@@ -3,8 +3,8 @@ import path from 'node:path';
 import { ROOT, pathMatchesAny, toArray } from './specs.mjs';
 
 const DIRECT_IPC_PATTERN = /window\.electron\.ipcRenderer\.invoke\s*\(/;
-const DIRECT_GATEWAY_HTTP_PATTERN = /fetch\s*\(\s*['"`]http:\/\/(?:127\.0\.0\.1|localhost):18789/;
-const DIRECT_GATEWAY_WS_PATTERN = /new\s+WebSocket\s*\(\s*['"`]ws:\/\/(?:127\.0\.0\.1|localhost):18789|ws:\/\/(?:127\.0\.0\.1|localhost):18789/;
+const DIRECT_GATEWAY_HTTP_PATTERN = /fetch\s*\(\s*['"`]http:\/\/(?:127\.0\.0\.1|localhost):18999/;
+const DIRECT_GATEWAY_WS_PATTERN = /new\s+WebSocket\s*\(\s*['"`]ws:\/\/(?:127\.0\.0\.1|localhost):18999|ws:\/\/(?:127\.0\.0\.1|localhost):18999/;
 const HOST_API_LOCAL_HTTP_PATTERN = /fetch\s*\(\s*['"`]http:\/\/(?:127\.0\.0\.1|localhost):13210|HOST_API_BASE\s*=\s*`?http:\/\/127\.0\.0\.1:\$\{HOST_API_PORT\}`?/;
 const GATEWAY_READY_MUTATION_PATTERN = /gatewayReady\s*[:=]\s*(?:true|false)|setStatus\s*\([^)]*gatewayReady|setState\s*\([^)]*gatewayReady/s;
 const COMMUNICATION_PATHS = [

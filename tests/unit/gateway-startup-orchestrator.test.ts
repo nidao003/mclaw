@@ -22,7 +22,7 @@ import { LifecycleSupersededError } from '@electron/gateway/lifecycle-controller
 
 function createMockHooks(overrides: Partial<Parameters<typeof runGatewayStartupSequence>[0]> = {}) {
   return {
-    port: 18789,
+    port: 18999,
     shouldWaitForPortFree: true,
     hasOwnedProcess: vi.fn().mockReturnValue(false),
     resetStartupStderrLines: vi.fn(),
@@ -49,13 +49,13 @@ describe('runGatewayStartupSequence', () => {
 
   it('connects to existing gateway when findExistingGateway returns a result', async () => {
     const hooks = createMockHooks({
-      findExistingGateway: vi.fn().mockResolvedValue({ port: 18789, externalToken: 'tok-ext' }),
+      findExistingGateway: vi.fn().mockResolvedValue({ port: 18999, externalToken: 'tok-ext' }),
     });
 
     await runGatewayStartupSequence(hooks);
 
-    expect(hooks.findExistingGateway).toHaveBeenCalledWith(18789);
-    expect(hooks.connect).toHaveBeenCalledWith(18789, 'tok-ext');
+    expect(hooks.findExistingGateway).toHaveBeenCalledWith(18999);
+    expect(hooks.connect).toHaveBeenCalledWith(18999, 'tok-ext');
     expect(hooks.onConnectedToExistingGateway).toHaveBeenCalledTimes(1);
     expect(hooks.startProcess).not.toHaveBeenCalled();
     expect(hooks.onConnectedToManagedGateway).not.toHaveBeenCalled();
@@ -72,10 +72,10 @@ describe('runGatewayStartupSequence', () => {
 
     await runGatewayStartupSequence(hooks);
 
-    expect(hooks.findExistingGateway).toHaveBeenCalledWith(18789);
+    expect(hooks.findExistingGateway).toHaveBeenCalledWith(18999);
     expect(hooks.hasOwnedProcess).toHaveBeenCalled();
-    expect(hooks.waitForReady).toHaveBeenCalledWith(18789);
-    expect(hooks.connect).toHaveBeenCalledWith(18789, undefined);
+    expect(hooks.waitForReady).toHaveBeenCalledWith(18999);
+    expect(hooks.connect).toHaveBeenCalledWith(18999, undefined);
     expect(hooks.onConnectedToExistingGateway).toHaveBeenCalledTimes(1);
 
     // Must NOT start a new process or wait for port free
@@ -97,12 +97,12 @@ describe('runGatewayStartupSequence', () => {
 
     await runGatewayStartupSequence(hooks);
 
-    expect(hooks.findExistingGateway).toHaveBeenCalledWith(18789);
+    expect(hooks.findExistingGateway).toHaveBeenCalledWith(18999);
     expect(hooks.hasOwnedProcess).toHaveBeenCalled();
-    expect(hooks.waitForPortFree).toHaveBeenCalledWith(18789);
+    expect(hooks.waitForPortFree).toHaveBeenCalledWith(18999);
     expect(hooks.startProcess).toHaveBeenCalledTimes(1);
-    expect(hooks.waitForReady).toHaveBeenCalledWith(18789);
-    expect(hooks.connect).toHaveBeenCalledWith(18789, undefined);
+    expect(hooks.waitForReady).toHaveBeenCalledWith(18999);
+    expect(hooks.connect).toHaveBeenCalledWith(18999, undefined);
     expect(hooks.onConnectedToManagedGateway).toHaveBeenCalledTimes(1);
     expect(hooks.onConnectedToExistingGateway).not.toHaveBeenCalled();
 

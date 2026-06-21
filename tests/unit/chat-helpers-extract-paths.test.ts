@@ -15,11 +15,11 @@ describe('extractRawFilePaths', () => {
 
   it('surfaces MEDIA: tagged artifacts emitted by the runtime', () => {
     const sample =
-      'Here is the spreadsheet:\nMEDIA:/Users/alice/.openclaw/media/outbound/sales-2025---abc123.xlsx';
+      'Here is the spreadsheet:\nMEDIA:/Users/alice/.mclaw/media/outbound/sales-2025---abc123.xlsx';
     const refs = extractRawFilePaths(sample);
     expect(refs).toHaveLength(1);
     expect(refs[0]).toMatchObject({
-      filePath: '/Users/alice/.openclaw/media/outbound/sales-2025---abc123.xlsx',
+      filePath: '/Users/alice/.mclaw/media/outbound/sales-2025---abc123.xlsx',
       mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
   });
@@ -42,11 +42,11 @@ describe('extractRawFilePaths', () => {
 
   it('captures MEDIA: tagged Windows artifact paths', () => {
     const refs = extractRawFilePaths(String.raw`SVG file is ready:
-MEDIA:C:\Users\Administrator\.openclaw\workspace\japan-kansai-4d3n-plan.svg`);
+MEDIA:C:\Users\Administrator\.mclaw\workspace\japan-kansai-4d3n-plan.svg`);
 
     expect(refs).toEqual([
       {
-        filePath: String.raw`C:\Users\Administrator\.openclaw\workspace\japan-kansai-4d3n-plan.svg`,
+        filePath: String.raw`C:\Users\Administrator\.mclaw\workspace\japan-kansai-4d3n-plan.svg`,
         mimeType: 'image/svg+xml',
       },
     ]);
@@ -95,16 +95,16 @@ MEDIA:C:\Users\Administrator\.openclaw\workspace\japan-kansai-4d3n-plan.svg`);
   });
 
   it('detects OpenClaw skill directories without file extensions', () => {
-    const refs = extractRawFilePaths('位置： ~/.openclaw/skills/open-eastmoney');
+    const refs = extractRawFilePaths('位置： ~/.mclaw/skills/open-eastmoney');
     expect(refs).toEqual([
-      { filePath: '~/.openclaw/skills/open-eastmoney', mimeType: 'application/x-directory' },
+      { filePath: '~/.mclaw/skills/open-eastmoney', mimeType: 'application/x-directory' },
     ]);
   });
 
   it('preserves unicode Windows skill directory paths', () => {
-    const refs = extractRawFilePaths(String.raw`位置： C:\Users\张三\.openclaw\skills\打开东方财富。`);
+    const refs = extractRawFilePaths(String.raw`位置： C:\Users\张三\.mclaw\skills\打开东方财富。`);
     expect(refs).toEqual([
-      { filePath: String.raw`C:\Users\张三\.openclaw\skills\打开东方财富`, mimeType: 'application/x-directory' },
+      { filePath: String.raw`C:\Users\张三\.mclaw\skills\打开东方财富`, mimeType: 'application/x-directory' },
     ]);
   });
 });

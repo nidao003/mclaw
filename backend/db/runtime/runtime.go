@@ -9,6 +9,7 @@ import (
 	"github.com/nidao003/mclaw/backend/consts"
 	"github.com/nidao003/mclaw/backend/db/audit"
 	"github.com/nidao003/mclaw/backend/db/checkin"
+	"github.com/nidao003/mclaw/backend/db/dataapipricing"
 	"github.com/nidao003/mclaw/backend/db/exchangecode"
 	"github.com/nidao003/mclaw/backend/db/expert"
 	"github.com/nidao003/mclaw/backend/db/gitbot"
@@ -84,6 +85,58 @@ func init() {
 	checkinDescCreatedAt := checkinFields[4].Descriptor()
 	// checkin.DefaultCreatedAt holds the default value on creation for the created_at field.
 	checkin.DefaultCreatedAt = checkinDescCreatedAt.Default.(func() time.Time)
+	dataapipricingFields := schema.DataApiPricing{}.Fields()
+	_ = dataapipricingFields
+	// dataapipricingDescAPICode is the schema descriptor for api_code field.
+	dataapipricingDescAPICode := dataapipricingFields[1].Descriptor()
+	// dataapipricing.APICodeValidator is a validator for the "api_code" field. It is called by the builders before save.
+	dataapipricing.APICodeValidator = dataapipricingDescAPICode.Validators[0].(func(string) error)
+	// dataapipricingDescName is the schema descriptor for name field.
+	dataapipricingDescName := dataapipricingFields[2].Descriptor()
+	// dataapipricing.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	dataapipricing.NameValidator = dataapipricingDescName.Validators[0].(func(string) error)
+	// dataapipricingDescGroup is the schema descriptor for group field.
+	dataapipricingDescGroup := dataapipricingFields[3].Descriptor()
+	// dataapipricing.DefaultGroup holds the default value on creation for the group field.
+	dataapipricing.DefaultGroup = dataapipricingDescGroup.Default.(string)
+	// dataapipricingDescCategory is the schema descriptor for category field.
+	dataapipricingDescCategory := dataapipricingFields[4].Descriptor()
+	// dataapipricing.CategoryValidator is a validator for the "category" field. It is called by the builders before save.
+	dataapipricing.CategoryValidator = dataapipricingDescCategory.Validators[0].(func(string) error)
+	// dataapipricingDescMethod is the schema descriptor for method field.
+	dataapipricingDescMethod := dataapipricingFields[5].Descriptor()
+	// dataapipricing.DefaultMethod holds the default value on creation for the method field.
+	dataapipricing.DefaultMethod = dataapipricingDescMethod.Default.(string)
+	// dataapipricingDescPath is the schema descriptor for path field.
+	dataapipricingDescPath := dataapipricingFields[6].Descriptor()
+	// dataapipricing.PathValidator is a validator for the "path" field. It is called by the builders before save.
+	dataapipricing.PathValidator = dataapipricingDescPath.Validators[0].(func(string) error)
+	// dataapipricingDescCreditsPerCall is the schema descriptor for credits_per_call field.
+	dataapipricingDescCreditsPerCall := dataapipricingFields[9].Descriptor()
+	// dataapipricing.DefaultCreditsPerCall holds the default value on creation for the credits_per_call field.
+	dataapipricing.DefaultCreditsPerCall = dataapipricingDescCreditsPerCall.Default.(int64)
+	// dataapipricingDescEnabled is the schema descriptor for enabled field.
+	dataapipricingDescEnabled := dataapipricingFields[10].Descriptor()
+	// dataapipricing.DefaultEnabled holds the default value on creation for the enabled field.
+	dataapipricing.DefaultEnabled = dataapipricingDescEnabled.Default.(bool)
+	// dataapipricingDescNeedAPIKey is the schema descriptor for need_api_key field.
+	dataapipricingDescNeedAPIKey := dataapipricingFields[11].Descriptor()
+	// dataapipricing.DefaultNeedAPIKey holds the default value on creation for the need_api_key field.
+	dataapipricing.DefaultNeedAPIKey = dataapipricingDescNeedAPIKey.Default.(bool)
+	// dataapipricingDescSortOrder is the schema descriptor for sort_order field.
+	dataapipricingDescSortOrder := dataapipricingFields[16].Descriptor()
+	// dataapipricing.DefaultSortOrder holds the default value on creation for the sort_order field.
+	dataapipricing.DefaultSortOrder = dataapipricingDescSortOrder.Default.(int)
+	// dataapipricingDescCreatedAt is the schema descriptor for created_at field.
+	dataapipricingDescCreatedAt := dataapipricingFields[17].Descriptor()
+	// dataapipricing.DefaultCreatedAt holds the default value on creation for the created_at field.
+	dataapipricing.DefaultCreatedAt = dataapipricingDescCreatedAt.Default.(func() time.Time)
+	// dataapipricingDescUpdatedAt is the schema descriptor for updated_at field.
+	dataapipricingDescUpdatedAt := dataapipricingFields[18].Descriptor()
+	// dataapipricing.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	dataapipricing.DefaultUpdatedAt = dataapipricingDescUpdatedAt.Default.(func() time.Time)
+	// dataapipricing.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	dataapipricing.UpdateDefaultUpdatedAt = dataapipricingDescUpdatedAt.UpdateDefault.(func() time.Time)
 	exchangecodeFields := schema.ExchangeCode{}.Fields()
 	_ = exchangecodeFields
 	// exchangecodeDescCode is the schema descriptor for code field.
@@ -1119,6 +1172,10 @@ func init() {
 	transactionlogDescCreatedAt := transactionlogFields[8].Descriptor()
 	// transactionlog.DefaultCreatedAt holds the default value on creation for the created_at field.
 	transactionlog.DefaultCreatedAt = transactionlogDescCreatedAt.Default.(func() time.Time)
+	// transactionlogDescID is the schema descriptor for id field.
+	transactionlogDescID := transactionlogFields[0].Descriptor()
+	// transactionlog.DefaultID holds the default value on creation for the id field.
+	transactionlog.DefaultID = transactionlogDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	user.Hooks[0] = userMixinHooks0[0]

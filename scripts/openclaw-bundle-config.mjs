@@ -4,7 +4,7 @@ export const EXTRA_BUNDLED_PACKAGES = [
   // Built-in channel/runtime extension deps that are not always pulled in by the
   // OpenClaw package's own transitive dependency graph, but are required in
   // packaged builds when dist/extensions/<channel>/*.js resolves bare imports
-  // from resources/openclaw/node_modules.
+  // from resources/mclaw/node_modules.
   '@larksuiteoapi/node-sdk',
   '@grammyjs/runner',
   '@grammyjs/transformer-throttler',

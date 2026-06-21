@@ -1,7 +1,7 @@
 import { app, utilityProcess } from 'electron';
 import path from 'path';
 import { existsSync } from 'fs';
-import { getOpenClawDir, getOpenClawEntryPath } from '../utils/paths';
+import { getMclawDir, getOpenClawConfigDir, getOpenClawEntryPath } from '../utils/paths';
 import { getUvMirrorEnv } from '../utils/uv-env';
 import { isPythonReady, setupManagedPython } from '../utils/uv-setup';
 import { logger } from '../utils/logger';
@@ -21,7 +21,7 @@ export function warmupManagedPythonReadiness(): void {
   });
 }
 
-export async function terminateOwnedGatewayProcess(child: Electron.UtilityProcess): Promise<void> {
+export async function terminateOwnedGatewayProcess(child: import('node:child_process').ChildProcess): Promise<void> {
   const terminateWindowsProcessTree = async (pid: number): Promise<void> => {
     const cp = await import('child_process');
     await new Promise<void>((resolve) => {
@@ -84,7 +84,7 @@ export async function unloadLaunchctlGatewayService(): Promise<void> {
     const uid = process.getuid?.();
     if (uid === undefined) return;
 
-    const launchdLabel = 'ai.openclaw.gateway';
+    const launchdLabel = 'ai.mclaw.gateway';
     const serviceTarget = `gui/${uid}/${launchdLabel}`;
     const cp = await import('child_process');
     const fsPromises = await import('fs/promises');
@@ -263,7 +263,7 @@ export async function findExistingGatewayProcess(options: {
 }
 
 export async function runOpenClawDoctorRepair(): Promise<boolean> {
-  const openclawDir = getOpenClawDir();
+  const mclawDir = getMclawDir();
   const entryScript = getOpenClawEntryPath();
   if (!existsSync(entryScript)) {
     logger.error(`Cannot run OpenClaw doctor repair: entry script not found at ${entryScript}`);
@@ -285,7 +285,7 @@ export async function runOpenClawDoctorRepair(): Promise<boolean> {
   const uvEnv = await getUvMirrorEnv();
   const doctorArgs = ['doctor', '--fix', '--yes', '--non-interactive'];
   logger.info(
-    `Running OpenClaw doctor repair (entry="${entryScript}", args="${doctorArgs.join(' ')}", cwd="${openclawDir}", bundledBin=${binPathExists ? 'yes' : 'no'})`,
+    `Running OpenClaw doctor repair (entry="${entryScript}", args="${doctorArgs.join(' ')}", cwd="${mclawDir}", bundledBin=${binPathExists ? 'yes' : 'no'})`,
   );
 
   return await new Promise<boolean>((resolve) => {
@@ -293,10 +293,14 @@ export async function runOpenClawDoctorRepair(): Promise<boolean> {
       ...baseEnvPatched,
       ...uvEnv,
       OPENCLAW_NO_RESPAWN: '1',
+      // Pin OpenClaw doctor to mclaw's own state directory so repairs
+      // operate on the same data the gateway uses (sessions, agents,
+      // extensions discovery) — never the legacy ~/.openclaw/.
+      OPENCLAW_STATE_DIR: getOpenClawConfigDir(),
     };
 
     const child = utilityProcess.fork(entryScript, doctorArgs, {
-      cwd: openclawDir,
+      cwd: mclawDir,
       stdio: 'pipe',
       env: forkEnv as NodeJS.ProcessEnv,
     });

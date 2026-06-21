@@ -18,6 +18,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/nidao003/mclaw/backend/db/audit"
 	"github.com/nidao003/mclaw/backend/db/checkin"
+	"github.com/nidao003/mclaw/backend/db/dataapipricing"
 	"github.com/nidao003/mclaw/backend/db/exchangecode"
 	"github.com/nidao003/mclaw/backend/db/expert"
 	"github.com/nidao003/mclaw/backend/db/gitbot"
@@ -83,6 +84,8 @@ type Client struct {
 	Audit *AuditClient
 	// CheckIn is the client for interacting with the CheckIn builders.
 	CheckIn *CheckInClient
+	// DataApiPricing is the client for interacting with the DataApiPricing builders.
+	DataApiPricing *DataApiPricingClient
 	// ExchangeCode is the client for interacting with the ExchangeCode builders.
 	ExchangeCode *ExchangeCodeClient
 	// Expert is the client for interacting with the Expert builders.
@@ -200,6 +203,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Audit = NewAuditClient(c.config)
 	c.CheckIn = NewCheckInClient(c.config)
+	c.DataApiPricing = NewDataApiPricingClient(c.config)
 	c.ExchangeCode = NewExchangeCodeClient(c.config)
 	c.Expert = NewExpertClient(c.config)
 	c.GitBot = NewGitBotClient(c.config)
@@ -346,6 +350,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:              cfg,
 		Audit:               NewAuditClient(cfg),
 		CheckIn:             NewCheckInClient(cfg),
+		DataApiPricing:      NewDataApiPricingClient(cfg),
 		ExchangeCode:        NewExchangeCodeClient(cfg),
 		Expert:              NewExpertClient(cfg),
 		GitBot:              NewGitBotClient(cfg),
@@ -419,6 +424,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:              cfg,
 		Audit:               NewAuditClient(cfg),
 		CheckIn:             NewCheckInClient(cfg),
+		DataApiPricing:      NewDataApiPricingClient(cfg),
 		ExchangeCode:        NewExchangeCodeClient(cfg),
 		Expert:              NewExpertClient(cfg),
 		GitBot:              NewGitBotClient(cfg),
@@ -500,17 +506,17 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Audit, c.CheckIn, c.ExchangeCode, c.Expert, c.GitBot, c.GitBotTask,
-		c.GitBotUser, c.GitIdentity, c.GitTask, c.Host, c.Image, c.Invitation,
-		c.MCPTool, c.MCPUpstream, c.MCPUserToolSetting, c.Model, c.ModelApiKey,
-		c.ModelPricing, c.NotifyChannel, c.NotifySendLog, c.NotifySubscription,
-		c.PaymentOrder, c.Plan, c.Project, c.ProjectCollaborator, c.ProjectGitBot,
-		c.ProjectIssue, c.ProjectIssueComment, c.ProjectTask, c.Skill, c.SkillRating,
-		c.SkillReview, c.SkillVersion, c.Task, c.TaskModelSwitch, c.TaskUsageStat,
-		c.TaskVirtualMachine, c.Team, c.TeamGroup, c.TeamGroupHost, c.TeamGroupImage,
-		c.TeamGroupMember, c.TeamGroupModel, c.TeamHost, c.TeamImage, c.TeamMember,
-		c.TeamModel, c.TransactionLog, c.User, c.UserApiKey, c.UserIdentity,
-		c.UserSubscription, c.VirtualMachine, c.Wallet,
+		c.Audit, c.CheckIn, c.DataApiPricing, c.ExchangeCode, c.Expert, c.GitBot,
+		c.GitBotTask, c.GitBotUser, c.GitIdentity, c.GitTask, c.Host, c.Image,
+		c.Invitation, c.MCPTool, c.MCPUpstream, c.MCPUserToolSetting, c.Model,
+		c.ModelApiKey, c.ModelPricing, c.NotifyChannel, c.NotifySendLog,
+		c.NotifySubscription, c.PaymentOrder, c.Plan, c.Project, c.ProjectCollaborator,
+		c.ProjectGitBot, c.ProjectIssue, c.ProjectIssueComment, c.ProjectTask, c.Skill,
+		c.SkillRating, c.SkillReview, c.SkillVersion, c.Task, c.TaskModelSwitch,
+		c.TaskUsageStat, c.TaskVirtualMachine, c.Team, c.TeamGroup, c.TeamGroupHost,
+		c.TeamGroupImage, c.TeamGroupMember, c.TeamGroupModel, c.TeamHost, c.TeamImage,
+		c.TeamMember, c.TeamModel, c.TransactionLog, c.User, c.UserApiKey,
+		c.UserIdentity, c.UserSubscription, c.VirtualMachine, c.Wallet,
 	} {
 		n.Use(hooks...)
 	}
@@ -520,17 +526,17 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Audit, c.CheckIn, c.ExchangeCode, c.Expert, c.GitBot, c.GitBotTask,
-		c.GitBotUser, c.GitIdentity, c.GitTask, c.Host, c.Image, c.Invitation,
-		c.MCPTool, c.MCPUpstream, c.MCPUserToolSetting, c.Model, c.ModelApiKey,
-		c.ModelPricing, c.NotifyChannel, c.NotifySendLog, c.NotifySubscription,
-		c.PaymentOrder, c.Plan, c.Project, c.ProjectCollaborator, c.ProjectGitBot,
-		c.ProjectIssue, c.ProjectIssueComment, c.ProjectTask, c.Skill, c.SkillRating,
-		c.SkillReview, c.SkillVersion, c.Task, c.TaskModelSwitch, c.TaskUsageStat,
-		c.TaskVirtualMachine, c.Team, c.TeamGroup, c.TeamGroupHost, c.TeamGroupImage,
-		c.TeamGroupMember, c.TeamGroupModel, c.TeamHost, c.TeamImage, c.TeamMember,
-		c.TeamModel, c.TransactionLog, c.User, c.UserApiKey, c.UserIdentity,
-		c.UserSubscription, c.VirtualMachine, c.Wallet,
+		c.Audit, c.CheckIn, c.DataApiPricing, c.ExchangeCode, c.Expert, c.GitBot,
+		c.GitBotTask, c.GitBotUser, c.GitIdentity, c.GitTask, c.Host, c.Image,
+		c.Invitation, c.MCPTool, c.MCPUpstream, c.MCPUserToolSetting, c.Model,
+		c.ModelApiKey, c.ModelPricing, c.NotifyChannel, c.NotifySendLog,
+		c.NotifySubscription, c.PaymentOrder, c.Plan, c.Project, c.ProjectCollaborator,
+		c.ProjectGitBot, c.ProjectIssue, c.ProjectIssueComment, c.ProjectTask, c.Skill,
+		c.SkillRating, c.SkillReview, c.SkillVersion, c.Task, c.TaskModelSwitch,
+		c.TaskUsageStat, c.TaskVirtualMachine, c.Team, c.TeamGroup, c.TeamGroupHost,
+		c.TeamGroupImage, c.TeamGroupMember, c.TeamGroupModel, c.TeamHost, c.TeamImage,
+		c.TeamMember, c.TeamModel, c.TransactionLog, c.User, c.UserApiKey,
+		c.UserIdentity, c.UserSubscription, c.VirtualMachine, c.Wallet,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -543,6 +549,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Audit.mutate(ctx, m)
 	case *CheckInMutation:
 		return c.CheckIn.mutate(ctx, m)
+	case *DataApiPricingMutation:
+		return c.DataApiPricing.mutate(ctx, m)
 	case *ExchangeCodeMutation:
 		return c.ExchangeCode.mutate(ctx, m)
 	case *ExpertMutation:
@@ -931,6 +939,139 @@ func (c *CheckInClient) mutate(ctx context.Context, m *CheckInMutation) (Value, 
 		return (&CheckInDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("db: unknown CheckIn mutation op: %q", m.Op())
+	}
+}
+
+// DataApiPricingClient is a client for the DataApiPricing schema.
+type DataApiPricingClient struct {
+	config
+}
+
+// NewDataApiPricingClient returns a client for the DataApiPricing from the given config.
+func NewDataApiPricingClient(c config) *DataApiPricingClient {
+	return &DataApiPricingClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dataapipricing.Hooks(f(g(h())))`.
+func (c *DataApiPricingClient) Use(hooks ...Hook) {
+	c.hooks.DataApiPricing = append(c.hooks.DataApiPricing, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dataapipricing.Intercept(f(g(h())))`.
+func (c *DataApiPricingClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DataApiPricing = append(c.inters.DataApiPricing, interceptors...)
+}
+
+// Create returns a builder for creating a DataApiPricing entity.
+func (c *DataApiPricingClient) Create() *DataApiPricingCreate {
+	mutation := newDataApiPricingMutation(c.config, OpCreate)
+	return &DataApiPricingCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DataApiPricing entities.
+func (c *DataApiPricingClient) CreateBulk(builders ...*DataApiPricingCreate) *DataApiPricingCreateBulk {
+	return &DataApiPricingCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DataApiPricingClient) MapCreateBulk(slice any, setFunc func(*DataApiPricingCreate, int)) *DataApiPricingCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DataApiPricingCreateBulk{err: fmt.Errorf("calling to DataApiPricingClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DataApiPricingCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DataApiPricingCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DataApiPricing.
+func (c *DataApiPricingClient) Update() *DataApiPricingUpdate {
+	mutation := newDataApiPricingMutation(c.config, OpUpdate)
+	return &DataApiPricingUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DataApiPricingClient) UpdateOne(_m *DataApiPricing) *DataApiPricingUpdateOne {
+	mutation := newDataApiPricingMutation(c.config, OpUpdateOne, withDataApiPricing(_m))
+	return &DataApiPricingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DataApiPricingClient) UpdateOneID(id uuid.UUID) *DataApiPricingUpdateOne {
+	mutation := newDataApiPricingMutation(c.config, OpUpdateOne, withDataApiPricingID(id))
+	return &DataApiPricingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DataApiPricing.
+func (c *DataApiPricingClient) Delete() *DataApiPricingDelete {
+	mutation := newDataApiPricingMutation(c.config, OpDelete)
+	return &DataApiPricingDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DataApiPricingClient) DeleteOne(_m *DataApiPricing) *DataApiPricingDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DataApiPricingClient) DeleteOneID(id uuid.UUID) *DataApiPricingDeleteOne {
+	builder := c.Delete().Where(dataapipricing.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DataApiPricingDeleteOne{builder}
+}
+
+// Query returns a query builder for DataApiPricing.
+func (c *DataApiPricingClient) Query() *DataApiPricingQuery {
+	return &DataApiPricingQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDataApiPricing},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DataApiPricing entity by its id.
+func (c *DataApiPricingClient) Get(ctx context.Context, id uuid.UUID) (*DataApiPricing, error) {
+	return c.Query().Where(dataapipricing.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DataApiPricingClient) GetX(ctx context.Context, id uuid.UUID) *DataApiPricing {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DataApiPricingClient) Hooks() []Hook {
+	return c.hooks.DataApiPricing
+}
+
+// Interceptors returns the client interceptors.
+func (c *DataApiPricingClient) Interceptors() []Interceptor {
+	return c.inters.DataApiPricing
+}
+
+func (c *DataApiPricingClient) mutate(ctx context.Context, m *DataApiPricingMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DataApiPricingCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DataApiPricingUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DataApiPricingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DataApiPricingDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("db: unknown DataApiPricing mutation op: %q", m.Op())
 	}
 }
 
@@ -10379,10 +10520,10 @@ func (c *WalletClient) mutate(ctx context.Context, m *WalletMutation) (Value, er
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Audit, CheckIn, ExchangeCode, Expert, GitBot, GitBotTask, GitBotUser,
-		GitIdentity, GitTask, Host, Image, Invitation, MCPTool, MCPUpstream,
-		MCPUserToolSetting, Model, ModelApiKey, ModelPricing, NotifyChannel,
-		NotifySendLog, NotifySubscription, PaymentOrder, Plan, Project,
+		Audit, CheckIn, DataApiPricing, ExchangeCode, Expert, GitBot, GitBotTask,
+		GitBotUser, GitIdentity, GitTask, Host, Image, Invitation, MCPTool,
+		MCPUpstream, MCPUserToolSetting, Model, ModelApiKey, ModelPricing,
+		NotifyChannel, NotifySendLog, NotifySubscription, PaymentOrder, Plan, Project,
 		ProjectCollaborator, ProjectGitBot, ProjectIssue, ProjectIssueComment,
 		ProjectTask, Skill, SkillRating, SkillReview, SkillVersion, Task,
 		TaskModelSwitch, TaskUsageStat, TaskVirtualMachine, Team, TeamGroup,
@@ -10391,10 +10532,10 @@ type (
 		UserIdentity, UserSubscription, VirtualMachine, Wallet []ent.Hook
 	}
 	inters struct {
-		Audit, CheckIn, ExchangeCode, Expert, GitBot, GitBotTask, GitBotUser,
-		GitIdentity, GitTask, Host, Image, Invitation, MCPTool, MCPUpstream,
-		MCPUserToolSetting, Model, ModelApiKey, ModelPricing, NotifyChannel,
-		NotifySendLog, NotifySubscription, PaymentOrder, Plan, Project,
+		Audit, CheckIn, DataApiPricing, ExchangeCode, Expert, GitBot, GitBotTask,
+		GitBotUser, GitIdentity, GitTask, Host, Image, Invitation, MCPTool,
+		MCPUpstream, MCPUserToolSetting, Model, ModelApiKey, ModelPricing,
+		NotifyChannel, NotifySendLog, NotifySubscription, PaymentOrder, Plan, Project,
 		ProjectCollaborator, ProjectGitBot, ProjectIssue, ProjectIssueComment,
 		ProjectTask, Skill, SkillRating, SkillReview, SkillVersion, Task,
 		TaskModelSwitch, TaskUsageStat, TaskVirtualMachine, Team, TeamGroup,

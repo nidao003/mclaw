@@ -14,7 +14,7 @@ const SESSIONS_LIST_PAYLOAD = {
   includeLastMessage: true,
 };
 
-test.describe('ClawX gateway lifecycle resilience', () => {
+test.describe('mclaw gateway lifecycle resilience', () => {
   test('app remains fully navigable while gateway is disconnected', async ({ page }) => {
     // In E2E mode, gateway auto-start is skipped, so the app starts
     // with gateway in "stopped" state — simulating the disconnected scenario.
@@ -45,7 +45,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
 
     // Mock the initial gateway status as "stopped"
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'stopped', port: 18789 },
+      gatewayStatus: { state: 'stopped', port: 18999 },
     });
 
     // Simulate gateway status transitions by sending IPC events to the renderer.
@@ -56,7 +56,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'starting',
-        port: 18789,
+        port: 18999,
       });
     });
     // Wait briefly for the renderer to process the IPC event
@@ -67,7 +67,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'running',
-        port: 18789,
+        port: 18999,
         pid: 12345,
         connectedAt: Date.now(),
       });
@@ -84,7 +84,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'error',
-        port: 18789,
+        port: 18999,
         error: 'WebSocket closed before handshake',
       });
     });
@@ -99,7 +99,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'reconnecting',
-        port: 18789,
+        port: 18999,
         reconnectAttempts: 1,
       });
     });
@@ -109,7 +109,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'running',
-        port: 18789,
+        port: 18999,
         pid: 23456,
         connectedAt: Date.now(),
       });
@@ -125,14 +125,14 @@ test.describe('ClawX gateway lifecycle resilience', () => {
 
   test('shows gateway restart progress in the sidebar instead of page-level warnings', async ({ electronApp, page }) => {
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'running', port: 18789, pid: 100, connectedAt: 1, gatewayReady: true },
+      gatewayStatus: { state: 'running', port: 18999, pid: 100, connectedAt: 1, gatewayReady: true },
       hostApi: {
         [stableStringify(['/api/gateway/status', 'GET'])]: {
           ok: true,
           data: {
             status: 200,
             ok: true,
-            json: { state: 'running', port: 18789, pid: 100, connectedAt: 1, gatewayReady: true },
+            json: { state: 'running', port: 18999, pid: 100, connectedAt: 1, gatewayReady: true },
           },
         },
         [stableStringify(['/api/agents', 'GET'])]: {
@@ -171,7 +171,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'starting',
-        port: 18789,
+        port: 18999,
         gatewayReady: false,
       });
     });
@@ -202,7 +202,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'running',
-        port: 18789,
+        port: 18999,
         pid: 200,
         connectedAt: 2,
         gatewayReady: true,
@@ -214,14 +214,14 @@ test.describe('ClawX gateway lifecycle resilience', () => {
 
   test('chat sidebar history reloads when gateway becomes ready after restart', async ({ electronApp, page }) => {
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'running', port: 18789, pid: 100, connectedAt: 1, gatewayReady: false },
+      gatewayStatus: { state: 'running', port: 18999, pid: 100, connectedAt: 1, gatewayReady: false },
       hostApi: {
         [stableStringify(['/api/gateway/status', 'GET'])]: {
           ok: true,
           data: {
             status: 200,
             ok: true,
-            json: { state: 'running', port: 18789, pid: 100, connectedAt: 1, gatewayReady: false },
+            json: { state: 'running', port: 18999, pid: 100, connectedAt: 1, gatewayReady: false },
           },
         },
         [stableStringify(['/api/agents', 'GET'])]: {
@@ -255,7 +255,7 @@ test.describe('ClawX gateway lifecycle resilience', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'running',
-        port: 18789,
+        port: 18999,
         pid: 200,
         connectedAt: 2,
         gatewayReady: true,

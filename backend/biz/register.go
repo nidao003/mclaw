@@ -7,6 +7,7 @@ import (
 	"github.com/samber/do"
 
 	"github.com/nidao003/mclaw/backend/biz/billing"
+	"github.com/nidao003/mclaw/backend/biz/data"
 	"github.com/nidao003/mclaw/backend/biz/file"
 	"github.com/nidao003/mclaw/backend/biz/admin"
 	"github.com/nidao003/mclaw/backend/biz/expert"
@@ -38,6 +39,7 @@ func RegisterAll(i *do.Injector) error {
 	subscription.ProvideSubscription(i)
 	wallet.ProvideWallet(i)
 	billing.ProvideBilling(i)
+	data.ProvideData(i)
 	skill.ProvideSkill(i)
 	expert.ProvideExpert(i)
 	payment.ProvidePayment(i)
@@ -62,6 +64,7 @@ func InvokeAll(i *do.Injector) {
 	subscription.InvokeSubscription(i)
 	wallet.InvokeWallet(i)
 	billing.InvokeBilling(i)
+	data.InvokeData(i)
 	skill.InvokeSkill(i)
 	expert.InvokeExpert(i)
 	payment.InvokePayment(i)

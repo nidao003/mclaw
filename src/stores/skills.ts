@@ -11,7 +11,7 @@ import type { Skill, MarketplaceSkill } from '../types/skill';
 type GatewaySkillStatus = NonNullable<SkillsStatusResult['skills']>[number];
 
 const BUNDLED_OPENCLAW_SKILL_ALLOWLIST = new Set(['skill-creator']);
-const GATEWAY_ONLY_APPENDABLE_SOURCES = new Set(['openclaw-plugin', 'openclaw-extra']);
+const GATEWAY_ONLY_APPENDABLE_SOURCES = new Set(['mclaw-plugin', 'mclaw-extra']);
 
 function mapErrorCodeToSkillErrorKey(
   code: AppError['code'],

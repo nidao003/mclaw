@@ -3,7 +3,7 @@ import type { GatewayManager } from '../gateway/manager';
 import { syncLaunchAtStartupSettingFromStore } from '../main/launch-at-startup';
 import { createMenu } from '../main/menu';
 import { applyProxySettings } from '../main/proxy';
-import { syncProxyConfigToOpenClaw } from '../utils/openclaw-proxy';
+import { syncProxyConfigToOpenClaw } from '../utils/mclaw-proxy';
 import {
   type AppSettings,
   getAllSettings,

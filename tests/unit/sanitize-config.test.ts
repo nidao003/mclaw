@@ -1,9 +1,9 @@
 /**
  * Tests for openclaw.json config sanitization before Gateway start.
  *
- * The sanitizeOpenClawConfig() function in openclaw-auth.ts relies on
+ * The sanitizeOpenClawConfig() function in mclaw-auth.ts relies on
  * Electron-specific helpers (readOpenClawJson / writeOpenClawJson) that
- * read from ~/.openclaw/openclaw.json.  To avoid mocking Electron + the
+ * read from ~/.mclaw/openclaw.json.  To avoid mocking Electron + the
  * real HOME directory, this test uses a standalone version of the
  * sanitization logic that mirrors the production code exactly, operating
  * on a temp directory with real file I/O.
@@ -27,7 +27,7 @@ async function readConfig(): Promise<Record<string, unknown>> {
 }
 
 /**
- * Standalone mirror of the sanitization logic in openclaw-auth.ts.
+ * Standalone mirror of the sanitization logic in mclaw-auth.ts.
  * Uses the same blocklist approach as the production code.
  */
 async function sanitizeConfig(
@@ -98,7 +98,7 @@ async function sanitizeConfig(
       const validLoad: unknown[] = [];
       for (const p of pluginsObj.load) {
         if (typeof p === 'string' && p.startsWith('/')) {
-          if (p.includes('node_modules/openclaw/extensions') || !(await fileExists(p))) {
+          if (p.includes('node_modules/mclaw/extensions') || !(await fileExists(p))) {
             modified = true;
           } else {
             validLoad.push(p);
@@ -115,7 +115,7 @@ async function sanitizeConfig(
         const countBefore = loadObj.paths.length;
         for (const p of loadObj.paths) {
           if (typeof p === 'string' && p.startsWith('/')) {
-            if (p.includes('node_modules/openclaw/extensions') || !(await fileExists(p))) {
+            if (p.includes('node_modules/mclaw/extensions') || !(await fileExists(p))) {
               modified = true;
             } else {
               validPaths.push(p);
@@ -244,7 +244,7 @@ async function sanitizeConfig(
     }
 
     // Mirror production logic: bundled provider plugins are only preserved when
-    // the provider is actually active, while ClawX-critical bundled plugins are
+    // the provider is actually active, while mclaw-critical bundled plugins are
     // preserved via a small explicit list.
     const bundledAll = new Set(bundledPlugins?.all ?? []);
     const providersByPluginId = bundledPlugins?.providersByPluginId ?? {};
@@ -355,7 +355,7 @@ async function sanitizeConfig(
 }
 
 beforeEach(async () => {
-  tempDir = await mkdtemp(join(tmpdir(), 'clawx-test-'));
+  tempDir = await mkdtemp(join(tmpdir(), 'mclaw-test-'));
   configPath = join(tempDir, 'openclaw.json');
 });
 
@@ -671,7 +671,7 @@ describe('sanitizeOpenClawConfig (blocklist approach)', () => {
       plugins: {
         load: {
           paths: [
-            '/home/user/.nvm/versions/node/v22.0.0/lib/node_modules/openclaw/extensions/some-plugin',
+            '/home/user/.nvm/versions/node/v22.0.0/lib/node_modules/mclaw/extensions/some-plugin',
           ],
         },
       },
@@ -741,7 +741,7 @@ describe('sanitizeOpenClawConfig (blocklist approach)', () => {
             config: {
               permissionMode: 'approve-all',
               nonInteractivePermissions: 'fail',
-              command: '/Users/example/project/node_modules/.pnpm/openclaw@2026.4.1/node_modules/openclaw/dist/extensions/acpx/node_modules/acpx/dist/cli.js',
+              command: '/Users/example/project/node_modules/.pnpm/openclaw@2026.4.1/node_modules/mclaw/dist/extensions/acpx/node_modules/acpx/dist/cli.js',
               expectedVersion: 'any',
               pluginToolsMcpBridge: true,
             },
@@ -751,8 +751,8 @@ describe('sanitizeOpenClawConfig (blocklist approach)', () => {
           acpx: {
             source: 'path',
             spec: 'acpx',
-            sourcePath: '/Users/example/project/node_modules/.pnpm/openclaw@2026.4.1/node_modules/openclaw/dist/extensions/acpx',
-            installPath: '/Users/example/project/node_modules/.pnpm/openclaw@2026.4.1/node_modules/openclaw/dist/extensions/acpx',
+            sourcePath: '/Users/example/project/node_modules/.pnpm/openclaw@2026.4.1/node_modules/mclaw/dist/extensions/acpx',
+            installPath: '/Users/example/project/node_modules/.pnpm/openclaw@2026.4.1/node_modules/mclaw/dist/extensions/acpx',
           },
         },
       },

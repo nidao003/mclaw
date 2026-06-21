@@ -254,8 +254,8 @@ describe('enrichWithCachedImages — Gateway media bubble dedup', () => {
 
   it('attaches a gateway-media entry to the assistant-media bubble itself (text reply + injected bubble)', () => {
     // Reproduces the exact shape of session
-    //   ~/.openclaw/agents/main/sessions/5fb6925e-...jsonl
-    //   - msg 12: assistant reply "...MEDIA:/tmp/openclaw/desktop_*.png"
+    //   ~/.mclaw/agents/main/sessions/5fb6925e-...jsonl
+    //   - msg 12: assistant reply "...MEDIA:/tmp/mclaw/desktop_*.png"
     //   - msg 13: assistant `image` block with flat `url`
     // After enrichment, msg 13 must carry exactly one `_attachedFiles`
     // entry sourced from the Gateway URL — otherwise ChatMessage's early
@@ -270,7 +270,7 @@ describe('enrichWithCachedImages — Gateway media bubble dedup', () => {
       {
         role: 'assistant',
         id: 'reply',
-        content: [{ type: 'text', text: 'Done, here it is:\n\nMEDIA:/tmp/openclaw/desktop_20260506_193407.png' }],
+        content: [{ type: 'text', text: 'Done, here it is:\n\nMEDIA:/tmp/mclaw/desktop_20260506_193407.png' }],
       },
       {
         role: 'assistant',
@@ -325,14 +325,14 @@ describe('enrichWithCachedImages — Gateway media bubble dedup', () => {
         id: 'reply',
         content: [{
           type: 'text',
-          text: '宇航员图片完成啦 🧑‍🚀✨\n\n![Astronaut with Milky Way in helmet visor](/Users/me/.openclaw/media/tool-image-generation/cat.png)',
+          text: '宇航员图片完成啦 🧑‍🚀✨\n\n![Astronaut with Milky Way in helmet visor](/Users/me/.mclaw/media/tool-image-generation/cat.png)',
         }],
       },
     ];
 
     const enriched = enrichWithCachedImages(messages);
     expect(enriched[0]?._attachedFiles?.map((file) => file.filePath)).toEqual([
-      '/Users/me/.openclaw/media/tool-image-generation/cat.png',
+      '/Users/me/.mclaw/media/tool-image-generation/cat.png',
     ]);
   });
 
@@ -369,7 +369,7 @@ describe('enrichWithToolCallAttachments', () => {
           name: 'message',
           input: {
             action: 'send',
-            attachments: [{ filePath: '/Users/me/.openclaw/media/tool-image-generation/cat.png' }],
+            attachments: [{ filePath: '/Users/me/.mclaw/media/tool-image-generation/cat.png' }],
           },
         }],
       },
@@ -377,7 +377,7 @@ describe('enrichWithToolCallAttachments', () => {
 
     const enriched = enrichWithToolCallAttachments(messages);
     expect(enriched[0]?._attachedFiles?.map((file) => file.filePath)).toEqual([
-      '/Users/me/.openclaw/media/tool-image-generation/cat.png',
+      '/Users/me/.mclaw/media/tool-image-generation/cat.png',
     ]);
     expect(enriched[0]?._attachedFiles?.[0]?.mimeType).toBe('image/png');
   });

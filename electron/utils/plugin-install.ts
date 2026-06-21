@@ -115,11 +115,11 @@ function toErrorDiagnostic(error: unknown): { code?: string; name?: string; mess
 // doesn't match the ID the plugin code actually exports.  After copying we
 // patch both the manifest AND the compiled JS so the Gateway accepts them.
 const MANIFEST_ID_FIXES: Record<string, string> = {
-  'wecom-openclaw-plugin': 'wecom',
+  'wecom-mclaw-plugin': 'wecom',
 };
 
 /**
- * After a plugin has been copied to ~/.openclaw/extensions/<dir>, fix any
+ * After a plugin has been copied to ~/.mclaw/extensions/<dir>, fix any
  * known manifest-ID mismatches so the Gateway can load the plugin.
  * Also patches package.json fields that the Gateway uses as "entry hints".
  */
@@ -153,7 +153,7 @@ export function fixupPluginManifest(targetDir: string): void {
         pkg.name = pkg.name.replace(oldId, newId);
         modified = true;
       }
-      const install = pkg.openclaw?.install;
+      const install = pkg.mclaw?.install;
       if (install) {
         if (typeof install.npmSpec === 'string' && install.npmSpec.includes(oldId)) {
           install.npmSpec = install.npmSpec.replace(oldId, newId);
@@ -208,7 +208,7 @@ function patchPluginEntryIds(targetDir: string): void {
 
     let patched = false;
     for (const [wrongId, correctId] of Object.entries(MANIFEST_ID_FIXES)) {
-      // Match patterns like:  id: "wecom-openclaw-plugin"  or  id: 'wecom-openclaw-plugin'
+      // Match patterns like:  id: "wecom-mclaw-plugin"  or  id: 'wecom-mclaw-plugin'
       const escapedWrongId = wrongId.replace(/-/g, '\\-');
       const pattern = new RegExp(`(\\bid\\s*:\\s*)(["'])${escapedWrongId}\\2`, 'g');
       const replaced = content.replace(pattern, `$1$2${correctId}$2`);
@@ -229,13 +229,13 @@ function patchPluginEntryIds(targetDir: string): void {
 
 const PLUGIN_NPM_NAMES: Record<string, string> = {
   dingtalk: '@soimy/dingtalk',
-  wecom: '@wecom/wecom-openclaw-plugin',
-  'feishu-openclaw-plugin': '@larksuite/openclaw-lark',
-  discord: '@openclaw/discord',
-  qqbot: '@openclaw/qqbot',
-  whatsapp: '@openclaw/whatsapp',
+  wecom: '@wecom/wecom-mclaw-plugin',
+  'feishu-mclaw-plugin': '@larksuite/mclaw-lark',
+  discord: '@mclaw/discord',
+  qqbot: '@mclaw/qqbot',
+  whatsapp: '@mclaw/whatsapp',
 
-  'openclaw-weixin': '@tencent-weixin/openclaw-weixin',
+  'mclaw-weixin': '@tencent-weixin/mclaw-weixin',
 };
 
 // ── Version helper ───────────────────────────────────────────────────────────
@@ -286,7 +286,7 @@ function listPackagesInDir(nodeModulesDir: string): Array<{ name: string; fullPa
 
 /**
  * Copy a plugin from a pnpm node_modules location, including its
- * transitive runtime dependencies (replicates bundle-openclaw-plugins.mjs
+ * transitive runtime dependencies (replicates bundle-mclaw-plugins.mjs
  * logic).
  */
 export function copyPluginFromNodeModules(npmPkgPath: string, targetDir: string, npmName: string): void {
@@ -365,7 +365,7 @@ export function ensurePluginInstalled(
   candidateSources: string[],
   pluginLabel: string,
 ): { installed: boolean; warning?: string } {
-  const targetDir = join(homedir(), '.openclaw', 'extensions', pluginDirName);
+  const targetDir = join(homedir(), '.mclaw', 'extensions', pluginDirName);
   const targetManifest = join(targetDir, 'openclaw.plugin.json');
   const targetPkgJson = join(targetDir, 'package.json');
 
@@ -387,7 +387,7 @@ export function ensurePluginInstalled(
 
   // Fresh install or upgrade — try bundled/build sources first
   if (sourceDir) {
-    const extensionsRoot = join(homedir(), '.openclaw', 'extensions');
+    const extensionsRoot = join(homedir(), '.mclaw', 'extensions');
     const attempts: Array<{ attempt: number; code?: string; name?: string; message: string }> = [];
     const maxAttempts = process.platform === 'win32' ? 2 : 1;
 
@@ -444,7 +444,7 @@ export function ensurePluginInstalled(
             `${installedVersion ? `: ${installedVersion} → ${sourceVersion}` : `: ${sourceVersion}`} (dev/node_modules)`,
           );
           try {
-            mkdirSync(fsPath(join(homedir(), '.openclaw', 'extensions')), { recursive: true });
+            mkdirSync(fsPath(join(homedir(), '.mclaw', 'extensions')), { recursive: true });
             copyPluginFromNodeModules(npmPkgPath, targetDir, npmName);
             fixupPluginManifest(targetDir);
             if (existsSync(fsPath(join(targetDir, 'openclaw.plugin.json')))) {
@@ -482,19 +482,19 @@ export function ensurePluginInstalled(
 export function buildCandidateSources(pluginDirName: string): string[] {
   return app.isPackaged
     ? [
-      join(process.resourcesPath, 'openclaw-plugins', pluginDirName),
-      join(process.resourcesPath, 'resources', 'openclaw-plugins', pluginDirName),
-      join(process.resourcesPath, 'app.asar.unpacked', 'build', 'openclaw-plugins', pluginDirName),
-      join(process.resourcesPath, 'app.asar.unpacked', 'resources', 'openclaw-plugins', pluginDirName),
-      join(process.resourcesPath, 'app.asar.unpacked', 'openclaw-plugins', pluginDirName),
+      join(process.resourcesPath, 'mclaw-plugins', pluginDirName),
+      join(process.resourcesPath, 'resources', 'mclaw-plugins', pluginDirName),
+      join(process.resourcesPath, 'app.asar.unpacked', 'build', 'mclaw-plugins', pluginDirName),
+      join(process.resourcesPath, 'app.asar.unpacked', 'resources', 'mclaw-plugins', pluginDirName),
+      join(process.resourcesPath, 'app.asar.unpacked', 'mclaw-plugins', pluginDirName),
     ]
     : [
-      join(app.getAppPath(), 'build', 'openclaw-plugins', pluginDirName),
-      join(app.getAppPath(), 'resources', 'openclaw-plugins', pluginDirName),
-      join(process.cwd(), 'build', 'openclaw-plugins', pluginDirName),
-      join(process.cwd(), 'resources', 'openclaw-plugins', pluginDirName),
-      join(__dirname, '../../build/openclaw-plugins', pluginDirName),
-      join(__dirname, '../../resources/openclaw-plugins', pluginDirName),
+      join(app.getAppPath(), 'build', 'mclaw-plugins', pluginDirName),
+      join(app.getAppPath(), 'resources', 'mclaw-plugins', pluginDirName),
+      join(process.cwd(), 'build', 'mclaw-plugins', pluginDirName),
+      join(process.cwd(), 'resources', 'mclaw-plugins', pluginDirName),
+      join(__dirname, '../../build/mclaw-plugins', pluginDirName),
+      join(__dirname, '../../resources/mclaw-plugins', pluginDirName),
     ];
 }
 
@@ -510,8 +510,8 @@ export function ensureWeComPluginInstalled(): { installed: boolean; warning?: st
 
 export function ensureFeishuPluginInstalled(): { installed: boolean; warning?: string } {
   return ensurePluginInstalled(
-    'feishu-openclaw-plugin',
-    buildCandidateSources('feishu-openclaw-plugin'),
+    'feishu-mclaw-plugin',
+    buildCandidateSources('feishu-mclaw-plugin'),
     'Feishu',
   );
 }
@@ -519,7 +519,7 @@ export function ensureFeishuPluginInstalled(): { installed: boolean; warning?: s
 
 
 export function ensureWeChatPluginInstalled(): { installed: boolean; warning?: string } {
-  return ensurePluginInstalled('openclaw-weixin', buildCandidateSources('openclaw-weixin'), 'WeChat');
+  return ensurePluginInstalled('mclaw-weixin', buildCandidateSources('mclaw-weixin'), 'WeChat');
 }
 
 export function ensureDiscordPluginInstalled(): { installed: boolean; warning?: string } {
@@ -534,11 +534,11 @@ export function ensureWhatsAppPluginInstalled(): { installed: boolean; warning?:
   return ensurePluginInstalled('whatsapp', buildCandidateSources('whatsapp'), 'WhatsApp');
 }
 
-export function ensureClawXOpenAiImagePluginInstalled(): { installed: boolean; warning?: string } {
+export function ensuremclawOpenAiImagePluginInstalled(): { installed: boolean; warning?: string } {
   return ensurePluginInstalled(
-    'clawx-openai-image',
-    buildCandidateSources('clawx-openai-image'),
-    'ClawX OpenAI Image',
+    'mclaw-openai-image',
+    buildCandidateSources('mclaw-openai-image'),
+    'mclaw OpenAI Image',
   );
 }
 
@@ -556,12 +556,12 @@ const ALL_BUNDLED_PLUGINS = [
   { fn: ensureDiscordPluginInstalled, label: 'Discord' },
   { fn: ensureQQBotPluginInstalled, label: 'QQBot' },
   { fn: ensureWhatsAppPluginInstalled, label: 'WhatsApp' },
-  { fn: ensureClawXOpenAiImagePluginInstalled, label: 'ClawX OpenAI Image' },
+  { fn: ensuremclawOpenAiImagePluginInstalled, label: 'mclaw OpenAI Image' },
 ] as const;
 
 /**
  * Ensure all bundled OpenClaw plugins are installed/upgraded in
- * `~/.openclaw/extensions/`.  Designed to be called once at app startup
+ * `~/.mclaw/extensions/`.  Designed to be called once at app startup
  * as a fire-and-forget task — errors are logged but never thrown.
  */
 export async function ensureAllBundledPluginsInstalled(): Promise<void> {

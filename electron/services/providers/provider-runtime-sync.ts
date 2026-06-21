@@ -17,7 +17,7 @@ import {
   syncProviderConfigToOpenClaw,
   updateAgentModelProvider,
   updateSingleAgentModelProvider,
-} from '../../utils/openclaw-auth';
+} from '../../utils/mclaw-auth';
 import {
   piAiModelsJsonModelEntry,
   type PiAiModelCostRates,
@@ -611,7 +611,7 @@ export async function syncDefaultProviderToRuntime(
   // Self-heal: pin the embedded agent runtime for legacy OpenAI provider entries
   // (`openai`, `openai-codex`) that would otherwise be auto-routed to the
   // unbundled `codex` harness. Running this before every default-provider switch
-  // repairs on-disk config written by earlier ClawX builds.
+  // repairs on-disk config written by earlier mclaw builds.
   try {
     const pinned = await ensureOpenClawProviderAgentRuntimePins();
     if (pinned.length > 0) {

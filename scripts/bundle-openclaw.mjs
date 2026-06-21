@@ -4,11 +4,11 @@
  * bundle-openclaw.mjs
  *
  * Bundles the openclaw npm package with ALL its dependencies (including
- * transitive ones) into a self-contained directory (build/openclaw/) for
+ * transitive ones) into a self-contained directory (build/mclaw/) for
  * electron-builder to pick up.
  *
  * pnpm uses a content-addressable virtual store with symlinks. A naive copy
- * of node_modules/openclaw/ will miss runtime dependencies entirely. Even
+ * of node_modules/mclaw/ will miss runtime dependencies entirely. Even
  * copying only direct siblings misses transitive deps (e.g. @clack/prompts
  * depends on @clack/core which lives in a separate virtual store entry).
  *
@@ -124,7 +124,7 @@ if (bundledSkillsTrim.removed > 0) {
 //
 // pnpm structure example:
 //   .pnpm/openclaw@ver/node_modules/
-//     openclaw/          <- real files
+//     mclaw/          <- real files
 //     chalk/             <- symlink -> .pnpm/chalk@ver/node_modules/chalk
 //     @clack/prompts/    <- symlink -> .pnpm/@clack+prompts@ver/node_modules/@clack/prompts
 //
@@ -252,10 +252,10 @@ while (queue.length > 0) {
 echo`   Found ${collected.size} total packages (direct + transitive)`;
 echo`   Skipped ${skippedDevCount} dev-only package references`;
 
-// 4b. Collect extra packages required by ClawX's Electron main process that are
+// 4b. Collect extra packages required by mclaw's Electron main process that are
 //     NOT deps of openclaw.  These are resolved from openclaw's context at runtime
 //     (via createRequire from the openclaw directory) so they must live in the
-//     bundled openclaw/node_modules/.
+//     bundled mclaw/node_modules/.
 //
 //     For each package we resolve it from the workspace's own node_modules,
 //     then BFS its transitive deps exactly like we did for openclaw above.
@@ -366,7 +366,7 @@ for (const [realPath, pkgName] of collectedEntries) {
 // chunks at dist/ root (e.g. sticker-cache-*.js) that eagerly import
 // extension-specific packages like "grammy".  Node.js resolves bare
 // specifiers from the importing file's directory upward:
-//   dist/ → openclaw/ → openclaw/node_modules/
+//   dist/ → mclaw/ → mclaw/node_modules/
 // It does NOT search dist/extensions/telegram/node_modules/.
 //
 // Fix: copy extension deps into the top-level node_modules/ so they are
@@ -682,7 +682,7 @@ function cleanupBundle(outputDir) {
     'node_modules/koffi/src',
     'node_modules/koffi/vendor',
     'node_modules/koffi/doc',
-    'dist/extensions/feishu', // Removed in favor of official @larksuite/openclaw-lark plugin
+    'dist/extensions/feishu', // Removed in favor of official @larksuite/mclaw-lark plugin
   ];
   for (const rel of LARGE_REMOVALS) {
     if (rmSafe(path.join(outputDir, rel))) removedCount++;
@@ -795,7 +795,7 @@ function patchBrokenModules(nodeModulesDir) {
               const patched = [
                 original,
                 '',
-                '// ClawX patch: add LRUCache named export for Node.js 22+ ESM interop',
+                '// mclaw patch: add LRUCache named export for Node.js 22+ ESM interop',
                 'if (typeof module.exports === "function" && !module.exports.LRUCache) {',
                 '  module.exports.LRUCache = module.exports;',
                 '}',
@@ -1080,3 +1080,149 @@ if (missingRuntimePackages.length > 0) {
   }
   process.exit(1);
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// 9. 打包成 mclaw.tar.gz（QClaw 模式：运行时解包，告别 30+ 分钟重打 app.asar）
+// ─────────────────────────────────────────────────────────────────────
+//
+// QClaw 的做法：把 openclaw 整个目录打成 tar.gz 放进 Resources，
+// App 首次启动时解包到 ~/Library/Application Support/QClaw/openclaw/。
+// 老王改造 mclaw 也走这条路线：
+//   - tar.gz 在 resources/mclaw/mclaw.tar.gz
+//   - 解包目标：getMclawRuntimeDir() → ~/Library/Application Support/mclaw/openclaw/
+//   - 启动 Gateway 时 cwd 指向解包后的 node_modules/openclaw/
+//
+// 收益：openclaw 升级只需要重打这个 tar.gz（< 1 分钟），不用动 app.asar
+//
+// 跳过某些在运行时不需要的大文件：
+//   - CHANGELOG.md / README.md（体积大）
+//   - .git / docs（开发用）
+//   - 源码 .ts（运行时只用 dist/）
+// 但因为 dist 才是入口，源码留着也无妨（debug 用）；我们只跳文档和 dev 痕迹。
+// ─────────────────────────────────────────────────────────────────────
+
+const RUNTIME_BUNDLE_DIR = path.join(ROOT, 'build', 'mclaw-runtime');
+const RUNTIME_TARBALL = path.join(ROOT, 'build', 'mclaw-runtime.tar.gz');
+
+// 9a. 把已构建的 OUTPUT 镜像到 RUNTIME_BUNDLE_DIR，做最后清理（解包时要的就是这状态）
+echo``;
+echo`🪄 Preparing runtime bundle (cleaning dev-only artifacts)...`;
+removeDirRobust(RUNTIME_BUNDLE_DIR);
+fs.mkdirSync(RUNTIME_BUNDLE_DIR, { recursive: true });
+
+// 用 cpSync 把 OUTPUT 拍平到 RUNTIME_BUNDLE_DIR（dereference symlink）
+fs.cpSync(OUTPUT, RUNTIME_BUNDLE_DIR, {
+  recursive: true,
+  dereference: true,
+});
+
+// 9b. 解包目标只保留运行时真正用得到的：
+//     - openclaw.mjs（入口）
+//     - package.json + package-lock.json（依赖清单）
+//     - node_modules/（整个依赖树）
+//     - dist/（编译产物，openclaw 入口从这里 require）
+//     - skills/（预装 skills）
+//     - assets/ docs/（部分运行时资源）
+const JUNK_AT_RUNTIME_ROOT = new Set([
+  'CHANGELOG.md',
+  'README.md',
+  'LICENSE',
+  // 保留 docs/（含 prompt 模板等运行时元数据）
+  // 保留 assets/（图标等）
+]);
+for (const name of JUNK_AT_RUNTIME_ROOT) {
+  rmSafe(path.join(RUNTIME_BUNDLE_DIR, name));
+}
+
+// 写入版本元数据（unpack-mclaw.cjs 会读这个来判断要不要重新解包）
+const RUNTIME_VERSION_FILE = path.join(RUNTIME_BUNDLE_DIR, '.runtime-version.json');
+const RUNTIME_METADATA = {
+  // 来自被 bundle 的 openclaw package.json 的 version 字段
+  openclawVersion: (() => {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(RUNTIME_BUNDLE_DIR, 'package.json'), 'utf-8')).version;
+    } catch {
+      return 'unknown';
+    }
+  })(),
+  // mclaw 自己的版本（app.getVersion() 同步用）
+  mclawVersion: (() => {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8')).version;
+    } catch {
+      return 'unknown';
+    }
+  })(),
+  // 打 tar 的时间（ms since epoch）
+  bundledAt: Date.now(),
+  // 平台标识（multi-arch 时区分）
+  platform: process.platform,
+  arch: process.arch,
+  // 节点 ABI（Node 22）
+  nodeAbi: '127', // node 22 默认 ABI
+};
+fs.writeFileSync(RUNTIME_VERSION_FILE, JSON.stringify(RUNTIME_METADATA, null, 2), 'utf-8');
+
+const runtimeSize = getDirSize(RUNTIME_BUNDLE_DIR);
+echo`   Runtime bundle: ${RUNTIME_BUNDLE_DIR}`;
+echo`   Size: ${formatSize(runtimeSize)}`;
+echo`   openclaw version: ${RUNTIME_METADATA.openclawVersion}`;
+echo`   mclaw version: ${RUNTIME_METADATA.mclawVersion}`;
+
+// 9c. 打成 tar.gz（用系统 tar，保持简单可靠）
+removeDirRobust(RUNTIME_TARBALL);
+if (fs.existsSync(RUNTIME_TARBALL)) fs.unlinkSync(RUNTIME_TARBALL);
+
+echo`📦 Creating ${RUNTIME_TARBALL}...`;
+const tarStart = Date.now();
+try {
+  // tar -czf <output.tar.gz> -C <parent_dir> <bundle_dir_name>
+  // 注意 tar 在 Windows 上也带了（bsdtar），不需要 PowerShell
+  const parentDir = path.dirname(RUNTIME_BUNDLE_DIR);
+  const bundleName = path.basename(RUNTIME_BUNDLE_DIR);
+  await $`tar -czf ${RUNTIME_TARBALL} -C ${parentDir} ${bundleName}`;
+} catch (err) {
+  echo(chalk.red`❌ tar failed: ${err.message}`);
+  // fallback：用 Node tar 包（脚本同目录的 node_modules/tar 由 bundle-tar-vendor.mjs 准备）
+  try {
+    const tar = await import(path.join(ROOT, 'node_modules', 'tar', 'lib', 'index.js'));
+    await tar.create(
+      { gzip: true, file: RUNTIME_TARBALL, cwd: path.dirname(RUNTIME_BUNDLE_DIR) },
+      [path.basename(RUNTIME_BUNDLE_DIR)],
+    );
+  } catch (fallbackErr) {
+    echo(chalk.red`❌ Node tar fallback also failed: ${fallbackErr.message}`);
+    process.exit(1);
+  }
+}
+
+const tarSize = fs.statSync(RUNTIME_TARBALL).size;
+const tarElapsed = ((Date.now() - tarStart) / 1000).toFixed(1);
+echo`✅ Tarball: ${RUNTIME_TARBALL} (${formatSize(tarSize)} in ${tarElapsed}s)`;
+
+// 9d. 写一个简短的 manifest（unpack-mclaw.cjs 用它校验完整性）
+const RUNTIME_MANIFEST = {
+  tarball: path.basename(RUNTIME_TARBALL),
+  tarballSize: tarSize,
+  tarballSha256: await (async () => {
+    try {
+      const crypto = await import('crypto');
+      const hash = crypto.createHash('sha256');
+      hash.update(fs.readFileSync(RUNTIME_TARBALL));
+      return hash.digest('hex');
+    } catch {
+      return null;
+    }
+  })(),
+  openclawVersion: RUNTIME_METADATA.openclawVersion,
+  mclawVersion: RUNTIME_METADATA.mclawVersion,
+  bundledAt: RUNTIME_METADATA.bundledAt,
+  platform: RUNTIME_METADATA.platform,
+  arch: RUNTIME_METADATA.arch,
+};
+const RUNTIME_MANIFEST_PATH = path.join(ROOT, 'build', 'mclaw-runtime-manifest.json');
+fs.writeFileSync(RUNTIME_MANIFEST_PATH, JSON.stringify(RUNTIME_MANIFEST, null, 2), 'utf-8');
+echo`   Manifest: ${RUNTIME_MANIFEST_PATH}`;
+
+echo``;
+echo`🎉 Done! Next: scripts/unpack-mclaw.cjs (runtime extract) will use this tarball.`;

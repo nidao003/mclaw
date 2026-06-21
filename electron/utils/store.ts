@@ -15,7 +15,7 @@ let settingsStoreInstance: any = null;
  * Generate a random token for gateway authentication
  */
 function generateToken(): string {
-  return `clawx-${randomBytes(16).toString('hex')}`;
+  return `mclaw-${randomBytes(16).toString('hex')}`;
 }
 
 /**
@@ -84,7 +84,7 @@ function createDefaultSettings(): AppSettings {
 
     // Gateway
     gatewayAutoStart: true,
-    gatewayPort: 18789,
+    gatewayPort: 18999,
     gatewayToken: generateToken(),
     proxyEnabled: false,
     proxyServer: '',

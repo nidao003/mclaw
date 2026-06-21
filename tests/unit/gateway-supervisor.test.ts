@@ -117,14 +117,14 @@ describe('gateway supervisor process cleanup', () => {
 
     mockExec.mockImplementation((cmd: string, _opts: object, cb: (err: Error | null, stdout: string) => void) => {
       if (cmd.includes('netstat -ano')) {
-        cb(null, '  TCP    127.0.0.1:18789    0.0.0.0:0    LISTENING    4321\n');
+        cb(null, '  TCP    127.0.0.1:18999    0.0.0.0:0    LISTENING    4321\n');
         return {} as never;
       }
       cb(null, '');
       return {} as never;
     });
 
-    const result = await findExistingGatewayProcess({ port: 18789 });
+    const result = await findExistingGatewayProcess({ port: 18999 });
     expect(result).toBeNull();
 
     expect(mockExec).toHaveBeenCalledWith(

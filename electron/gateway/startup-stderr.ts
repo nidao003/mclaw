@@ -12,7 +12,7 @@ export function classifyGatewayStderrMessage(message: string): GatewayStderrClas
   }
 
   // Known noisy lines that are not actionable for Gateway lifecycle debugging.
-  if (msg.includes('openclaw-control-ui') && msg.includes('token_mismatch')) {
+  if (msg.includes('mclaw-control-ui') && msg.includes('token_mismatch')) {
     return { level: 'drop', normalized: msg };
   }
   if (msg.includes('closed before connect') && msg.includes('token mismatch')) {

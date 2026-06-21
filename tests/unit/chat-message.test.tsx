@@ -168,7 +168,7 @@ describe('ChatMessage attachment dedupe', () => {
           mimeType: 'text/markdown',
           fileSize: 433,
           preview: null,
-          filePath: '/Users/bytedance/.openclaw/workspace/CHECKLIST.md',
+          filePath: '/Users/bytedance/.mclaw/workspace/CHECKLIST.md',
           source: 'tool-result',
         },
       ],
@@ -239,7 +239,7 @@ describe('ChatMessage attachment dedupe', () => {
   it('derives preview cards from assistant text paths when attachments are missing', async () => {
     const message: RawMessage = {
       role: 'assistant',
-      content: '已生成测试 PDF 文件： 测试PDF文件.pdf 位置： `/Users/zhonghaolu/.openclaw/workspace/测试PDF文件.pdf`',
+      content: '已生成测试 PDF 文件： 测试PDF文件.pdf 位置： `/Users/zhonghaolu/.mclaw/workspace/测试PDF文件.pdf`',
     };
 
     render(<ChatMessage message={message} suppressProcessAttachments />);
@@ -250,7 +250,7 @@ describe('ChatMessage attachment dedupe', () => {
   it('derives skill directory cards from assistant text paths', async () => {
     const message: RawMessage = {
       role: 'assistant',
-      content: '名称： open-eastmoney\n位置： ~/.openclaw/skills/open-eastmoney\n校验结果：通过',
+      content: '名称： open-eastmoney\n位置： ~/.mclaw/skills/open-eastmoney\n校验结果：通过',
     };
 
     render(<ChatMessage message={message} suppressProcessAttachments />);
@@ -262,7 +262,7 @@ describe('ChatMessage attachment dedupe', () => {
   it('keeps unicode Windows skill directory paths as cards', async () => {
     const message: RawMessage = {
       role: 'assistant',
-      content: String.raw`位置： C:\Users\张三\.openclaw\skills\打开东方财富`,
+      content: String.raw`位置： C:\Users\张三\.mclaw\skills\打开东方财富`,
     };
 
     render(<ChatMessage message={message} suppressProcessAttachments />);
@@ -275,7 +275,7 @@ describe('ChatMessage attachment dedupe', () => {
     const onOpenFile = vi.fn();
     const message: RawMessage = {
       role: 'assistant',
-      content: '位置： ~/.openclaw/skills/open-baidu\nMarkdown 文件： ~/.openclaw/skills/open-baidu/SKILL.md',
+      content: '位置： ~/.mclaw/skills/open-baidu\nMarkdown 文件： ~/.mclaw/skills/open-baidu/SKILL.md',
     };
 
     render(<ChatMessage message={message} suppressProcessAttachments onOpenFile={onOpenFile} />);
@@ -287,7 +287,7 @@ describe('ChatMessage attachment dedupe', () => {
     fireEvent.click(screen.getByText('SKILL.md'));
     expect(onOpenFile).toHaveBeenCalledWith(expect.objectContaining({
       fileName: 'SKILL.md',
-      filePath: '~/.openclaw/skills/open-baidu/SKILL.md',
+      filePath: '~/.mclaw/skills/open-baidu/SKILL.md',
       mimeType: 'text/markdown',
     }));
   });
@@ -295,7 +295,7 @@ describe('ChatMessage attachment dedupe', () => {
   it('does not show cards for hallucinated missing paths', async () => {
     const message: RawMessage = {
       role: 'assistant',
-      content: '不存在的文件： ~/.openclaw/skills/missing-skill/SKILL.md',
+      content: '不存在的文件： ~/.mclaw/skills/missing-skill/SKILL.md',
     };
 
     render(<ChatMessage message={message} suppressProcessAttachments />);
@@ -491,7 +491,7 @@ describe('ChatMessage image copy', () => {
 
     const message: RawMessage = {
       role: 'assistant',
-      content: 'http://127.0.0.1:18789/api/chat/media/outgoing/agent/main/full',
+      content: 'http://127.0.0.1:18999/api/chat/media/outgoing/agent/main/full',
       _attachedFiles: [
         {
           fileName: 'cat.png',

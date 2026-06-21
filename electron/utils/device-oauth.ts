@@ -13,7 +13,7 @@
  * - Works identically on macOS, Windows, and Linux
  *
  * We provide our own callbacks (openUrl/note/progress) that hook into
- * the Electron IPC system to display UI in the ClawX frontend.
+ * the Electron IPC system to display UI in the mclaw frontend.
  */
 import { EventEmitter } from 'events';
 import { BrowserWindow, shell } from 'electron';
@@ -21,7 +21,7 @@ import { logger } from './logger';
 import { saveProvider, getProvider, ProviderConfig } from './secure-storage';
 import { getProviderDefaultModel } from './provider-registry';
 import { proxyAwareFetch } from './proxy-fetch';
-import { saveOAuthTokenToOpenClaw, setOpenClawDefaultModelWithOverride } from './openclaw-auth';
+import { saveOAuthTokenToOpenClaw, setOpenClawDefaultModelWithOverride } from './mclaw-auth';
 import { loginMiniMaxPortalOAuth, type MiniMaxOAuthToken, type MiniMaxRegion } from './minimax-oauth';
 
 export type OAuthProviderType = 'minimax-portal' | 'minimax-portal-cn';
@@ -220,7 +220,7 @@ class DeviceOAuthManager extends EventEmitter {
             logger.warn(`[DeviceOAuth] Failed to configure openclaw models:`, err);
         }
 
-        // 3. Save provider record in ClawX's own store so UI shows it as configured
+        // 3. Save provider record in mclaw's own store so UI shows it as configured
         const existing = await getProvider(accountId);
         const nameMap: Record<OAuthProviderType, string> = {
             'minimax-portal': 'MiniMax (Global)',

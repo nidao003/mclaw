@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const OPENCLAW_PLUGIN_SDK_PREFIX = 'openclaw/plugin-sdk/';
+export const OPENCLAW_PLUGIN_SDK_PREFIX = 'mclaw/plugin-sdk/';
 
 const OPENCLAW_PLUGIN_SDK_SPECIFIER_RE = /(["'])openclaw\/plugin-sdk\/([^"'\r\n]+)\1/g;
 

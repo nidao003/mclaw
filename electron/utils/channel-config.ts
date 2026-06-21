@@ -19,22 +19,22 @@ import {
     toOpenClawChannelType,
 } from './channel-alias';
 
-const OPENCLAW_DIR = join(homedir(), '.openclaw');
-const CONFIG_FILE = join(OPENCLAW_DIR, 'openclaw.json');
+const MCLAW_DIR = join(homedir(), '.mclaw');
+const CONFIG_FILE = join(MCLAW_DIR, 'openclaw.json');
 const WECOM_PLUGIN_ID = 'wecom';
 // Note: QQBot is a built-in channel since OpenClaw 3.31 — no plugin ID needed.
 const WECHAT_PLUGIN_ID = OPENCLAW_WECHAT_CHANNEL_TYPE;
-const FEISHU_PLUGIN_ID_CANDIDATES = ['openclaw-lark', 'feishu-openclaw-plugin'] as const;
+const FEISHU_PLUGIN_ID_CANDIDATES = ['mclaw-lark', 'feishu-mclaw-plugin'] as const;
 const DEFAULT_ACCOUNT_ID = 'default';
 // Channels whose top-level schema (additionalProperties:false) does NOT
 // include `defaultAccount`.  We still use the multi-account `accounts`
 // map, but strip `defaultAccount` before persisting to avoid plugin
-// schema validation errors.  ClawX falls back to DEFAULT_ACCOUNT_ID
+// schema validation errors.  mclaw falls back to DEFAULT_ACCOUNT_ID
 // when `defaultAccount` is absent.
 const CHANNELS_OMIT_DEFAULT_ACCOUNT_KEY = new Set(['dingtalk']);
 
 // Channels whose schema accepts a top-level default account and account map,
-// but whose account payload contains nested strict-schema objects that ClawX
+// but whose account payload contains nested strict-schema objects that mclaw
 // can accidentally make invalid by adding UI convenience fields.  Keep this
 // sanitization narrowly scoped to known nested maps so local config remains
 // OpenClaw-compatible after a save.
@@ -55,11 +55,11 @@ const DISCORD_GUILD_CHANNEL_KEYS_TO_KEEP = new Set([
 ]);
 const DISCORD_CHANNEL_ALLOW_FLAG_KEYS = new Set(['allow']);
 const CHANNEL_TOP_LEVEL_KEYS_TO_KEEP = new Set(['accounts', 'defaultAccount', 'enabled']);
-const WECHAT_STATE_DIR = join(OPENCLAW_DIR, WECHAT_PLUGIN_ID);
+const WECHAT_STATE_DIR = join(MCLAW_DIR, WECHAT_PLUGIN_ID);
 const WECHAT_ACCOUNT_INDEX_FILE = join(WECHAT_STATE_DIR, 'accounts.json');
 const WECHAT_ACCOUNTS_DIR = join(WECHAT_STATE_DIR, 'accounts');
-const LEGACY_WECHAT_CREDENTIALS_DIR = join(OPENCLAW_DIR, 'credentials', WECHAT_PLUGIN_ID);
-const LEGACY_WECHAT_SYNC_DIR = join(OPENCLAW_DIR, 'agents', 'default', 'sessions', '.openclaw-weixin-sync');
+const LEGACY_WECHAT_CREDENTIALS_DIR = join(MCLAW_DIR, 'credentials', WECHAT_PLUGIN_ID);
+const LEGACY_WECHAT_SYNC_DIR = join(MCLAW_DIR, 'agents', 'default', 'sessions', '.mclaw-weixin-sync');
 
 // Channels that are managed as plugins (config goes under plugins.entries, not channels)
 const PLUGIN_CHANNELS: string[] = ['discord', 'qqbot', 'whatsapp'];
@@ -107,7 +107,7 @@ function sanitizeDiscordGuildChannelConfig(channelConfig: unknown): void {
 
     const record = channelConfig as Record<string, unknown>;
 
-    // Backward compatibility for the older ClawX-generated shape:
+    // Backward compatibility for the older mclaw-generated shape:
     //   channels: { "123": { allow: true, requireMention: true } }
     // OpenClaw's current DiscordGuildChannelConfig does not include `allow`;
     // represent deny/allow using `enabled` instead.
@@ -187,7 +187,7 @@ function normalizeCredentialValue(value: string): string {
 }
 
 async function resolveFeishuPluginId(): Promise<string> {
-    const extensionRoot = join(homedir(), '.openclaw', 'extensions');
+    const extensionRoot = join(homedir(), '.mclaw', 'extensions');
     for (const dirName of FEISHU_PLUGIN_ID_CANDIDATES) {
         const manifestPath = join(extensionRoot, dirName, 'openclaw.plugin.json');
         try {
@@ -456,8 +456,8 @@ export interface OpenClawConfig {
 // ── Config I/O ───────────────────────────────────────────────────
 
 async function ensureConfigDir(): Promise<void> {
-    if (!(await fileExists(OPENCLAW_DIR))) {
-        await mkdir(OPENCLAW_DIR, { recursive: true });
+    if (!(await fileExists(MCLAW_DIR))) {
+        await mkdir(MCLAW_DIR, { recursive: true });
     }
 }
 
@@ -539,7 +539,7 @@ async function ensurePluginAllowlist(currentConfig: OpenClawConfig, channelType:
             }
             // Remove conflicting feishu plugin entries; keep only the resolved
             // external plugin id. A disabled plugins.entries.feishu record
-            // blocks openclaw-lark in OpenClaw's gateway startup planner.
+            // blocks mclaw-lark in OpenClaw's gateway startup planner.
             delete currentConfig.plugins.entries['feishu'];
             for (const candidateId of FEISHU_PLUGIN_ID_CANDIDATES) {
                 if (candidateId !== feishuPluginId) {
@@ -842,7 +842,7 @@ export async function saveChannelConfig(
         syncBuiltinChannelsWithPluginAllowlist(currentConfig, [resolvedChannelType]);
 
         // Plugin-based channels are mirrored into plugins.entries.<id> below,
-        // but ClawX still keeps channels.<id> as the local account-list source.
+        // but mclaw still keeps channels.<id> as the local account-list source.
 
         if (!currentConfig.channels) {
             currentConfig.channels = {};
@@ -891,7 +891,7 @@ export async function saveChannelConfig(
 
         // Plugin-backed channel packages read their activation/config from
         // plugins.entries.<id>. Mirror the enabled flag and account map there
-        // while preserving channels.<id> for ClawX's account list UI.
+        // while preserving channels.<id> for mclaw's account list UI.
         if (PLUGIN_CHANNELS.includes(resolvedChannelType)) {
             ensurePluginRegistration(currentConfig, resolvedChannelType);
             const pluginEntry = currentConfig.plugins!.entries![resolvedChannelType];
@@ -1124,7 +1124,7 @@ export async function deleteChannelConfig(channelType: string): Promise<void> {
 
         if (resolvedChannelType === 'whatsapp') {
             try {
-                const whatsappDir = join(homedir(), '.openclaw', 'credentials', 'whatsapp');
+                const whatsappDir = join(homedir(), '.mclaw', 'credentials', 'whatsapp');
                 if (await fileExists(whatsappDir)) {
                     await rm(whatsappDir, { recursive: true, force: true });
                     console.log('Deleted WhatsApp credentials directory');
@@ -1158,7 +1158,7 @@ export async function listConfiguredChannelsFromConfig(config: OpenClawConfig): 
     }
 
     try {
-        const whatsappDir = join(homedir(), '.openclaw', 'credentials', 'whatsapp');
+        const whatsappDir = join(homedir(), '.mclaw', 'credentials', 'whatsapp');
         if (await fileExists(whatsappDir)) {
             const entries = await readdir(whatsappDir);
             const hasSession = await (async () => {

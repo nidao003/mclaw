@@ -5,7 +5,7 @@ describe('stripSystemdSupervisorEnv', () => {
   it('removes systemd supervisor marker env vars', () => {
     const env = {
       PATH: '/usr/bin:/bin',
-      OPENCLAW_SYSTEMD_UNIT: 'openclaw-gateway.service',
+      OPENCLAW_SYSTEMD_UNIT: 'mclaw-gateway.service',
       INVOCATION_ID: 'abc123',
       SYSTEMD_EXEC_PID: '777',
       JOURNAL_STREAM: '8:12345',
@@ -32,7 +32,7 @@ describe('stripSystemdSupervisorEnv', () => {
 
   it('does not mutate source env object', () => {
     const env = {
-      OPENCLAW_SYSTEMD_UNIT: 'openclaw-gateway.service',
+      OPENCLAW_SYSTEMD_UNIT: 'mclaw-gateway.service',
       VALUE: '1',
     };
     const before = { ...env };

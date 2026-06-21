@@ -66,7 +66,7 @@ test.describe('OpenClaw Dreams', () => {
             {
               key: 'native-dreams-ui',
               path: 'memory/dreams/native-ui.md',
-              snippet: 'User expects Dreams to be a native ClawX interface, not only an external jump.',
+              snippet: 'User expects Dreams to be a native mclaw interface, not only an external jump.',
               startLine: 4,
               totalSignalCount: 2,
             },
@@ -113,7 +113,7 @@ test.describe('OpenClaw Dreams', () => {
 
   test('renders the native Dreams page and runs a maintenance action', async ({ electronApp, page }) => {
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+      gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
       gatewayRpc: dreamsRpcMocks,
       hostApi: {
         [stableStringify(['/api/gateway/status', 'GET'])]: {
@@ -121,7 +121,7 @@ test.describe('OpenClaw Dreams', () => {
           data: {
             status: 200,
             ok: true,
-            json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+            json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
           },
         },
       },
@@ -135,7 +135,7 @@ test.describe('OpenClaw Dreams', () => {
     await expect(page.getByTestId('dreams-page')).toBeVisible();
     await expect(page.getByTestId('dreams-disable')).toBeVisible();
     await expect(page.getByText('Native dreams page landed')).toBeVisible();
-    await expect(page.getByText('User expects Dreams to be a native ClawX interface')).toBeVisible();
+    await expect(page.getByText('User expects Dreams to be a native mclaw interface')).toBeVisible();
 
     await page.getByTestId('dreams-action-backfill').click();
     await expect(page.getByTestId('dreams-action-message')).toContainText(/Backfilled 2 dream diary entries\.|已回填 2 条梦境日记。/);
@@ -156,7 +156,7 @@ test.describe('OpenClaw Dreams', () => {
   test('starts Dreams from the native page when dreaming is disabled', async ({ electronApp, page }) => {
     const configHash = 'dreams-config-hash';
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+      gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
       gatewayRpc: {
         ...dreamsRpcMocks,
         [stableStringify(['doctor.memory.status', {}])]: {
@@ -187,7 +187,7 @@ test.describe('OpenClaw Dreams', () => {
         [stableStringify(['config.patch', {
           raw: buildDreamingEnabledPatchRaw(true),
           baseHash: configHash,
-          note: 'Enable memory dreaming from ClawX Dreams.',
+          note: 'Enable memory dreaming from mclaw Dreams.',
         }])]: {
           success: true,
           result: { ok: true },
@@ -199,7 +199,7 @@ test.describe('OpenClaw Dreams', () => {
           data: {
             status: 200,
             ok: true,
-            json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+            json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
           },
         },
       },
@@ -218,7 +218,7 @@ test.describe('OpenClaw Dreams', () => {
 
   test('waits for the gateway process before loading Dreams data', async ({ electronApp, page }) => {
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'stopped', port: 18789 },
+      gatewayStatus: { state: 'stopped', port: 18999 },
       gatewayRpc: dreamsRpcMocks,
       hostApi: {
         [stableStringify(['/api/gateway/status', 'GET'])]: {
@@ -226,7 +226,7 @@ test.describe('OpenClaw Dreams', () => {
           data: {
             status: 200,
             ok: true,
-            json: { state: 'stopped', port: 18789 },
+            json: { state: 'stopped', port: 18999 },
           },
         },
       },
@@ -246,7 +246,7 @@ test.describe('OpenClaw Dreams', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'running',
-        port: 18789,
+        port: 18999,
         pid: 12345,
         gatewayReady: true,
         connectedAt: Date.now(),

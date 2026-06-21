@@ -29,8 +29,8 @@ const electronAPI = {
       const validChannels = [
         // Gateway
         'gateway:status',
-        // OpenClaw
-        'openclaw:status',
+        // mclaw
+        'mclaw:status',
         // Shell
         'shell:openExternal',
         'shell:showItemInFolder',
@@ -89,9 +89,9 @@ const electronAPI = {
         'file:stat',
         'file:listDir',
         'file:listTree',
-        // OpenClaw extras
-        'openclaw:getSkillsDir',
-        'openclaw:getCliCommand',
+        // mclaw extras
+        'mclaw:getSkillsDir',
+        'mclaw:getCliCommand',
       ];
 
       if (validChannels.includes(channel)) {
@@ -168,13 +168,13 @@ const electronAPI = {
   isDev: process.env.NODE_ENV === 'development' || !!process.env.VITE_DEV_SERVER_URL,
 };
 
-const clawxAPI = {
+const mclawAPI = {
   hostInvoke: (request: HostRequest) => ipcRenderer.invoke('host:invoke', request),
 };
 
 // Expose the API to the renderer process
 contextBridge.exposeInMainWorld('electron', electronAPI);
-contextBridge.exposeInMainWorld('clawx', clawxAPI);
+contextBridge.exposeInMainWorld('mclaw', mclawAPI);
 
 // Type declarations for the renderer process
 export type ElectronAPI = typeof electronAPI;

@@ -16,8 +16,8 @@ export {
 } from './token-usage-core';
 
 async function listAgentIdsWithSessionDirs(): Promise<string[]> {
-  const openclawDir = getOpenClawConfigDir();
-  const agentsDir = join(openclawDir, 'agents');
+  const mclawDir = getOpenClawConfigDir();
+  const agentsDir = join(mclawDir, 'agents');
   const agentIds = new Set<string>();
 
   try {
@@ -49,8 +49,8 @@ async function listAgentIdsWithSessionDirs(): Promise<string[]> {
 }
 
 async function listRecentSessionFiles(): Promise<Array<{ filePath: string; sessionId: string; agentId: string; mtimeMs: number }>> {
-  const openclawDir = getOpenClawConfigDir();
-  const agentsDir = join(openclawDir, 'agents');
+  const mclawDir = getOpenClawConfigDir();
+  const agentsDir = join(mclawDir, 'agents');
 
   try {
     const agentEntries = await listAgentIdsWithSessionDirs();

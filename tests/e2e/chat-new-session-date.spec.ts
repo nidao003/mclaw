@@ -16,7 +16,7 @@ function stableStringify(value: unknown): string {
   return `{${entries.join(',')}}`;
 }
 
-test.describe('ClawX chat session date grouping', () => {
+test.describe('mclaw chat session date grouping', () => {
   test('shows four collapsible history buckets with only recent buckets expanded', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
     const nowMs = Date.now();
@@ -29,7 +29,7 @@ test.describe('ClawX chat session date grouping', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345, connectedAt: nowMs },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345, connectedAt: nowMs },
         gatewayRpc: {
           [stableStringify(['sessions.list', SESSIONS_LIST_PAYLOAD])]: {
             success: true,
@@ -50,7 +50,7 @@ test.describe('ClawX chat session date grouping', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345, connectedAt: nowMs },
+              json: { state: 'running', port: 18999, pid: 12345, connectedAt: nowMs },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {
@@ -102,7 +102,7 @@ test.describe('ClawX chat session date grouping', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', SESSIONS_LIST_PAYLOAD])]: {
             success: true,
@@ -129,7 +129,7 @@ test.describe('ClawX chat session date grouping', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

@@ -37,6 +37,7 @@ interface SettingsState {
   sidebarCollapsed: boolean;
   sidebarWidth: number;
   devModeUnlocked: boolean;
+  settingsSheetOpen: boolean;
 
   // Setup
   setupComplete: boolean;
@@ -61,6 +62,7 @@ interface SettingsState {
   setSidebarCollapsed: (value: boolean) => void;
   setSidebarWidth: (value: number) => void;
   setDevModeUnlocked: (value: boolean) => void;
+  setSettingsSheetOpen: (value: boolean) => void;
   markSetupComplete: () => void;
   resetSettings: () => void;
 }
@@ -72,7 +74,7 @@ const defaultSettings = {
   launchAtStartup: false,
   telemetryEnabled: true,
   gatewayAutoStart: true,
-  gatewayPort: 18789,
+  gatewayPort: 18999,
   proxyEnabled: false,
   proxyServer: '',
   proxyHttpServer: '',
@@ -84,6 +86,7 @@ const defaultSettings = {
   sidebarCollapsed: false,
   sidebarWidth: 280,
   devModeUnlocked: false,
+  settingsSheetOpen: false,
   setupComplete: false,
 };
 
@@ -162,11 +165,12 @@ export const useSettingsStore = create<SettingsState>()(
         set({ devModeUnlocked });
         void hostApi.settings.set('devModeUnlocked', devModeUnlocked).catch(() => { });
       },
+      setSettingsSheetOpen: (settingsSheetOpen) => set({ settingsSheetOpen }),
       markSetupComplete: () => set({ setupComplete: true }),
       resetSettings: () => set(defaultSettings),
     }),
     {
-      name: 'clawx-settings',
+      name: 'mclaw-settings',
     }
   )
 );

@@ -1,16 +1,16 @@
 #!/usr/bin/env zx
 
 /**
- * bundle-openclaw-plugins.mjs
+ * bundle-mclaw-plugins.mjs
  *
  * Build a self-contained mirror of OpenClaw third-party plugins for packaging.
  * Current plugins:
- *   - @soimy/dingtalk -> build/openclaw-plugins/dingtalk
- *   - @wecom/wecom-openclaw-plugin -> build/openclaw-plugins/wecom
- *   - @openclaw/discord -> build/openclaw-plugins/discord
- *   - @openclaw/qqbot -> build/openclaw-plugins/qqbot
- *   - @openclaw/whatsapp -> build/openclaw-plugins/whatsapp
- *   - @tencent-weixin/openclaw-weixin -> build/openclaw-plugins/openclaw-weixin
+ *   - @soimy/dingtalk -> build/mclaw-plugins/dingtalk
+ *   - @wecom/wecom-mclaw-plugin -> build/mclaw-plugins/wecom
+ *   - @mclaw/discord -> build/mclaw-plugins/discord
+ *   - @mclaw/qqbot -> build/mclaw-plugins/qqbot
+ *   - @mclaw/whatsapp -> build/mclaw-plugins/whatsapp
+ *   - @tencent-weixin/mclaw-weixin -> build/mclaw-plugins/mclaw-weixin
  *
  * The output plugin directory contains:
  *   - plugin source files (index.ts, openclaw.plugin.json, package.json, ...)
@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const OUTPUT_ROOT = path.join(ROOT, 'build', 'openclaw-plugins');
+const OUTPUT_ROOT = path.join(ROOT, 'build', 'mclaw-plugins');
 const NODE_MODULES = path.join(ROOT, 'node_modules');
 
 // On Windows, pnpm virtual store paths can exceed MAX_PATH (260 chars).
@@ -40,12 +40,12 @@ function normWin(p) {
 
 const PLUGINS = [
   { npmName: '@soimy/dingtalk', pluginId: 'dingtalk' },
-  { npmName: '@wecom/wecom-openclaw-plugin', pluginId: 'wecom' },
-  { npmName: '@larksuite/openclaw-lark', pluginId: 'feishu-openclaw-plugin' },
-  { npmName: '@openclaw/discord', pluginId: 'discord' },
-  { npmName: '@openclaw/qqbot', pluginId: 'qqbot' },
-  { npmName: '@openclaw/whatsapp', pluginId: 'whatsapp' },
-  { npmName: '@tencent-weixin/openclaw-weixin', pluginId: 'openclaw-weixin' },
+  { npmName: '@wecom/wecom-mclaw-plugin', pluginId: 'wecom' },
+  { npmName: '@larksuite/mclaw-lark', pluginId: 'feishu-mclaw-plugin' },
+  { npmName: '@mclaw/discord', pluginId: 'discord' },
+  { npmName: '@mclaw/qqbot', pluginId: 'qqbot' },
+  { npmName: '@mclaw/whatsapp', pluginId: 'whatsapp' },
+  { npmName: '@tencent-weixin/mclaw-weixin', pluginId: 'mclaw-weixin' },
 ];
 
 function getVirtualStoreNodeModules(realPkgPath) {
@@ -212,7 +212,7 @@ function patchPluginId(pluginDir, expectedId) {
   // Known ID mismatches to patch.  Keys are the wrong ID found in compiled JS,
   // values are the correct ID (must match openclaw.plugin.json).
   const ID_FIXES = {
-    'wecom-openclaw-plugin': 'wecom',
+    'wecom-mclaw-plugin': 'wecom',
   };
 
   for (const entry of entryFiles) {
@@ -224,7 +224,7 @@ function patchPluginId(pluginDir, expectedId) {
 
     for (const [wrongId, correctId] of Object.entries(ID_FIXES)) {
       if (correctId !== expectedId) continue;
-      // Replace  id: "wecom-openclaw-plugin"  or  id: 'wecom-openclaw-plugin'
+      // Replace  id: "wecom-mclaw-plugin"  or  id: 'wecom-mclaw-plugin'
       const pattern = new RegExp(`(\\bid\\s*:\\s*)(["'])${wrongId.replace(/-/g, '\\-')}\\2`, 'g');
       const replaced = content.replace(pattern, `$1$2${correctId}$2`);
       if (replaced !== content) {

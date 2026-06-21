@@ -41,7 +41,7 @@ export const OLLAMA_PLACEHOLDER_API_KEY = 'ollama-local';
  * OpenClaw Gateway config schema.  Keep in sync with OpenClaw's
  * `assertValidGatewayStartupConfigSnapshot`.
  *
- * Writing any other value into `~/.openclaw/openclaw.json` triggers
+ * Writing any other value into `~/.mclaw/openclaw.json` triggers
  * `Invalid config` rejection on next reload/restart and tears down all
  * channels.  Use `assertValidApiProtocol` at every write site.
  */

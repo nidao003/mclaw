@@ -54,7 +54,7 @@ const EXT_MIME_MAP: Record<string, string> = {
   '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 };
 
-const OUTBOUND_DIR = join(homedir(), '.openclaw', 'media', 'outbound');
+const OUTBOUND_DIR = join(homedir(), '.mclaw', 'media', 'outbound');
 const DIRECTORY_MIME_TYPE = 'application/x-directory';
 const FILE_PREVIEW_MAX_TEXT_BYTES = 2 * 1024 * 1024;
 const FILE_PREVIEW_MAX_BINARY_BYTES = 50 * 1024 * 1024;
@@ -145,7 +145,7 @@ function isPathInside(child: string, parent: string): boolean {
 
 function getFilePreviewWriteRoots(): string[] {
   const roots: string[] = [];
-  roots.push(resolve(join(homedir(), '.openclaw')));
+  roots.push(resolve(join(homedir(), '.mclaw')));
   try {
     roots.push(resolve(app.getPath('userData')));
   } catch {

@@ -52,7 +52,7 @@ const {
   getChannelFormValuesMock: vi.fn(),
   getSettingMock: vi.fn(),
   listLogFilesMock: vi.fn(),
-  logDir: '/tmp/clawx-host-services-test-logs',
+  logDir: '/tmp/mclaw-host-services-test-logs',
   listAgentsSnapshotFromConfigMock: vi.fn(),
   listAgentsSnapshotMock: vi.fn(),
   listConfiguredChannelAccountsFromConfigMock: vi.fn(),
@@ -102,7 +102,7 @@ const {
   syncSavedProviderToRuntimeMock: vi.fn(),
   syncLaunchAtStartupSettingFromStoreMock: vi.fn(),
   syncProxyConfigToOpenClawMock: vi.fn(),
-  testOpenClawConfigDir: '/tmp/clawx-host-services-openclaw',
+  testOpenClawConfigDir: '/tmp/mclaw-host-services-openclaw',
   updateAgentNameMock: vi.fn(),
   validateApiKeyWithProviderMock: vi.fn(),
 }));
@@ -114,7 +114,7 @@ vi.mock('@electron/utils/store', () => ({
   setSetting: (...args: unknown[]) => setSettingMock(...args),
 }));
 
-vi.mock('@electron/utils/openclaw-proxy', () => ({
+vi.mock('@electron/utils/mclaw-proxy', () => ({
   syncProxyConfigToOpenClaw: (...args: unknown[]) => syncProxyConfigToOpenClawMock(...args),
 }));
 
@@ -133,7 +133,7 @@ vi.mock('@electron/utils/logger', async (importOriginal) => {
       info: vi.fn(),
       warn: vi.fn(),
       getLogDir: () => logDir,
-      getLogFilePath: () => join(logDir, 'clawx-current.log'),
+      getLogFilePath: () => join(logDir, 'mclaw-current.log'),
       getRecentLogs: vi.fn(),
       listLogFiles: (...args: unknown[]) => listLogFilesMock(...args),
       readLogFile: (...args: unknown[]) => readLogFileMock(...args),
@@ -183,8 +183,8 @@ vi.mock('@electron/utils/plugin-install', () => ({
   ensureWhatsAppPluginInstalled: vi.fn(),
 }));
 
-vi.mock('@electron/utils/openclaw-workspace', () => ({
-  ensureClawXContext: vi.fn(),
+vi.mock('@electron/utils/mclaw-workspace', () => ({
+  ensuremclawContext: vi.fn(),
 }));
 
 vi.mock('@electron/services/providers/provider-runtime-sync', () => ({
@@ -252,7 +252,7 @@ vi.mock('@electron/utils/proxy-fetch', () => ({
   proxyAwareFetch: vi.fn(),
 }));
 
-vi.mock('@electron/utils/openclaw-sdk', () => ({
+vi.mock('@electron/utils/mclaw-sdk', () => ({
   listDiscordDirectoryGroupsFromConfig: vi.fn().mockResolvedValue([]),
   listDiscordDirectoryPeersFromConfig: vi.fn().mockResolvedValue([]),
   normalizeDiscordMessagingTarget: vi.fn().mockReturnValue(undefined),
@@ -319,7 +319,7 @@ describe('host services', () => {
 
   it('runs proxy side effects and restarts a running gateway after settings.set', async () => {
     const gatewayManager = {
-      getStatus: vi.fn(() => ({ state: 'running', port: 18789 })),
+      getStatus: vi.fn(() => ({ state: 'running', port: 18999 })),
       restart: vi.fn(),
     };
     const { createSettingsApi } = await import('@electron/services/settings-api');
@@ -339,7 +339,7 @@ describe('host services', () => {
 
   it('runs launch-at-startup side effects after settings.setMany and reset', async () => {
     const gatewayManager = {
-      getStatus: vi.fn(() => ({ state: 'stopped', port: 18789 })),
+      getStatus: vi.fn(() => ({ state: 'stopped', port: 18999 })),
       restart: vi.fn(),
     };
     const { createSettingsApi } = await import('@electron/services/settings-api');
@@ -512,7 +512,7 @@ describe('host services', () => {
     });
     const gatewayManager = {
       rpc: vi.fn(),
-      getStatus: vi.fn(() => ({ state: 'running', port: 18789 })),
+      getStatus: vi.fn(() => ({ state: 'running', port: 18999 })),
       getDiagnostics: vi.fn(() => ({ consecutiveHeartbeatMisses: 0, consecutiveRpcFailures: 0 })),
     };
     const { createChannelsApi } = await import('@electron/services/channels-api');
@@ -590,7 +590,7 @@ describe('host services', () => {
       channelAccountOwners: {},
     });
     const gatewayManager = {
-      getStatus: vi.fn(() => ({ state: 'running', port: 18789 })),
+      getStatus: vi.fn(() => ({ state: 'running', port: 18999 })),
       debouncedRestart: vi.fn(),
       debouncedReload: vi.fn(),
     };
@@ -618,7 +618,7 @@ describe('host services', () => {
     });
     getChannelFormValuesMock.mockResolvedValue({ appId: 'old', appSecret: 'old-secret' });
     const gatewayManager = {
-      getStatus: vi.fn(() => ({ state: 'running', port: 18789 })),
+      getStatus: vi.fn(() => ({ state: 'running', port: 18999 })),
       debouncedRestart: vi.fn(),
       debouncedReload: vi.fn(),
     };
@@ -693,7 +693,7 @@ describe('host services', () => {
 
   it('returns diagnostics snapshot with channel view and log tails', async () => {
     writeFileSync(join(testOpenClawConfigDir, 'logs', 'gateway.log'), 'gateway-one\ngateway-two\n');
-    readLogFileMock.mockResolvedValue('clawx-log-tail');
+    readLogFileMock.mockResolvedValue('mclaw-log-tail');
     readOpenClawConfigMock.mockResolvedValue({
       channels: {
         feishu: {
@@ -726,7 +726,7 @@ describe('host services', () => {
         },
         channelDefaultAccountId: { feishu: 'default' },
       }),
-      getStatus: vi.fn(() => ({ state: 'running', port: 18789 })),
+      getStatus: vi.fn(() => ({ state: 'running', port: 18999 })),
       getDiagnostics: vi.fn(() => ({
         consecutiveHeartbeatMisses: 0,
         consecutiveRpcFailures: 0,
@@ -745,7 +745,7 @@ describe('host services', () => {
           accounts: [expect.objectContaining({ accountId: 'default', agentId: 'main' })],
         }),
       ],
-      clawxLogTail: 'clawx-log-tail',
+      mclawLogTail: 'mclaw-log-tail',
       gateway: expect.objectContaining({
         state: 'healthy',
         capabilities: { rpc: true },
@@ -756,9 +756,9 @@ describe('host services', () => {
   });
 
   it('reads only selected log files from the log directory', async () => {
-    const selectedLog = join(logDir, 'clawx-selected.log');
+    const selectedLog = join(logDir, 'mclaw-selected.log');
     writeFileSync(selectedLog, 'one\ntwo\nthree\n');
-    listLogFilesMock.mockResolvedValue([{ name: 'clawx-selected.log', path: selectedLog, size: 14, modified: 'now' }]);
+    listLogFilesMock.mockResolvedValue([{ name: 'mclaw-selected.log', path: selectedLog, size: 14, modified: 'now' }]);
     const { createLogsApi } = await import('@electron/services/logs-api');
 
     await expect(createLogsApi().readFile({ path: selectedLog, tailLines: 2 })).resolves.toEqual({
@@ -770,7 +770,7 @@ describe('host services', () => {
   });
 
   it('sends staged media through the typed chat service with gateway attachments', async () => {
-    const mediaPath = join(tmpdir(), `clawx-host-services-media-${Date.now()}.png`);
+    const mediaPath = join(tmpdir(), `mclaw-host-services-media-${Date.now()}.png`);
     writeFileSync(mediaPath, 'fake-image-bytes');
     const gatewayManager = {
       rpc: vi.fn().mockResolvedValue({ runId: 'run-123' }),

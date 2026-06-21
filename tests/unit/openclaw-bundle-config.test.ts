@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 describe('openclaw bundle config', () => {
   it('includes Electron runtime-only packages needed in packaged builds', async () => {
-    const { ELECTRON_MAIN_RUNTIME_PACKAGES, EXTRA_BUNDLED_PACKAGES } = await import('../../scripts/openclaw-bundle-config.mjs');
+    const { ELECTRON_MAIN_RUNTIME_PACKAGES, EXTRA_BUNDLED_PACKAGES } = await import('../../scripts/mclaw-bundle-config.mjs');
 
     expect(ELECTRON_MAIN_RUNTIME_PACKAGES).toEqual([
       '@whiskeysockets/baileys',

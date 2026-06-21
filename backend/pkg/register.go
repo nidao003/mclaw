@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/GoYoko/web"
@@ -30,6 +31,7 @@ import (
 	"github.com/nidao003/mclaw/backend/pkg/notify/channel"
 	"github.com/nidao003/mclaw/backend/pkg/notify/dispatcher"
 	"github.com/nidao003/mclaw/backend/pkg/notify/template"
+	"github.com/nidao003/mclaw/backend/pkg/oohdata"
 	"github.com/nidao003/mclaw/backend/pkg/session"
 	"github.com/nidao003/mclaw/backend/pkg/store"
 	"github.com/nidao003/mclaw/backend/pkg/tasker"
@@ -68,14 +70,38 @@ func RegisterInfra(i *do.Injector, w ...*web.Web) error {
 		return store.NewEntDBV2(cfg, l)
 	})
 
+	// ooh_data 只读 MySQL（数据 API 查询用，未配置时为 nil）
+	do.Provide(i, func(i *do.Injector) (*oohdata.Client, error) {
+		cfg := do.MustInvoke[*config.Config](i)
+		l := do.MustInvoke[*slog.Logger](i)
+		c, err := oohdata.New(cfg)
+		if err != nil {
+			l.ErrorContext(context.Background(), "oohdata client init failed", "error", err)
+			return nil, err
+		}
+		if c == nil {
+			l.WarnContext(context.Background(), "oohdata client not configured (data API disabled)")
+		}
+		return c, nil
+	})
+
 	// Web
 	if len(w) > 0 && w[0] != nil {
-		do.ProvideValue(i, w[0])
+		// 外部传入的 web 实例也注册日志/Recover 中间件
+		mw := w[0]
+		lg := do.MustInvoke[*slog.Logger](i)
+		middleware.RegisterLogging(mw, lg)
+		middleware.RegisterCORS(mw)
+		middleware.RegisterErrorHandler(mw) // *web.Err 状态码透传（中间件裸返回时兜底）
+		do.ProvideValue(i, mw)
 	} else {
 		do.Provide(i, func(i *do.Injector) (*web.Web, error) {
 			w := web.New()
+			lg := do.MustInvoke[*slog.Logger](i)
+			middleware.RegisterLogging(w, lg) // Recover + 请求/错误日志，最先注册
 			middleware.RegisterCORS(w)
-				return w, nil
+			middleware.RegisterErrorHandler(w) // *web.Err 状态码透传（中间件裸返回时兜底）
+			return w, nil
 		})
 	}
 

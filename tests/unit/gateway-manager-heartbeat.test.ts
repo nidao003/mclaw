@@ -41,7 +41,7 @@ describe('GatewayManager heartbeat recovery', () => {
     (manager as unknown as { shouldReconnect: boolean }).shouldReconnect = true;
     (manager as unknown as { status: { state: string; port: number } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
     };
     const restartSpy = vi.spyOn(manager, 'restart').mockResolvedValue();
 
@@ -72,7 +72,7 @@ describe('GatewayManager heartbeat recovery', () => {
     (manager as unknown as { shouldReconnect: boolean }).shouldReconnect = true;
     (manager as unknown as { status: { state: string; port: number; connectedAt: number; gatewayReady: boolean } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
       connectedAt,
       gatewayReady: false,
     };
@@ -107,7 +107,7 @@ describe('GatewayManager heartbeat recovery', () => {
     (manager as unknown as { shouldReconnect: boolean }).shouldReconnect = true;
     (manager as unknown as { status: { state: string; port: number } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
     };
     const restartSpy = vi.spyOn(manager, 'restart').mockResolvedValue();
 
@@ -142,7 +142,7 @@ describe('GatewayManager heartbeat recovery', () => {
     (manager as unknown as { shouldReconnect: boolean }).shouldReconnect = false;
     (manager as unknown as { status: { state: string; port: number } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
     };
     const restartSpy = vi.spyOn(manager, 'restart').mockResolvedValue();
 
@@ -172,7 +172,7 @@ describe('GatewayManager heartbeat recovery', () => {
     (manager as unknown as { shouldReconnect: boolean }).shouldReconnect = true;
     (manager as unknown as { status: { state: string; port: number } }).status = {
       state: 'running',
-      port: 18789,
+      port: 18999,
     };
     const restartSpy = vi.spyOn(manager, 'restart').mockResolvedValue();
 

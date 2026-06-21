@@ -106,8 +106,8 @@ describe('skills store local-first fetch', () => {
 
     gatewayDeferred.resolve({
       skills: [
-        { skillKey: 'agent-browser', slug: 'agent-browser', name: 'agent-browser', source: 'openclaw-managed', disabled: false },
-        { skillKey: 'plugin-skill', slug: 'plugin-skill', name: 'plugin-skill', source: 'openclaw-plugin', disabled: false },
+        { skillKey: 'agent-browser', slug: 'agent-browser', name: 'agent-browser', source: 'mclaw-managed', disabled: false },
+        { skillKey: 'plugin-skill', slug: 'plugin-skill', name: 'plugin-skill', source: 'mclaw-plugin', disabled: false },
       ],
     });
 

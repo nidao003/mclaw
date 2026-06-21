@@ -97,7 +97,7 @@ describe('connectGatewaySocket', () => {
     const onHandshakeComplete = vi.fn();
 
     const connectionPromise = connectGatewaySocket({
-      port: 18789,
+      port: 18999,
       deviceIdentity: null,
       platform: 'win32',
       pendingRequests,
@@ -156,7 +156,7 @@ describe('connectGatewaySocket', () => {
     const pendingRequests = new Map();
 
     const connectionPromise = connectGatewaySocket({
-      port: 18789,
+      port: 18999,
       deviceIdentity: null,
       platform: 'win32',
       pendingRequests,
@@ -194,7 +194,7 @@ describe('connectGatewaySocket', () => {
     const pendingRequests = new Map();
 
     const connectionPromise = connectGatewaySocket({
-      port: 18789,
+      port: 18999,
       deviceIdentity: null,
       platform: 'win32',
       pendingRequests,
@@ -254,7 +254,7 @@ describe('probeGatewayReady', () => {
   });
 
   it('resolves true when connect.challenge message is received', async () => {
-    const probePromise = probeGatewayReady(18789, 5000);
+    const probePromise = probeGatewayReady(18999, 5000);
     const socket = getLatestSocket();
 
     socket.emitOpen();
@@ -269,7 +269,7 @@ describe('probeGatewayReady', () => {
   });
 
   it('resolves false on WebSocket error', async () => {
-    const probePromise = probeGatewayReady(18789, 5000);
+    const probePromise = probeGatewayReady(18999, 5000);
     const socket = getLatestSocket();
 
     socket.emit('error', new Error('ECONNREFUSED'));
@@ -279,7 +279,7 @@ describe('probeGatewayReady', () => {
   });
 
   it('resolves false on timeout when no message is received', async () => {
-    const probePromise = probeGatewayReady(18789, 2000);
+    const probePromise = probeGatewayReady(18999, 2000);
     const socket = getLatestSocket();
 
     socket.emitOpen();
@@ -291,7 +291,7 @@ describe('probeGatewayReady', () => {
   });
 
   it('resolves false when socket closes before challenge', async () => {
-    const probePromise = probeGatewayReady(18789, 5000);
+    const probePromise = probeGatewayReady(18999, 5000);
     const socket = getLatestSocket();
 
     socket.emitOpen();
@@ -303,7 +303,7 @@ describe('probeGatewayReady', () => {
   });
 
   it('does NOT resolve true on plain open event (key behavioral change)', async () => {
-    const probePromise = probeGatewayReady(18789, 500);
+    const probePromise = probeGatewayReady(18999, 500);
     const socket = getLatestSocket();
 
     // Only emit open — no connect.challenge message
@@ -317,7 +317,7 @@ describe('probeGatewayReady', () => {
   });
 
   it('uses terminate() instead of close() for cleanup to avoid Windows TIME_WAIT', async () => {
-    const probePromise = probeGatewayReady(18789, 5000);
+    const probePromise = probeGatewayReady(18999, 5000);
     const socket = getLatestSocket();
 
     socket.emitOpen();
@@ -335,7 +335,7 @@ describe('probeGatewayReady', () => {
   });
 
   it('ignores non-challenge messages', async () => {
-    const probePromise = probeGatewayReady(18789, 1000);
+    const probePromise = probeGatewayReady(18999, 1000);
     const socket = getLatestSocket();
 
     socket.emitOpen();
@@ -352,7 +352,7 @@ describe('probeGatewayReady', () => {
   });
 
   it('ignores malformed JSON messages', async () => {
-    const probePromise = probeGatewayReady(18789, 1000);
+    const probePromise = probeGatewayReady(18999, 1000);
     const socket = getLatestSocket();
 
     socket.emitOpen();

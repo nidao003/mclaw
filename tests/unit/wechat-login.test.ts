@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { testHome } = vi.hoisted(() => {
   const suffix = Math.random().toString(36).slice(2);
   return {
-    testHome: `/tmp/clawx-wechat-login-${suffix}`,
+    testHome: `/tmp/mclaw-wechat-login-${suffix}`,
   };
 });
 
@@ -25,7 +25,7 @@ vi.mock('node:os', async () => {
 vi.mock('electron', () => ({
   app: {
     isPackaged: false,
-    getPath: () => '/tmp/clawx-test-user-data',
+    getPath: () => '/tmp/mclaw-test-user-data',
     getVersion: () => '0.0.0-test',
     getAppPath: () => '/tmp',
   },
@@ -90,14 +90,14 @@ describe('wechat login utility', () => {
     expect(normalizedAccountId).toBe('bot-im-bot');
 
     const accountFile = JSON.parse(
-      await readFile(join(testHome, '.openclaw', 'openclaw-weixin', 'accounts', 'bot-im-bot.json'), 'utf-8'),
+      await readFile(join(testHome, '.mclaw', 'mclaw-weixin', 'accounts', 'bot-im-bot.json'), 'utf-8'),
     ) as { token?: string; baseUrl?: string; userId?: string };
     expect(accountFile.token).toBe('secret-token');
     expect(accountFile.baseUrl).toBe('https://ilinkai.weixin.qq.com');
     expect(accountFile.userId).toBe('user-123');
 
     const accountIndex = JSON.parse(
-      await readFile(join(testHome, '.openclaw', 'openclaw-weixin', 'accounts.json'), 'utf-8'),
+      await readFile(join(testHome, '.mclaw', 'mclaw-weixin', 'accounts.json'), 'utf-8'),
     ) as string[];
     expect(accountIndex).toEqual(['bot-im-bot']);
   });

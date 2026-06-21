@@ -12,7 +12,7 @@ const refreshProviderSnapshotMock = vi.fn();
 
 const { gatewayState, agentsState, providersState } = vi.hoisted(() => ({
   gatewayState: {
-    status: { state: 'running', port: 18789 },
+    status: { state: 'running', port: 18999 },
   },
   agentsState: {
     agents: [] as Array<Record<string, unknown>>,
@@ -95,7 +95,7 @@ vi.mock('sonner', () => ({
 describe('Agents page status refresh', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    gatewayState.status = { state: 'running', port: 18789 };
+    gatewayState.status = { state: 'running', port: 18999 };
     agentsState.agents = [];
     agentsState.defaultModelRef = null;
     providersState.accounts = [];
@@ -139,7 +139,7 @@ describe('Agents page status refresh', () => {
   });
 
   it('refetches channel accounts when the gateway transitions to running after mount', async () => {
-    gatewayState.status = { state: 'starting', port: 18789 };
+    gatewayState.status = { state: 'starting', port: 18999 };
 
     const { rerender } = render(<Agents />);
 
@@ -148,7 +148,7 @@ describe('Agents page status refresh', () => {
       expect(channelsAccountsMock).toHaveBeenCalledWith();
     });
 
-    gatewayState.status = { state: 'running', port: 18789 };
+    gatewayState.status = { state: 'running', port: 18999 };
     await act(async () => {
       rerender(<Agents />);
     });
@@ -159,7 +159,7 @@ describe('Agents page status refresh', () => {
   });
 
   it('does not render the legacy gateway warning during transient stopped status', async () => {
-    gatewayState.status = { state: 'stopped', port: 18789 };
+    gatewayState.status = { state: 'stopped', port: 18999 };
 
     render(<Agents />);
 
@@ -180,8 +180,8 @@ describe('Agents page status refresh', () => {
         modelRef: 'openrouter/anthropic/claude-opus-4.6',
         overrideModelRef: null,
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:desk',
         channelTypes: [],
       },
@@ -241,8 +241,8 @@ describe('Agents page status refresh', () => {
         modelRef: 'openai/gpt-5',
         overrideModelRef: null,
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },

@@ -9,13 +9,13 @@ function stableStringify(value: unknown): string {
   return `{${entries.join(',')}}`;
 }
 
-test.describe('ClawX startup chat history recovery', () => {
+test.describe('mclaw startup chat history recovery', () => {
   test('retries an initial chat.history timeout and eventually renders history', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345, connectedAt: Date.now() },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345, connectedAt: Date.now() },
         gatewayRpc: {},
         hostApi: {
           [stableStringify(['/api/gateway/status', 'GET'])]: {
@@ -23,7 +23,7 @@ test.describe('ClawX startup chat history recovery', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345, connectedAt: Date.now() },
+              json: { state: 'running', port: 18999, pid: 12345, connectedAt: Date.now() },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {
@@ -105,7 +105,7 @@ test.describe('ClawX startup chat history recovery', () => {
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345, connectedAt: Date.now() },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345, connectedAt: Date.now() },
         gatewayRpc: {},
         hostApi: {
           [stableStringify(['/api/gateway/status', 'GET'])]: {
@@ -113,7 +113,7 @@ test.describe('ClawX startup chat history recovery', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345, connectedAt: Date.now() },
+              json: { state: 'running', port: 18999, pid: 12345, connectedAt: Date.now() },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

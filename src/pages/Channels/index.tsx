@@ -40,7 +40,7 @@ interface GatewayDiagnosticSnapshot {
   platform: string;
   gateway: GatewayHealthSummary & Record<string, unknown>;
   channels: ChannelGroupItem[];
-  clawxLogTail: string;
+  mclawLogTail: string;
   gatewayLogTail: string;
   gatewayErrLogTail: string;
 }
@@ -57,7 +57,7 @@ function isGatewayDiagnosticSnapshot(value: unknown): value is GatewayDiagnostic
     && typeof snapshot.gateway === 'object'
     && snapshot.gateway !== null
     && Array.isArray(snapshot.channels)
-    && typeof snapshot.clawxLogTail === 'string'
+    && typeof snapshot.mclawLogTail === 'string'
     && typeof snapshot.gatewayLogTail === 'string'
     && typeof snapshot.gatewayErrLogTail === 'string'
   );
@@ -499,7 +499,7 @@ export function Channels() {
               variant="outline"
               onClick={handleRefresh}
               disabled={gatewayStatus.state !== 'running'}
-              className="h-9 text-meta font-medium rounded-full px-4 border-black/10 dark:border-white/10 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 shadow-none text-foreground/80 hover:text-foreground transition-colors"
+              className="h-9 text-meta font-medium rounded-full px-4 border-border bg-transparent hover:bg-accent/50 shadow-none text-foreground/80 hover:text-foreground transition-colors"
             >
               <RefreshCw className={cn('h-3.5 w-3.5 mr-2', isUsingStableValue && 'animate-spin')} />
               {t('refresh')}
@@ -587,7 +587,7 @@ export function Channels() {
               </div>
 
               {showDiagnostics && diagnosticsText && (
-                <div className="mt-4 rounded-xl border border-black/10 dark:border-white/10 bg-background/80 p-3">
+                <div className="mt-4 rounded-xl border border-border bg-background/80 p-3">
                   <p className="mb-2 text-xs font-medium text-muted-foreground">{t('health.diagnosticsTitle')}</p>
                   <pre data-testid="channels-diagnostics" className="max-h-[320px] overflow-auto whitespace-pre-wrap break-all text-tiny text-foreground/85">
                     {diagnosticsText}
@@ -613,10 +613,10 @@ export function Channels() {
               </h2>
               <div className="space-y-4">
                 {configuredGroups.map((group) => (
-                  <div key={group.channelType} className="rounded-2xl border border-black/10 dark:border-white/10 p-4 bg-transparent">
+                  <div key={group.channelType} className="rounded-2xl border border-border p-4 bg-transparent">
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-[40px] w-[40px] shrink-0 flex items-center justify-center text-foreground bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-full shadow-sm">
+                        <div className="h-[40px] w-[40px] shrink-0 flex items-center justify-center text-foreground bg-accent/50 border border-border/50 rounded-full shadow-sm">
                           <ChannelLogo type={group.channelType as ChannelType} />
                         </div>
                         <div className="min-w-0">
@@ -687,7 +687,7 @@ export function Channels() {
                             ? t('account.mainAccount')
                             : account.name;
                         return (
-                        <div key={`${group.channelType}-${account.accountId}`} className="rounded-xl bg-black/5 dark:bg-white/5 px-3 py-2">
+                        <div key={`${group.channelType}-${account.accountId}`} className="rounded-xl bg-accent/50 px-3 py-2">
                           <div className="flex items-center justify-between gap-3">
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
@@ -706,7 +706,7 @@ export function Channels() {
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-muted-foreground">{t('account.bindAgentLabel')}</span>
                               <select
-                                className="h-8 rounded-lg border border-black/10 dark:border-white/10 bg-background px-2 text-xs"
+                                className="h-8 rounded-lg border border-border bg-background px-2 text-xs"
                                 value={account.agentId || ''}
                                 onChange={(event) => {
                                   void handleBindAgent(group.channelType, account.accountId, event.target.value);
@@ -786,10 +786,10 @@ export function Channels() {
                       setShowConfigModal(true);
                     }}
                     className={cn(
-                      'group flex items-start gap-4 p-4 rounded-2xl transition-all text-left border relative overflow-hidden bg-transparent border-transparent hover:bg-black/5 dark:hover:bg-white/5'
+                      'group flex items-start gap-4 p-4 rounded-2xl transition-all text-left border relative overflow-hidden bg-transparent border-transparent hover:bg-accent/50'
                     )}
                   >
-                    <div className="h-[46px] w-[46px] shrink-0 flex items-center justify-center text-foreground bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-full shadow-sm mb-3">
+                    <div className="h-[46px] w-[46px] shrink-0 flex items-center justify-center text-foreground bg-accent/50 border border-border/50 rounded-full shadow-sm mb-3">
                       <ChannelLogo type={type} />
                     </div>
                     <div className="flex flex-col flex-1 min-w-0 py-0.5 mt-1">

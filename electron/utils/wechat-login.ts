@@ -13,8 +13,8 @@ const DEFAULT_ILINK_BOT_TYPE = '3';
 const ACTIVE_LOGIN_TTL_MS = 5 * 60_000;
 const QR_POLL_TIMEOUT_MS = 35_000;
 const MAX_QR_REFRESH_COUNT = 3;
-const OPENCLAW_DIR = join(homedir(), '.openclaw');
-const WECHAT_STATE_DIR = join(OPENCLAW_DIR, 'openclaw-weixin');
+const MCLAW_DIR = join(homedir(), '.mclaw');
+const WECHAT_STATE_DIR = join(MCLAW_DIR, 'mclaw-weixin');
 const WECHAT_ACCOUNT_INDEX_FILE = join(WECHAT_STATE_DIR, 'accounts.json');
 const WECHAT_ACCOUNTS_DIR = join(WECHAT_STATE_DIR, 'accounts');
 const require = createRequire(import.meta.url);
@@ -212,7 +212,7 @@ function isLoginFresh(login: ActiveLogin): boolean {
 function resolveConfigPath(): string {
   const envPath = process.env.OPENCLAW_CONFIG?.trim();
   if (envPath) return envPath;
-  return join(OPENCLAW_DIR, 'openclaw.json');
+  return join(MCLAW_DIR, 'openclaw.json');
 }
 
 function loadWeChatRouteTag(accountId?: string): string | undefined {
@@ -226,7 +226,7 @@ function loadWeChatRouteTag(accountId?: string): string | undefined {
         accounts?: Record<string, { routeTag?: string | number }>;
       }>;
     };
-    const section = parsed.channels?.['openclaw-weixin'];
+    const section = parsed.channels?.['mclaw-weixin'];
     if (!section) return undefined;
     if (accountId) {
       const normalizedAccountId = normalizeOpenClawAccountId(accountId);

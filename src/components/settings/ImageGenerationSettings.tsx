@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const inputClasses =
-  'h-[44px] rounded-xl font-mono text-meta bg-transparent border-black/10 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 shadow-sm transition-all text-foreground placeholder:text-foreground/40';
+  'h-[44px] rounded-xl font-mono text-meta bg-transparent border-border focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 shadow-sm transition-all text-foreground placeholder:text-foreground/40';
 const labelClasses = 'text-sm text-foreground/80 font-bold';
 
 function extractTestOutputPath(result: unknown): string | null {
@@ -213,13 +213,13 @@ export function ImageGenerationSettings() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12 text-muted-foreground bg-black/5 dark:bg-white/5 rounded-3xl border border-dashed border-transparent">
+        <div className="flex items-center justify-center py-12 text-muted-foreground bg-accent/50 rounded-3xl border border-dashed border-transparent">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : (
-        <div className="space-y-8 rounded-3xl border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] p-6 md:p-8">
+        <div className="space-y-8 rounded-3xl border border-border bg-black/[0.02] dark:bg-white/[0.02] p-6 md:p-8">
           <div
-            className="space-y-4 rounded-2xl border border-black/10 dark:border-white/10 p-5"
+            className="space-y-4 rounded-2xl border border-border p-5"
             data-testid="image-generation-openai-relay"
           >
             <div>
@@ -332,10 +332,10 @@ export function ImageGenerationSettings() {
           <div className="space-y-3">
             <Label className={labelClasses}>{t('imageGeneration.agentAuthTitle')}</Label>
             <p className="text-meta text-muted-foreground">{t('imageGeneration.agentAuthDesc')}</p>
-            <div className="rounded-2xl border border-black/10 dark:border-white/10 overflow-hidden">
+            <div className="rounded-2xl border border-border overflow-hidden">
               <table className="w-full text-sm" data-testid="image-generation-agent-auth-table">
                 <thead>
-                  <tr className="border-b border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-left text-meta text-muted-foreground">
+                  <tr className="border-b border-border bg-accent/50 text-left text-meta text-muted-foreground">
                     <th className="px-4 py-2 font-medium">{t('imageGeneration.agentColumn')}</th>
                     <th className="px-4 py-2 font-medium">{t('imageGeneration.authColumn')}</th>
                   </tr>
@@ -344,7 +344,7 @@ export function ImageGenerationSettings() {
                   {(snapshot?.agents ?? []).map((agent) => (
                     <tr
                       key={agent.id}
-                      className="border-b border-black/5 dark:border-white/5 last:border-0"
+                      className="border-b border-border/50 last:border-0"
                       data-testid={`image-generation-agent-row-${agent.id}`}
                     >
                       <td className="px-4 py-3">
@@ -378,7 +378,7 @@ export function ImageGenerationSettings() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-end gap-4 pt-2 border-t border-black/10 dark:border-white/10">
+          <div className="flex flex-wrap items-end gap-4 pt-2 border-t border-border">
             <div className="space-y-2 min-w-[200px]">
               <Label htmlFor="image-gen-test-agent" className={labelClasses}>
                 {t('imageGeneration.testAgent')}

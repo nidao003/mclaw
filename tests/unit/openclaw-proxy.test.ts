@@ -43,7 +43,7 @@ describe('syncProxyConfigToOpenClaw', () => {
       },
     });
 
-    const { syncProxyConfigToOpenClaw } = await import('@electron/utils/openclaw-proxy');
+    const { syncProxyConfigToOpenClaw } = await import('@electron/utils/mclaw-proxy');
 
     await syncProxyConfigToOpenClaw({
       proxyEnabled: false,
@@ -67,7 +67,7 @@ describe('syncProxyConfigToOpenClaw', () => {
       },
     });
 
-    const { syncProxyConfigToOpenClaw } = await import('@electron/utils/openclaw-proxy');
+    const { syncProxyConfigToOpenClaw } = await import('@electron/utils/mclaw-proxy');
 
     await syncProxyConfigToOpenClaw({
       proxyEnabled: false,

@@ -7,7 +7,7 @@ const tMock = (key: string) => key;
 
 const { gatewayState, hostApiMock } = vi.hoisted(() => ({
   gatewayState: {
-    status: { state: 'running', port: 18789, gatewayReady: true } as {
+    status: { state: 'running', port: 18999, gatewayReady: true } as {
       state: string;
       port: number;
       gatewayReady?: boolean;
@@ -66,7 +66,7 @@ vi.mock('sonner', () => ({
 describe('Dreams page gateway readiness', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    gatewayState.status = { state: 'running', port: 18789, gatewayReady: true };
+    gatewayState.status = { state: 'running', port: 18999, gatewayReady: true };
     rpcMock.mockImplementation(async (method: string) => {
       if (method === 'doctor.memory.status') {
         return {
@@ -89,7 +89,7 @@ describe('Dreams page gateway readiness', () => {
   });
 
   it('does not call memory doctor RPCs until gatewayReady is true', async () => {
-    gatewayState.status = { state: 'running', port: 18789, gatewayReady: false };
+    gatewayState.status = { state: 'running', port: 18999, gatewayReady: false };
     const { rerender } = render(<Dreams />);
 
     expect(screen.getByTestId('dreams-refresh')).toBeDisabled();
@@ -99,7 +99,7 @@ describe('Dreams page gateway readiness', () => {
       expect(rpcMock).not.toHaveBeenCalled();
     });
 
-    gatewayState.status = { state: 'running', port: 18789, gatewayReady: true };
+    gatewayState.status = { state: 'running', port: 18999, gatewayReady: true };
     await act(async () => {
       rerender(<Dreams />);
     });

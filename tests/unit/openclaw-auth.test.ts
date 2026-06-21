@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { testHome, testUserData, getSettingMock } = vi.hoisted(() => {
   const suffix = Math.random().toString(36).slice(2);
   return {
-    testHome: `/tmp/clawx-openclaw-auth-${suffix}`,
-    testUserData: `/tmp/clawx-openclaw-auth-user-data-${suffix}`,
+    testHome: `/tmp/mclaw-mclaw-auth-${suffix}`,
+    testUserData: `/tmp/mclaw-mclaw-auth-user-data-${suffix}`,
     getSettingMock: vi.fn(),
   };
 });
@@ -37,7 +37,7 @@ vi.mock('@electron/utils/store', () => ({
 
 vi.mock('@electron/utils/paths', async () => {
   const actual = await vi.importActual<typeof import('@electron/utils/paths')>('@electron/utils/paths');
-  const resolvedDir = join(testHome, '.openclaw-test-openclaw');
+  const resolvedDir = join(testHome, '.mclaw-test-openclaw');
   return {
     ...actual,
     getOpenClawResolvedDir: () => resolvedDir,
@@ -46,23 +46,23 @@ vi.mock('@electron/utils/paths', async () => {
 });
 
 async function writeOpenClawJson(config: unknown): Promise<void> {
-  const openclawDir = join(testHome, '.openclaw');
+  const openclawDir = join(testHome, '.mclaw');
   await mkdir(openclawDir, { recursive: true });
   await writeFile(join(openclawDir, 'openclaw.json'), JSON.stringify(config, null, 2), 'utf8');
 }
 
 async function readOpenClawJson(): Promise<Record<string, unknown>> {
-  const content = await readFile(join(testHome, '.openclaw', 'openclaw.json'), 'utf8');
+  const content = await readFile(join(testHome, '.mclaw', 'openclaw.json'), 'utf8');
   return JSON.parse(content) as Record<string, unknown>;
 }
 
 async function readAuthProfiles(agentId: string): Promise<Record<string, unknown>> {
-  const content = await readFile(join(testHome, '.openclaw', 'agents', agentId, 'agent', 'auth-profiles.json'), 'utf8');
+  const content = await readFile(join(testHome, '.mclaw', 'agents', agentId, 'agent', 'auth-profiles.json'), 'utf8');
   return JSON.parse(content) as Record<string, unknown>;
 }
 
 async function writeAgentAuthProfiles(agentId: string, store: Record<string, unknown>): Promise<void> {
-  const agentDir = join(testHome, '.openclaw', 'agents', agentId, 'agent');
+  const agentDir = join(testHome, '.mclaw', 'agents', agentId, 'agent');
   await mkdir(agentDir, { recursive: true });
   await writeFile(join(agentDir, 'auth-profiles.json'), JSON.stringify(store, null, 2), 'utf8');
 }
@@ -83,22 +83,22 @@ describe('saveProviderKeyToOpenClaw', () => {
             id: 'main',
             name: 'Main',
             default: true,
-            workspace: '~/.openclaw/workspace',
-            agentDir: '~/.openclaw/agents/main/agent',
+            workspace: '~/.mclaw/workspace',
+            agentDir: '~/.mclaw/agents/main/agent',
           },
           {
             id: 'test3',
             name: 'test3',
-            workspace: '~/.openclaw/workspace-test3',
-            agentDir: '~/.openclaw/agents/test3/agent',
+            workspace: '~/.mclaw/workspace-test3',
+            agentDir: '~/.mclaw/agents/test3/agent',
           },
         ],
       },
     });
 
-    await mkdir(join(testHome, '.openclaw', 'agents', 'test2', 'agent'), { recursive: true });
+    await mkdir(join(testHome, '.mclaw', 'agents', 'test2', 'agent'), { recursive: true });
     await writeFile(
-      join(testHome, '.openclaw', 'agents', 'test2', 'agent', 'auth-profiles.json'),
+      join(testHome, '.mclaw', 'agents', 'test2', 'agent', 'auth-profiles.json'),
       JSON.stringify({
         version: 1,
         profiles: {
@@ -113,7 +113,7 @@ describe('saveProviderKeyToOpenClaw', () => {
     );
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    const { saveProviderKeyToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { saveProviderKeyToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await saveProviderKeyToOpenClaw('openrouter', 'sk-test');
 
@@ -172,7 +172,7 @@ describe('removeProviderKeyFromOpenClaw', () => {
       },
     });
 
-    const { removeProviderKeyFromOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { removeProviderKeyFromOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await removeProviderKeyFromOpenClaw('custom-abc12345', 'main');
 
@@ -211,7 +211,7 @@ describe('removeProviderKeyFromOpenClaw', () => {
       },
     });
 
-    const { removeProviderKeyFromOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { removeProviderKeyFromOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await removeProviderKeyFromOpenClaw('custom-abc12345', 'main');
 
@@ -249,7 +249,7 @@ describe('removeProviderKeyFromOpenClaw', () => {
       },
     });
 
-    const { removeProviderKeyFromOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { removeProviderKeyFromOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await removeProviderKeyFromOpenClaw('openai-codex', 'main');
 
@@ -299,7 +299,7 @@ describe('removeProviderKeyFromOpenClaw', () => {
       },
     });
 
-    const { removeProviderKeyFromOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { removeProviderKeyFromOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await removeProviderKeyFromOpenClaw('minimax-portal', 'main');
 
@@ -329,14 +329,14 @@ describe('sanitizeOpenClawConfig', () => {
   });
 
   it('skips sanitization when openclaw.json does not exist', async () => {
-    // Ensure the .openclaw dir doesn't exist at all
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    // Ensure the .mclaw dir doesn't exist at all
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     // Should not throw and should not create the file
     await expect(sanitizeOpenClawConfig()).resolves.toBeUndefined();
 
-    const configPath = join(testHome, '.openclaw', 'openclaw.json');
+    const configPath = join(testHome, '.mclaw', 'openclaw.json');
     await expect(readFile(configPath, 'utf8')).rejects.toThrow();
 
     logSpy.mockRestore();
@@ -344,13 +344,13 @@ describe('sanitizeOpenClawConfig', () => {
 
   it('skips sanitization when openclaw.json contains invalid JSON', async () => {
     // Simulate a corrupted file: readJsonFile returns null, sanitize must bail out
-    const openclawDir = join(testHome, '.openclaw');
+    const openclawDir = join(testHome, '.mclaw');
     await mkdir(openclawDir, { recursive: true });
     const configPath = join(openclawDir, 'openclaw.json');
     await writeFile(configPath, 'NOT VALID JSON {{{', 'utf8');
     const before = await readFile(configPath, 'utf8');
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     await sanitizeOpenClawConfig();
@@ -367,12 +367,12 @@ describe('sanitizeOpenClawConfig', () => {
     // and enforce tools.profile, commands.restart, etc.
     await writeOpenClawJson({});
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     await sanitizeOpenClawConfig();
 
-    const configPath = join(testHome, '.openclaw', 'openclaw.json');
+    const configPath = join(testHome, '.mclaw', 'openclaw.json');
     const result = JSON.parse(await readFile(configPath, 'utf8')) as Record<string, unknown>;
     // Fresh install should get tools settings enforced
     const tools = result.tools as Record<string, unknown>;
@@ -388,12 +388,12 @@ describe('sanitizeOpenClawConfig', () => {
       memory: { enabled: true, limit: 100 },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     await sanitizeOpenClawConfig();
 
-    const configPath = join(testHome, '.openclaw', 'openclaw.json');
+    const configPath = join(testHome, '.mclaw', 'openclaw.json');
     const result = JSON.parse(await readFile(configPath, 'utf8')) as Record<string, unknown>;
 
     // User-owned sections must survive the sanitize pass
@@ -428,7 +428,7 @@ describe('sanitizeOpenClawConfig', () => {
       },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -459,7 +459,7 @@ describe('sanitizeOpenClawConfig', () => {
       },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -481,24 +481,24 @@ describe('sanitizeOpenClawConfig', () => {
       },
       plugins: {
         enabled: true,
-        allow: ['custom-plugin', 'feishu', 'openclaw-lark'],
+        allow: ['custom-plugin', 'feishu', 'mclaw-lark'],
         entries: {
           'custom-plugin': { enabled: true },
           feishu: { enabled: true },
-          'openclaw-lark': { enabled: true, config: { preserved: true } },
+          'mclaw-lark': { enabled: true, config: { preserved: true } },
         },
       },
     });
 
-    const legacyPluginDir = join(testHome, '.openclaw', 'extensions', 'openclaw-lark');
+    const legacyPluginDir = join(testHome, '.mclaw', 'extensions', 'mclaw-lark');
     await mkdir(legacyPluginDir, { recursive: true });
     await writeFile(
       join(legacyPluginDir, 'openclaw.plugin.json'),
-      JSON.stringify({ id: 'openclaw-lark' }, null, 2),
+      JSON.stringify({ id: 'mclaw-lark' }, null, 2),
       'utf8',
     );
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -506,9 +506,9 @@ describe('sanitizeOpenClawConfig', () => {
     const allow = plugins.allow as string[];
     const entries = plugins.entries as Record<string, Record<string, unknown>>;
 
-    expect(allow).toContain('openclaw-lark');
+    expect(allow).toContain('mclaw-lark');
     expect(allow).not.toContain('feishu');
-    expect(entries['openclaw-lark']).toEqual({
+    expect(entries['mclaw-lark']).toEqual({
       enabled: true,
       config: { preserved: true },
     });
@@ -525,16 +525,16 @@ describe('sanitizeOpenClawConfig', () => {
       },
       plugins: {
         enabled: true,
-        allow: ['custom-plugin', 'feishu', 'openclaw-lark'],
+        allow: ['custom-plugin', 'feishu', 'mclaw-lark'],
         entries: {
           'custom-plugin': { enabled: true },
           feishu: { enabled: false },
-          'openclaw-lark': { enabled: true },
+          'mclaw-lark': { enabled: true },
         },
       },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -544,10 +544,10 @@ describe('sanitizeOpenClawConfig', () => {
 
     expect(allow).toContain('custom-plugin');
     expect(allow).not.toContain('feishu');
-    expect(allow).not.toContain('openclaw-lark');
+    expect(allow).not.toContain('mclaw-lark');
     expect(entries['custom-plugin']).toEqual({ enabled: true });
     expect(entries.feishu).toBeUndefined();
-    expect(entries['openclaw-lark']).toBeUndefined();
+    expect(entries['mclaw-lark']).toBeUndefined();
   });
 
   it('strips defaultAccount (but preserves accounts) from dingtalk during sanitize', async () => {
@@ -569,7 +569,7 @@ describe('sanitizeOpenClawConfig', () => {
       },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -609,7 +609,7 @@ describe('sanitizeOpenClawConfig', () => {
       },
     });
 
-    const openclawDir = join(testHome, '.openclaw-package-sanitize');
+    const openclawDir = join(testHome, '.mclaw-package-sanitize');
     await mkdir(join(openclawDir, 'dist', 'extensions', 'minimax'), { recursive: true });
     await writeFile(
       join(openclawDir, 'dist', 'extensions', 'minimax', 'openclaw.plugin.json'),
@@ -629,7 +629,7 @@ describe('sanitizeOpenClawConfig', () => {
       };
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -669,7 +669,7 @@ describe('sanitizeOpenClawConfig', () => {
       },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -679,7 +679,7 @@ describe('sanitizeOpenClawConfig', () => {
   });
 
   it('removes missing external plugin ids from plugins.allow while preserving installed and configured plugins', async () => {
-    const installedPluginDir = join(testHome, '.openclaw', 'extensions', 'custom-installed');
+    const installedPluginDir = join(testHome, '.mclaw', 'extensions', 'custom-installed');
     await mkdir(installedPluginDir, { recursive: true });
     await writeFile(
       join(installedPluginDir, 'openclaw.plugin.json'),
@@ -695,7 +695,7 @@ describe('sanitizeOpenClawConfig', () => {
       },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -723,7 +723,7 @@ describe('sanitizeOpenClawConfig', () => {
       },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -736,7 +736,7 @@ describe('sanitizeOpenClawConfig', () => {
   });
 
   it('limits enabled-by-default provider plugins in plugins.allow to active providers', async () => {
-    const openclawDir = join(testHome, '.openclaw-package-allowlist');
+    const openclawDir = join(testHome, '.mclaw-package-allowlist');
     const extensionsRoot = join(openclawDir, 'dist', 'extensions');
     for (const manifest of [
       { dir: 'browser', id: 'browser', enabledByDefault: true },
@@ -775,7 +775,7 @@ describe('sanitizeOpenClawConfig', () => {
       };
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -798,8 +798,8 @@ describe('sanitizeOpenClawConfig', () => {
           {
             id: 'work',
             name: 'Work',
-            workspace: '~/.openclaw/workspace-work',
-            agentDir: '~/.openclaw/agents/work/agent',
+            workspace: '~/.mclaw/workspace-work',
+            agentDir: '~/.mclaw/agents/work/agent',
           },
         ],
       },
@@ -824,7 +824,7 @@ describe('sanitizeOpenClawConfig', () => {
       },
     });
 
-    const openclawDir = join(testHome, '.openclaw-package-sanitize-providers');
+    const openclawDir = join(testHome, '.mclaw-package-sanitize-providers');
     await mkdir(join(openclawDir, 'dist', 'extensions', 'openai'), { recursive: true });
     await writeFile(
       join(openclawDir, 'dist', 'extensions', 'openai', 'openclaw.plugin.json'),
@@ -844,7 +844,7 @@ describe('sanitizeOpenClawConfig', () => {
       };
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -869,7 +869,7 @@ describe('syncProviderConfigToOpenClaw', () => {
       models: { providers: {} },
     });
 
-    const openclawDir = join(testHome, '.openclaw-package-old');
+    const openclawDir = join(testHome, '.mclaw-package-old');
     await mkdir(join(openclawDir, 'extensions', 'minimax-portal-auth'), { recursive: true });
     await writeFile(
       join(openclawDir, 'extensions', 'minimax-portal-auth', 'openclaw.plugin.json'),
@@ -888,7 +888,7 @@ describe('syncProviderConfigToOpenClaw', () => {
       };
     });
 
-    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('minimax-portal', 'MiniMax-M2.7', {
       baseUrl: 'https://api.minimax.io/anthropic',
@@ -918,7 +918,7 @@ describe('syncProviderConfigToOpenClaw', () => {
       models: { providers: {} },
     });
 
-    const openclawDir = join(testHome, '.openclaw-package-new');
+    const openclawDir = join(testHome, '.mclaw-package-new');
     await mkdir(join(openclawDir, 'dist', 'extensions', 'minimax'), { recursive: true });
     await writeFile(
       join(openclawDir, 'dist', 'extensions', 'minimax', 'openclaw.plugin.json'),
@@ -938,7 +938,7 @@ describe('syncProviderConfigToOpenClaw', () => {
       };
     });
 
-    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('minimax-portal', 'MiniMax-M2.7', {
       baseUrl: 'https://api.minimax.io/anthropic',
@@ -965,7 +965,7 @@ describe('syncProviderConfigToOpenClaw', () => {
       },
     });
 
-    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('moonshot', 'kimi-k2.6', {
       baseUrl: 'https://api.moonshot.cn/v1',
@@ -990,7 +990,7 @@ describe('syncProviderConfigToOpenClaw', () => {
       },
     });
 
-    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('moonshot', 'kimi-k2.6', {
       baseUrl: 'https://api.moonshot.cn/v1',
@@ -1019,8 +1019,8 @@ describe('auth-backed provider discovery', () => {
     await writeOpenClawJson({
       agents: {
         list: [
-          { id: 'main', name: 'Main', default: true, workspace: '~/.openclaw/workspace', agentDir: '~/.openclaw/agents/main/agent' },
-          { id: 'work', name: 'Work', workspace: '~/.openclaw/workspace-work', agentDir: '~/.openclaw/agents/work/agent' },
+          { id: 'main', name: 'Main', default: true, workspace: '~/.mclaw/workspace', agentDir: '~/.mclaw/agents/main/agent' },
+          { id: 'work', name: 'Work', workspace: '~/.mclaw/workspace-work', agentDir: '~/.mclaw/agents/work/agent' },
         ],
       },
       auth: {
@@ -1044,7 +1044,7 @@ describe('auth-backed provider discovery', () => {
       },
     });
 
-    const { getActiveOpenClawProviders } = await import('@electron/utils/openclaw-auth');
+    const { getActiveOpenClawProviders } = await import('@electron/utils/mclaw-auth');
 
     await expect(getActiveOpenClawProviders()).resolves.toEqual(
       new Set(['openai', 'anthropic', 'google']),
@@ -1055,8 +1055,8 @@ describe('auth-backed provider discovery', () => {
     await writeOpenClawJson({
       agents: {
         list: [
-          { id: 'main', name: 'Main', default: true, workspace: '~/.openclaw/workspace', agentDir: '~/.openclaw/agents/main/agent' },
-          { id: 'work', name: 'Work', workspace: '~/.openclaw/workspace-work', agentDir: '~/.openclaw/agents/work/agent' },
+          { id: 'main', name: 'Main', default: true, workspace: '~/.mclaw/workspace', agentDir: '~/.mclaw/agents/main/agent' },
+          { id: 'work', name: 'Work', workspace: '~/.mclaw/workspace-work', agentDir: '~/.mclaw/agents/work/agent' },
         ],
         defaults: {
           model: {
@@ -1082,7 +1082,7 @@ describe('auth-backed provider discovery', () => {
       },
     });
 
-    const { getOpenClawProvidersConfig } = await import('@electron/utils/openclaw-auth');
+    const { getOpenClawProvidersConfig } = await import('@electron/utils/mclaw-auth');
     const result = await getOpenClawProvidersConfig();
 
     expect(result.defaultModel).toBe('openai/gpt-5.5');
@@ -1096,8 +1096,8 @@ describe('auth-backed provider discovery', () => {
     await writeOpenClawJson({
       agents: {
         list: [
-          { id: 'main', name: 'Main', default: true, workspace: '~/.openclaw/workspace', agentDir: '~/.openclaw/agents/main/agent' },
-          { id: 'work', name: 'Work', workspace: '~/.openclaw/workspace-work', agentDir: '~/.openclaw/agents/work/agent' },
+          { id: 'main', name: 'Main', default: true, workspace: '~/.mclaw/workspace', agentDir: '~/.mclaw/agents/main/agent' },
+          { id: 'work', name: 'Work', workspace: '~/.mclaw/workspace-work', agentDir: '~/.mclaw/agents/work/agent' },
         ],
       },
       models: {
@@ -1155,7 +1155,7 @@ describe('auth-backed provider discovery', () => {
       getActiveOpenClawProviders,
       getOpenClawProvidersConfig,
       removeProviderFromOpenClaw,
-    } = await import('@electron/utils/openclaw-auth');
+    } = await import('@electron/utils/mclaw-auth');
 
     await expect(getActiveOpenClawProviders()).resolves.toEqual(new Set(['custom-abc12345']));
 
@@ -1194,7 +1194,7 @@ describe('auth-backed provider discovery', () => {
       },
     });
 
-    const openclawDir = join(testHome, '.openclaw-package-new');
+    const openclawDir = join(testHome, '.mclaw-package-new');
     await mkdir(join(openclawDir, 'dist', 'extensions', 'minimax'), { recursive: true });
     await writeFile(
       join(openclawDir, 'dist', 'extensions', 'minimax', 'openclaw.plugin.json'),
@@ -1214,7 +1214,7 @@ describe('auth-backed provider discovery', () => {
       };
     });
 
-    const { removeProviderFromOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { removeProviderFromOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await removeProviderFromOpenClaw('minimax-portal');
 
@@ -1240,7 +1240,7 @@ describe('auth-backed provider discovery', () => {
       },
     });
 
-    const openclawDir = join(testHome, '.openclaw-package-new');
+    const openclawDir = join(testHome, '.mclaw-package-new');
     await mkdir(join(openclawDir, 'dist', 'extensions', 'minimax'), { recursive: true });
     await writeFile(
       join(openclawDir, 'dist', 'extensions', 'minimax', 'openclaw.plugin.json'),
@@ -1260,7 +1260,7 @@ describe('auth-backed provider discovery', () => {
       };
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
 
     await sanitizeOpenClawConfig();
 
@@ -1295,8 +1295,8 @@ describe('assertValidApiProtocol guard at write sites', () => {
             id: 'main',
             name: 'Main',
             default: true,
-            workspace: '~/.openclaw/workspace',
-            agentDir: '~/.openclaw/agents/main/agent',
+            workspace: '~/.mclaw/workspace',
+            agentDir: '~/.mclaw/agents/main/agent',
           },
         ],
       },
@@ -1327,7 +1327,7 @@ describe('assertValidApiProtocol guard at write sites', () => {
       };
     });
 
-    const { setOpenClawDefaultModel } = await import('@electron/utils/openclaw-auth');
+    const { setOpenClawDefaultModel } = await import('@electron/utils/mclaw-auth');
     const { InvalidApiProtocolError } = await import('@electron/shared/providers/types');
 
     await expect(setOpenClawDefaultModel('bogus-provider')).rejects.toBeInstanceOf(InvalidApiProtocolError);
@@ -1348,7 +1348,7 @@ describe('anthropic-messages maxTokens', () => {
   it('adds maxTokens when syncProviderConfigToOpenClaw writes anthropic-messages providers', async () => {
     await writeOpenClawJson({ models: { providers: {} } });
 
-    const { syncProviderConfigToOpenClaw, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('minimax-portal', 'MiniMax-M2.7', {
       baseUrl: 'https://api.minimax.io/anthropic',
@@ -1369,7 +1369,7 @@ describe('anthropic-messages maxTokens', () => {
   it('adds maxTokens for custom providers using anthropic-messages', async () => {
     await writeOpenClawJson({ models: { providers: {} } });
 
-    const { syncProviderConfigToOpenClaw, ANTHROPIC_MESSAGES_DEFAULT_MAX_TOKENS } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw, ANTHROPIC_MESSAGES_DEFAULT_MAX_TOKENS } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('custom-a1b2c3d4', 'my-claude-proxy', {
       baseUrl: 'https://example.com/anthropic',
@@ -1389,7 +1389,7 @@ describe('anthropic-messages maxTokens', () => {
   it('does not inject maxTokens for openai-completions providers', async () => {
     await writeOpenClawJson({ models: { providers: {} } });
 
-    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('custom-a1b2c3d4', 'gpt-proxy', {
       baseUrl: 'https://example.com/v1',
@@ -1419,7 +1419,7 @@ describe('anthropic-messages maxTokens', () => {
       },
     });
 
-    const { ensureAnthropicMessagesModelMaxTokens, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/openclaw-auth');
+    const { ensureAnthropicMessagesModelMaxTokens, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/mclaw-auth');
     const healed = await ensureAnthropicMessagesModelMaxTokens();
 
     expect(healed).toEqual(['minimax-portal']);
@@ -1446,7 +1446,7 @@ describe('anthropic-messages maxTokens', () => {
       },
     });
 
-    const { ensureAnthropicMessagesModelMaxTokens } = await import('@electron/utils/openclaw-auth');
+    const { ensureAnthropicMessagesModelMaxTokens } = await import('@electron/utils/mclaw-auth');
     const healed = await ensureAnthropicMessagesModelMaxTokens();
 
     expect(healed).toEqual([]);
@@ -1472,7 +1472,7 @@ describe('anthropic-messages maxTokens', () => {
       },
     });
 
-    const { sanitizeOpenClawConfig, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -1486,7 +1486,7 @@ describe('anthropic-messages maxTokens', () => {
   it('adds maxTokens to agent models.json for anthropic-messages providers', async () => {
     await writeOpenClawJson({ agents: { list: [{ id: 'main', name: 'Main' }] } });
 
-    const { updateAgentModelProvider, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/openclaw-auth');
+    const { updateAgentModelProvider, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/mclaw-auth');
 
     await updateAgentModelProvider('minimax-portal', {
       baseUrl: 'https://api.minimax.io/anthropic',
@@ -1496,7 +1496,7 @@ describe('anthropic-messages maxTokens', () => {
       models: [{ id: 'MiniMax-M2.7', name: 'MiniMax-M2.7', cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } }],
     });
 
-    const content = await readFile(join(testHome, '.openclaw', 'agents', 'main', 'agent', 'models.json'), 'utf8');
+    const content = await readFile(join(testHome, '.mclaw', 'agents', 'main', 'agent', 'models.json'), 'utf8');
     const result = JSON.parse(content) as Record<string, unknown>;
     const providers = result.providers as Record<string, Record<string, unknown>>;
     const entry = providers['minimax-portal'];
@@ -1509,7 +1509,7 @@ describe('anthropic-messages maxTokens', () => {
 
   it('repairs legacy agent models.json anthropic-messages entries during update', async () => {
     await writeOpenClawJson({ agents: { list: [{ id: 'main', name: 'Main' }] } });
-    const agentDir = join(testHome, '.openclaw', 'agents', 'main', 'agent');
+    const agentDir = join(testHome, '.mclaw', 'agents', 'main', 'agent');
     await mkdir(agentDir, { recursive: true });
     await writeFile(join(agentDir, 'models.json'), JSON.stringify({
       providers: {
@@ -1521,7 +1521,7 @@ describe('anthropic-messages maxTokens', () => {
       },
     }, null, 2), 'utf8');
 
-    const { updateAgentModelProvider, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/openclaw-auth');
+    const { updateAgentModelProvider, MINIMAX_M27_MAX_TOKENS } = await import('@electron/utils/mclaw-auth');
 
     await updateAgentModelProvider('minimax-portal', {
       baseUrl: 'https://api.minimax.io/anthropic',
@@ -1549,7 +1549,7 @@ describe('pruneInvalidApiProviderEntries', () => {
 
   it('removes only the entries whose api field is not in the OpenClaw allowlist', async () => {
     await writeOpenClawJson({
-      agents: { list: [{ id: 'main', name: 'Main', default: true, workspace: '~/.openclaw/workspace', agentDir: '~/.openclaw/agents/main/agent' }] },
+      agents: { list: [{ id: 'main', name: 'Main', default: true, workspace: '~/.mclaw/workspace', agentDir: '~/.mclaw/agents/main/agent' }] },
       models: {
         providers: {
           openrouter: {
@@ -1573,7 +1573,7 @@ describe('pruneInvalidApiProviderEntries', () => {
       },
     });
 
-    const { pruneInvalidApiProviderEntries } = await import('@electron/utils/openclaw-auth');
+    const { pruneInvalidApiProviderEntries } = await import('@electron/utils/mclaw-auth');
 
     const removed = await pruneInvalidApiProviderEntries();
     expect(new Set(removed)).toEqual(new Set(['openrouter', 'someBroken']));
@@ -1598,7 +1598,7 @@ describe('pruneInvalidApiProviderEntries', () => {
     });
     const before = await readOpenClawJson();
 
-    const { pruneInvalidApiProviderEntries } = await import('@electron/utils/openclaw-auth');
+    const { pruneInvalidApiProviderEntries } = await import('@electron/utils/mclaw-auth');
     const removed = await pruneInvalidApiProviderEntries();
 
     expect(removed).toEqual([]);
@@ -1620,7 +1620,7 @@ describe('openai agentRuntime pin', () => {
       models: { providers: {} },
     });
 
-    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('openai', 'gpt-5.5', {
       baseUrl: 'https://api.openai.com/v1',
@@ -1643,7 +1643,7 @@ describe('openai agentRuntime pin', () => {
       models: { providers: {} },
     });
 
-    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('openai-codex', 'gpt-5.5', {
       baseUrl: 'https://api.openai.com/v1',
@@ -1674,7 +1674,7 @@ describe('openai agentRuntime pin', () => {
       },
     });
 
-    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/openclaw-auth');
+    const { syncProviderConfigToOpenClaw } = await import('@electron/utils/mclaw-auth');
 
     await syncProviderConfigToOpenClaw('openai', 'gpt-5.5', {
       baseUrl: 'https://api.openai.com/v1',
@@ -1698,7 +1698,7 @@ describe('syncOpenAiCompatibleImageRelay', () => {
     await rm(testUserData, { recursive: true, force: true });
   });
 
-  it('writes a ClawX-owned provider with a custom image base URL without changing OpenAI chat config', async () => {
+  it('writes a mclaw-owned provider with a custom image base URL without changing OpenAI chat config', async () => {
     await writeOpenClawJson({
       models: {
         providers: {
@@ -1707,7 +1707,7 @@ describe('syncOpenAiCompatibleImageRelay', () => {
       },
     });
 
-    const { syncOpenAiCompatibleImageRelay } = await import('@electron/utils/openclaw-auth');
+    const { syncOpenAiCompatibleImageRelay } = await import('@electron/utils/mclaw-auth');
     await syncOpenAiCompatibleImageRelay({
       enabled: true,
       baseUrl: 'https://relay.example.com',
@@ -1718,7 +1718,7 @@ describe('syncOpenAiCompatibleImageRelay', () => {
     const result = await readOpenClawJson();
     const providers = (result.models as Record<string, unknown>).providers as Record<string, unknown>;
     const openai = providers.openai as Record<string, unknown>;
-    const imageRelay = providers['clawx-openai-image'] as Record<string, unknown>;
+    const imageRelay = providers['mclaw-openai-image'] as Record<string, unknown>;
     expect(openai.baseUrl).toBe('https://api.openai.com/v1');
     expect(openai.api).toBe('openai-responses');
     expect(imageRelay.baseUrl).toBe('https://relay.example.com/v1');
@@ -1728,38 +1728,38 @@ describe('syncOpenAiCompatibleImageRelay', () => {
 
     const plugins = result.plugins as Record<string, unknown>;
     const entries = plugins.entries as Record<string, unknown>;
-    expect((entries['clawx-openai-image'] as Record<string, unknown>).enabled).toBe(true);
+    expect((entries['mclaw-openai-image'] as Record<string, unknown>).enabled).toBe(true);
 
     const auth = await readAuthProfiles('main');
-    expect((auth.profiles['clawx-openai-image:default'] as Record<string, unknown>).key).toBe('sk-relay-test');
+    expect((auth.profiles['mclaw-openai-image:default'] as Record<string, unknown>).key).toBe('sk-relay-test');
   });
 
-  it('removes only the ClawX image provider when relay is disabled', async () => {
+  it('removes only the mclaw image provider when relay is disabled', async () => {
     await writeOpenClawJson({
       models: {
         providers: {
           openai: { baseUrl: 'https://api.openai.com/v1', api: 'openai-responses', models: [] },
-          'clawx-openai-image': { baseUrl: 'https://relay.example.com/v1', api: 'openai-completions', models: [] },
+          'mclaw-openai-image': { baseUrl: 'https://relay.example.com/v1', api: 'openai-completions', models: [] },
         },
       },
       agents: {
         defaults: {
-          imageGenerationModel: { primary: 'clawx-openai-image/gpt-image-2', timeoutMs: 180000 },
+          imageGenerationModel: { primary: 'mclaw-openai-image/gpt-image-2', timeoutMs: 180000 },
         },
       },
       plugins: {
-        allow: ['clawx-openai-image'],
-        entries: { 'clawx-openai-image': { enabled: true } },
+        allow: ['mclaw-openai-image'],
+        entries: { 'mclaw-openai-image': { enabled: true } },
       },
     });
 
-    const { syncOpenAiCompatibleImageRelay } = await import('@electron/utils/openclaw-auth');
+    const { syncOpenAiCompatibleImageRelay } = await import('@electron/utils/mclaw-auth');
     await syncOpenAiCompatibleImageRelay({ enabled: false });
 
     const result = await readOpenClawJson();
     const providers = (result.models as Record<string, unknown>).providers as Record<string, unknown>;
     expect(providers.openai).toEqual({ baseUrl: 'https://api.openai.com/v1', api: 'openai-responses', models: [] });
-    expect(providers['clawx-openai-image']).toBeUndefined();
+    expect(providers['mclaw-openai-image']).toBeUndefined();
     const defaults = (result.agents as Record<string, unknown>).defaults as Record<string, unknown>;
     expect(defaults.imageGenerationModel).toBeUndefined();
     expect(result.plugins).toBeUndefined();
@@ -1780,7 +1780,7 @@ describe('setOpenClawDefaultModel for openai-codex OAuth', () => {
       models: { providers: {} },
     });
 
-    const { setOpenClawDefaultModel } = await import('@electron/utils/openclaw-auth');
+    const { setOpenClawDefaultModel } = await import('@electron/utils/mclaw-auth');
     await setOpenClawDefaultModel('openai-codex', 'openai-codex/gpt-5.5');
 
     const result = await readOpenClawJson();
@@ -1816,7 +1816,7 @@ describe('ensureOpenClawProviderAgentRuntimePins', () => {
       },
     });
 
-    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/openclaw-auth');
+    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/mclaw-auth');
     const pinned = await ensureOpenClawProviderAgentRuntimePins();
 
     expect(pinned).toEqual(['openai']);
@@ -1840,7 +1840,7 @@ describe('ensureOpenClawProviderAgentRuntimePins', () => {
       },
     });
 
-    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/openclaw-auth');
+    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/mclaw-auth');
     const pinned = await ensureOpenClawProviderAgentRuntimePins();
 
     expect(pinned).toEqual(['openai-codex']);
@@ -1868,7 +1868,7 @@ describe('ensureOpenClawProviderAgentRuntimePins', () => {
       },
     });
 
-    const { sanitizeOpenClawConfig } = await import('@electron/utils/openclaw-auth');
+    const { sanitizeOpenClawConfig } = await import('@electron/utils/mclaw-auth');
     await sanitizeOpenClawConfig();
 
     const result = await readOpenClawJson();
@@ -1898,7 +1898,7 @@ describe('ensureOpenClawProviderAgentRuntimePins', () => {
     await writeOpenClawJson(initial);
     const before = await readOpenClawJson();
 
-    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/openclaw-auth');
+    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/mclaw-auth');
     const pinned = await ensureOpenClawProviderAgentRuntimePins();
 
     expect(pinned).toEqual([]);
@@ -1920,7 +1920,7 @@ describe('ensureOpenClawProviderAgentRuntimePins', () => {
     await writeOpenClawJson(initial);
     const before = await readOpenClawJson();
 
-    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/openclaw-auth');
+    const { ensureOpenClawProviderAgentRuntimePins } = await import('@electron/utils/mclaw-auth');
     const pinned = await ensureOpenClawProviderAgentRuntimePins();
 
     expect(pinned).toEqual([]);
@@ -1934,7 +1934,7 @@ describe('batchSyncConfigFields', () => {
     vi.resetModules();
     vi.restoreAllMocks();
     getSettingMock.mockImplementation(async (key: string) => {
-      if (key === 'gatewayPort') return 18789;
+      if (key === 'gatewayPort') return 18999;
       return undefined;
     });
     await rm(testHome, { recursive: true, force: true });
@@ -1944,7 +1944,7 @@ describe('batchSyncConfigFields', () => {
   it('seeds web_fetch SSRF policy for fake-IP proxy environments', async () => {
     await writeOpenClawJson({ gateway: { auth: { mode: 'token', token: 'old' } } });
 
-    const { batchSyncConfigFields } = await import('@electron/utils/openclaw-auth');
+    const { batchSyncConfigFields } = await import('@electron/utils/mclaw-auth');
     await batchSyncConfigFields('new-token');
 
     const config = await readOpenClawJson();
@@ -1969,7 +1969,7 @@ describe('batchSyncConfigFields', () => {
       },
     });
 
-    const { batchSyncConfigFields } = await import('@electron/utils/openclaw-auth');
+    const { batchSyncConfigFields } = await import('@electron/utils/mclaw-auth');
     await batchSyncConfigFields('new-token');
 
     const config = await readOpenClawJson();

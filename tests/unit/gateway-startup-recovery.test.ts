@@ -12,7 +12,7 @@ import {
 describe('gateway startup recovery heuristics', () => {
   it('detects invalid-config signal from stderr lines', () => {
     const lines = [
-      'Invalid config at C:\\Users\\pc\\.openclaw\\openclaw.json:\\n- skills: Unrecognized key: "enabled"',
+      'Invalid config at C:\\Users\\pc\\.mclaw\\openclaw.json:\\n- skills: Unrecognized key: "enabled"',
       'Run: openclaw doctor --fix',
     ];
     expect(hasInvalidConfigFailureSignal(new Error('gateway start failed'), lines)).toBe(true);
@@ -137,7 +137,7 @@ describe('connectGatewayWithStartupRetry', () => {
 
     await connectGatewayWithStartupRetry({
       connect,
-      port: 18789,
+      port: 18999,
       delay,
       retryDelaysMs: [10, 20],
     });
@@ -154,7 +154,7 @@ describe('connectGatewayWithStartupRetry', () => {
 
     await expect(connectGatewayWithStartupRetry({
       connect,
-      port: 18789,
+      port: 18999,
       delay,
       retryDelaysMs: [10],
     })).rejects.toThrow('token mismatch');
@@ -176,7 +176,7 @@ describe('connectGatewayWithStartupRetry', () => {
 
     await expect(connectGatewayWithStartupRetry({
       connect,
-      port: 18789,
+      port: 18999,
       delay,
       beforeAttempt,
       retryDelaysMs: [10],

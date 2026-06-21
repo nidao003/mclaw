@@ -13,7 +13,7 @@ const { agentsState, chatState, gatewayState, providersState, artifactPanelMocks
     currentAgentId: 'main',
   },
   gatewayState: {
-    status: { state: 'running', port: 18789 },
+    status: { state: 'running', port: 18999 },
   },
   providersState: {
     accounts: [] as Array<Record<string, unknown>>,
@@ -133,7 +133,7 @@ describe('ChatInput agent targeting', () => {
     agentsState.defaultModelRef = null;
     agentsState.updateAgentModel.mockReset();
     chatState.currentAgentId = 'main';
-    gatewayState.status = { state: 'running', port: 18789 };
+    gatewayState.status = { state: 'running', port: 18999 };
     providersState.accounts = [];
     providersState.statuses = [];
     providersState.defaultAccountId = null;
@@ -150,8 +150,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -170,8 +170,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -196,8 +196,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -207,8 +207,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: false,
         modelDisplay: 'Claude',
         inheritedModel: false,
-        workspace: '~/.openclaw/workspace-research',
-        agentDir: '~/.openclaw/agents/research/agent',
+        workspace: '~/.mclaw/workspace-research',
+        agentDir: '~/.mclaw/agents/research/agent',
         mainSessionKey: 'agent:research:desk',
         channelTypes: [],
       },
@@ -228,7 +228,7 @@ describe('ChatInput agent targeting', () => {
   });
 
   it('disables the input while gateway is running but not yet ready', () => {
-    gatewayState.status = { state: 'running', port: 18789, gatewayReady: false };
+    gatewayState.status = { state: 'running', port: 18999, gatewayReady: false };
     agentsState.agents = [
       {
         id: 'main',
@@ -236,8 +236,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -284,7 +284,7 @@ describe('ChatInput agent targeting', () => {
   });
 
   it('shows starting status while gateway is running but not yet ready', () => {
-    gatewayState.status = { state: 'running', port: 18789, gatewayReady: false };
+    gatewayState.status = { state: 'running', port: 18999, gatewayReady: false };
     agentsState.agents = [
       {
         id: 'main',
@@ -292,8 +292,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -301,7 +301,7 @@ describe('ChatInput agent targeting', () => {
 
     renderChatInput();
 
-    expect(screen.getByText(/gateway starting \| port: 18789/i)).toBeInTheDocument();
+    expect(screen.getByText(/gateway starting \| port: 18999/i)).toBeInTheDocument();
   });
 
   it('renders the skill trigger after the @ agent picker', () => {
@@ -312,8 +312,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -323,8 +323,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: false,
         modelDisplay: 'Claude',
         inheritedModel: false,
-        workspace: '~/.openclaw/workspace-research',
-        agentDir: '~/.openclaw/agents/research/agent',
+        workspace: '~/.mclaw/workspace-research',
+        agentDir: '~/.mclaw/agents/research/agent',
         mainSessionKey: 'agent:research:desk',
         channelTypes: [],
       },
@@ -348,8 +348,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -403,8 +403,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -448,8 +448,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -496,8 +496,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -510,8 +510,8 @@ describe('ChatInput agent targeting', () => {
           description: 'Work with Word documents.',
           source: 'legacy',
           sourceLabel: 'Legacy',
-          manifestPath: '/tmp/openclaw/skills/docx/SKILL.md',
-          baseDir: '/tmp/openclaw/skills/docx',
+          manifestPath: '/tmp/mclaw/skills/docx/SKILL.md',
+          baseDir: '/tmp/mclaw/skills/docx',
         },
       ],
     });
@@ -537,8 +537,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },
@@ -579,8 +579,8 @@ describe('ChatInput agent targeting', () => {
         isDefault: true,
         modelDisplay: 'MiniMax',
         inheritedModel: true,
-        workspace: '~/.openclaw/workspace',
-        agentDir: '~/.openclaw/agents/main/agent',
+        workspace: '~/.mclaw/workspace',
+        agentDir: '~/.mclaw/agents/main/agent',
         mainSessionKey: 'agent:main:main',
         channelTypes: [],
       },

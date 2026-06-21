@@ -54,30 +54,30 @@ function WindowsTitleBar() {
   return (
     <div
       data-testid="windows-titlebar"
-      className="drag-region flex h-10 shrink-0 items-center justify-end bg-surface-sidebar"
+      className="drag-region flex h-10 shrink-0 items-center justify-end border-b border-border/40 bg-surface-sidebar"
     >
-      {/* Right: Window Controls */}
-      <div className="no-drag flex h-full">
+      {/* Right: Window Controls — 设计图风格：柔和的浅色悬停，关闭按钮警示红 */}
+      <div className="no-drag flex h-full items-center gap-0.5 px-1.5">
         <button
           onClick={handleMinimize}
-          className="flex h-full w-11 items-center justify-center text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 transition-colors"
+          className="titlebar-btn flex h-8 w-10 items-center justify-center rounded-md text-sidebar-muted"
           title="Minimize"
         >
-          <Minus className="h-4 w-4" />
+          <Minus className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={handleMaximize}
-          className="flex h-full w-11 items-center justify-center text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10 transition-colors"
+          className="titlebar-btn flex h-8 w-10 items-center justify-center rounded-md text-sidebar-muted"
           title={maximized ? 'Restore' : 'Maximize'}
         >
-          {maximized ? <Copy className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+          {maximized ? <Copy className="h-3 w-3" /> : <Square className="h-3 w-3" />}
         </button>
         <button
           onClick={handleClose}
-          className="flex h-full w-11 items-center justify-center text-muted-foreground hover:bg-red-500 hover:text-white transition-colors"
+          className="titlebar-btn titlebar-btn-close flex h-8 w-10 items-center justify-center rounded-md text-sidebar-muted"
           title="Close"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

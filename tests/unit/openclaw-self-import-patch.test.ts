@@ -8,12 +8,12 @@ import {
   patchExtensionOpenClawSelfImports,
   rewriteOpenClawPluginSdkSpecifiers,
   toImportSpecifier,
-} from '../../scripts/openclaw-self-import-patch.mjs';
+} from '../../scripts/mclaw-self-import-patch.mjs';
 
 const tempRoots: string[] = [];
 
 async function createTempOpenClawBundle(): Promise<string> {
-  const root = await mkdtemp(path.join(tmpdir(), 'clawx-openclaw-self-import-'));
+  const root = await mkdtemp(path.join(tmpdir(), 'mclaw-mclaw-self-import-'));
   tempRoots.push(root);
   return root;
 }
@@ -36,7 +36,7 @@ describe('openclaw self-import bundle patch', () => {
     await writeFile(
       promptOverlayPath,
       [
-        'import { ok } from "openclaw/plugin-sdk/provider-model-shared";',
+        'import { ok } from "mclaw/plugin-sdk/provider-model-shared";',
         "export { ok };",
         '',
       ].join('\n'),
@@ -71,12 +71,12 @@ describe('openclaw self-import bundle patch', () => {
   });
 
   it('throws when the bundled plugin-sdk target is missing', () => {
-    const root = path.join(tmpdir(), 'missing-target-openclaw-bundle');
+    const root = path.join(tmpdir(), 'missing-target-mclaw-bundle');
     const distDir = path.join(root, 'dist');
     const filePath = path.join(distDir, 'extensions', 'codex', 'prompt-overlay.js');
 
     expect(() => rewriteOpenClawPluginSdkSpecifiers(
-      'import "openclaw/plugin-sdk/provider-model-shared";',
+      'import "mclaw/plugin-sdk/provider-model-shared";',
       { filePath, distDir },
     )).toThrow(/missing bundled SDK target/);
   });

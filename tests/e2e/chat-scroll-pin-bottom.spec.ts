@@ -25,13 +25,13 @@ function streamingText(paragraphs: number): string {
   return Array.from({ length: paragraphs }, (_, idx) => `Streaming paragraph ${idx + 1}.`).join('\n\n');
 }
 
-test.describe('ClawX chat scroll pin-to-bottom during runs', () => {
+test.describe('mclaw chat scroll pin-to-bottom during runs', () => {
   test('keeps the scrollbar pinned to the bottom through oscillating tool-heavy streaming, and yields to manual scroll-up', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
         gatewayRpc: {
           // Null-arg fallbacks match regardless of the exact request payload.
           [stableStringify(['sessions.list', null])]: {
@@ -53,7 +53,7 @@ test.describe('ClawX chat scroll pin-to-bottom during runs', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345, gatewayReady: true },
+              json: { state: 'running', port: 18999, pid: 12345, gatewayReady: true },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

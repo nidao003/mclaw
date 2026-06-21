@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 
@@ -19,8 +17,9 @@ const DialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
+    data-slot="dialog-overlay"
     className={cn(
-      "clawx-dialog-overlay",
+      "mclaw-dialog-overlay",
       className,
     )}
     {...props}
@@ -36,8 +35,9 @@ const DialogContent = React.forwardRef<
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      data-slot="dialog-content"
       className={cn(
-        "clawx-dialog-content",
+        "mclaw-dialog-content rounded-xl",
         className,
       )}
       {...props}

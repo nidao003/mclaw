@@ -5,7 +5,7 @@ test.describe('Skills page gateway readiness', () => {
     await completeSetup(page);
 
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'stopped', port: 18789 },
+      gatewayStatus: { state: 'stopped', port: 18999 },
       gatewayRpc: {
         '["skills.status",null]': { success: false, error: 'Gateway not connected' },
       },
@@ -23,16 +23,16 @@ test.describe('Skills page gateway readiness', () => {
             name: 'PDF',
             description: 'Local PDF tools',
             enabled: true,
-            source: 'openclaw-managed',
-            baseDir: '/tmp/.openclaw/skills/pdf',
+            source: 'mclaw-managed',
+            baseDir: '/tmp/.mclaw/skills/pdf',
           }, {
             id: 'xlsx',
             slug: 'xlsx',
             name: 'XLSX',
             description: 'Local spreadsheet tools',
             enabled: false,
-            source: 'openclaw-managed',
-            baseDir: '/tmp/.openclaw/skills/xlsx',
+            source: 'mclaw-managed',
+            baseDir: '/tmp/.mclaw/skills/xlsx',
           }],
         },
       },
@@ -58,7 +58,7 @@ test.describe('Skills page gateway readiness', () => {
     await completeSetup(page);
 
     await installIpcMocks(electronApp, {
-      gatewayStatus: { state: 'stopped', port: 18789 },
+      gatewayStatus: { state: 'stopped', port: 18999 },
       gatewayRpc: {
         '["skills.status",null]': { success: false, error: 'Gateway not connected' },
       },
@@ -76,8 +76,8 @@ test.describe('Skills page gateway readiness', () => {
             name: 'Browser Automation',
             description: 'Plugin skill',
             enabled: true,
-            source: 'openclaw-plugin',
-            baseDir: '/tmp/.openclaw/plugin-skills/browser-automation',
+            source: 'mclaw-plugin',
+            baseDir: '/tmp/.mclaw/plugin-skills/browser-automation',
           }],
         },
       },
@@ -118,7 +118,7 @@ test.describe('Skills page gateway readiness', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'running',
-        port: 18789,
+        port: 18999,
         pid: 12345,
         connectedAt: 1,
         gatewayReady: false,
@@ -146,7 +146,7 @@ test.describe('Skills page gateway readiness', () => {
       const win = BrowserWindow.getAllWindows()[0];
       win?.webContents.send('gateway:status-changed', {
         state: 'running',
-        port: 18789,
+        port: 18999,
         pid: 12345,
         connectedAt: 2,
         gatewayReady: false,

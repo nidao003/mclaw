@@ -345,7 +345,7 @@ export function WorkspaceBrowserBody({
           <p>
             {directOpen
               ? t('filePreview.errors.largeBinaryOpenHint', {
-                defaultValue: 'This file is {{size}}. ClawX does not provide an inline preview for it. You can confirm to open it directly in your system default app.',
+                defaultValue: 'This file is {{size}}. mclaw does not provide an inline preview for it. You can confirm to open it directly in your system default app.',
                 size: formatFileSize(fileState.size ?? 0) || '> 2MB',
               })
               : t('filePreview.errors.tooLarge', 'File too large; preview disabled')}
@@ -371,7 +371,7 @@ export function WorkspaceBrowserBody({
           <p>
             {directOpen
               ? t('filePreview.errors.largeBinaryOpenHint', {
-                defaultValue: 'This file is {{size}}. ClawX does not provide an inline preview for it. You can confirm to open it directly in your system default app.',
+                defaultValue: 'This file is {{size}}. mclaw does not provide an inline preview for it. You can confirm to open it directly in your system default app.',
                 size: formatFileSize(fileState.size ?? 0) || '> 2MB',
               })
               : t('filePreview.errors.binary', 'Binary files do not support text preview')}
@@ -416,7 +416,7 @@ export function WorkspaceBrowserBody({
             <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
               {directOpen
                 ? t('filePreview.errors.largeBinaryOpenHint', {
-                  defaultValue: 'This file is {{size}}. ClawX does not provide an inline preview for it. You can confirm to open it directly in your system default app.',
+                  defaultValue: 'This file is {{size}}. mclaw does not provide an inline preview for it. You can confirm to open it directly in your system default app.',
                   size: formatFileSize(fileState.size ?? 0) || '> 2MB',
                 })
                 : t(
@@ -475,7 +475,7 @@ export function WorkspaceBrowserBody({
     <div className="flex h-full min-h-0 flex-col">
       <header
         className={cn(
-          'flex items-center justify-between gap-3 border-b border-black/5 dark:border-white/10',
+          'flex items-center justify-between gap-3 border-b border-border/50',
           compact ? 'px-3 py-1.5' : 'px-4 py-2',
         )}
       >
@@ -529,7 +529,7 @@ export function WorkspaceBrowserBody({
         className="grid min-h-0 flex-1"
         style={{ gridTemplateColumns: `${treeWidth ?? (compact ? 220 : 280)}px 1fr` }}
       >
-        <aside className="min-h-0 overflow-hidden border-r border-black/5 dark:border-white/10">
+        <aside className="min-h-0 overflow-hidden border-r border-border/50">
           <div className="h-full overflow-y-auto py-2 text-sm">{renderTree()}</div>
         </aside>
         <section className="min-h-0 overflow-hidden">
@@ -603,7 +603,7 @@ function FileTreeNodeRow({ node, depth, expanded, selectedRel, onToggle, onSelec
           onClick={() => onToggle(node.relPath)}
           className={cn(
             'flex w-full items-center gap-1 rounded-md px-2 py-1 text-left text-xs transition-colors',
-            'hover:bg-black/5 dark:hover:bg-white/10',
+            'hover:bg-accent',
           )}
           style={{ paddingLeft: indent }}
           title={node.relPath || node.name}
@@ -639,7 +639,7 @@ function FileTreeNodeRow({ node, depth, expanded, selectedRel, onToggle, onSelec
           'flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs transition-colors',
           isSelected
             ? 'bg-primary/10 text-foreground'
-            : 'hover:bg-black/5 dark:hover:bg-white/10',
+            : 'hover:bg-accent',
         )}
         style={{ paddingLeft: indent + 16 }}
         title={node.relPath || node.name}

@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { testHome, testUserData } = vi.hoisted(() => {
   const suffix = Math.random().toString(36).slice(2);
   return {
-    testHome: `/tmp/clawx-agent-config-${suffix}`,
-    testUserData: `/tmp/clawx-agent-config-user-data-${suffix}`,
+    testHome: `/tmp/mclaw-agent-config-${suffix}`,
+    testUserData: `/tmp/mclaw-agent-config-user-data-${suffix}`,
   };
 });
 
@@ -31,13 +31,13 @@ vi.mock('electron', () => ({
 }));
 
 async function writeOpenClawJson(config: unknown): Promise<void> {
-  const openclawDir = join(testHome, '.openclaw');
+  const openclawDir = join(testHome, '.mclaw');
   await mkdir(openclawDir, { recursive: true });
   await writeFile(join(openclawDir, 'openclaw.json'), JSON.stringify(config, null, 2), 'utf8');
 }
 
 async function readOpenClawJson(): Promise<Record<string, unknown>> {
-  const content = await readFile(join(testHome, '.openclaw', 'openclaw.json'), 'utf8');
+  const content = await readFile(join(testHome, '.mclaw', 'openclaw.json'), 'utf8');
   return JSON.parse(content) as Record<string, unknown>;
 }
 
@@ -211,20 +211,20 @@ describe('agent config lifecycle', () => {
             id: 'main',
             name: 'Main',
             default: true,
-            workspace: '~/.openclaw/workspace',
-            agentDir: '~/.openclaw/agents/main/agent',
+            workspace: '~/.mclaw/workspace',
+            agentDir: '~/.mclaw/agents/main/agent',
           },
           {
             id: 'test2',
             name: 'test2',
-            workspace: '~/.openclaw/workspace-test2',
-            agentDir: '~/.openclaw/agents/test2/agent',
+            workspace: '~/.mclaw/workspace-test2',
+            agentDir: '~/.mclaw/agents/test2/agent',
           },
           {
             id: 'test3',
             name: 'test3',
-            workspace: '~/.openclaw/workspace-test3',
-            agentDir: '~/.openclaw/agents/test3/agent',
+            workspace: '~/.mclaw/workspace-test3',
+            agentDir: '~/.mclaw/agents/test3/agent',
           },
         ],
       },
@@ -243,11 +243,11 @@ describe('agent config lifecycle', () => {
       ],
     });
 
-    const test2RuntimeDir = join(testHome, '.openclaw', 'agents', 'test2');
-    const test2WorkspaceDir = join(testHome, '.openclaw', 'workspace-test2');
+    const test2RuntimeDir = join(testHome, '.mclaw', 'agents', 'test2');
+    const test2WorkspaceDir = join(testHome, '.mclaw', 'workspace-test2');
     await mkdir(join(test2RuntimeDir, 'agent'), { recursive: true });
     await mkdir(join(test2RuntimeDir, 'sessions'), { recursive: true });
-    await mkdir(join(test2WorkspaceDir, '.openclaw'), { recursive: true });
+    await mkdir(join(test2WorkspaceDir, '.mclaw'), { recursive: true });
     await writeFile(
       join(test2RuntimeDir, 'agent', 'auth-profiles.json'),
       JSON.stringify({ version: 1, profiles: {} }, null, 2),
@@ -287,20 +287,20 @@ describe('agent config lifecycle', () => {
             id: 'main',
             name: 'Main',
             default: true,
-            workspace: '~/.openclaw/workspace',
-            agentDir: '~/.openclaw/agents/main/agent',
+            workspace: '~/.mclaw/workspace',
+            agentDir: '~/.mclaw/agents/main/agent',
           },
           {
             id: 'test2',
             name: 'test2',
             workspace: customWorkspaceDir,
-            agentDir: '~/.openclaw/agents/test2/agent',
+            agentDir: '~/.mclaw/agents/test2/agent',
           },
         ],
       },
     });
 
-    await mkdir(join(testHome, '.openclaw', 'agents', 'test2', 'agent'), { recursive: true });
+    await mkdir(join(testHome, '.mclaw', 'agents', 'test2', 'agent'), { recursive: true });
     await mkdir(customWorkspaceDir, { recursive: true });
     await writeFile(join(customWorkspaceDir, 'AGENTS.md'), '# custom', 'utf8');
 
@@ -510,7 +510,7 @@ describe('agent config lifecycle', () => {
     expect(agentIds).not.toContain('1');
   });
 
-  it('seeds a default ClawX IDENTITY.md for newly created agent workspaces', async () => {
+  it('seeds a default mclaw IDENTITY.md for newly created agent workspaces', async () => {
     await writeOpenClawJson({
       agents: {
         list: [{ id: 'main', name: 'Main', default: true }],
@@ -521,6 +521,6 @@ describe('agent config lifecycle', () => {
 
     await createAgent('Research');
 
-    await expect(readFile(join(testHome, '.openclaw', 'workspace-research', 'IDENTITY.md'), 'utf8')).resolves.toContain('ClawX');
+    await expect(readFile(join(testHome, '.mclaw', 'workspace-research', 'IDENTITY.md'), 'utf8')).resolves.toContain('mclaw');
   });
 });

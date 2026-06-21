@@ -63,5 +63,20 @@
         "notRunningDesc": "The OpenClaw Gateway needs to be running to use this feature. It will start automatically, or you can start it from Settings.",
         "restarting": "Gateway restarting",
         "warning": "Gateway is not running."
+    },
+    "extensions": {
+        "title": "Extensions",
+        "description": "Manage mclaw extensions (built-in + user-installed)",
+        "installFromFile": "Install from local package",
+        "empty": "No extensions installed",
+        "builtin": "Built-in",
+        "byAuthor": "by {{author}}",
+        "uninstall": "Uninstall",
+        "confirmUninstall": "Uninstall extension \"{{name}}\"? This cannot be undone."
+    },
+    "feedback": {
+        "packButton": "📦 Pack feedback data",
+        "packSuccess": "Feedback pack generated: {{path}}\nSize: {{size}}\nPlease send this file to the developer.",
+        "packFailed": "Pack failed: {{error}}"
     }
 }

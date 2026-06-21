@@ -179,7 +179,7 @@ export class ClawHubService {
                     return {
                         slug: entry.name,
                         version,
-                        source: 'openclaw-managed',
+                        source: 'mclaw-managed',
                         baseDir: skillDir,
                     };
                 }));

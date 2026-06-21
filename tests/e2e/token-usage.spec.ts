@@ -10,7 +10,7 @@ const GATEWAY_INJECTED_SESSION_ID = 'agent-session-gateway-injected';
 const DELIVERY_MIRROR_SESSION_ID = 'agent-session-delivery-mirror';
 
 async function seedTokenUsageTranscripts(homeDir: string): Promise<void> {
-  const sessionDir = join(homeDir, '.openclaw', 'agents', TEST_AGENT_ID, 'sessions');
+  const sessionDir = join(homeDir, '.mclaw', 'agents', TEST_AGENT_ID, 'sessions');
   const now = new Date();
   const zeroTimestamp = new Date(now.getTime() - 20_000).toISOString();
   const nonzeroTimestamp = now.toISOString();
@@ -99,7 +99,7 @@ async function seedTokenUsageTranscripts(homeDir: string): Promise<void> {
   );
 }
 
-test.describe('ClawX token usage history', () => {
+test.describe('mclaw token usage history', () => {
 
   async function validateUsageHistory(page: Page): Promise<void> {
     const usageHistory = await page.evaluate(async () => {

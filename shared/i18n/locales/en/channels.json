@@ -216,7 +216,7 @@
         },
         "signal": {
             "description": "Connect Signal using signal-cli",
-            "docsUrl": "https://docs.openclaw.ai/channels/signal",
+            "docsUrl": "https://docs.mclaw.ai/channels/signal",
             "fields": {
                 "phoneNumber": {
                     "label": "Phone Number",
@@ -270,7 +270,7 @@
         },
         "imessage": {
             "description": "Connect iMessage via BlueBubbles (macOS)",
-            "docsUrl": "https://docs.openclaw.ai/channels/bluebubbles",
+            "docsUrl": "https://docs.mclaw.ai/channels/bluebubbles",
             "fields": {
                 "serverUrl": {
                     "label": "BlueBubbles Server URL",
@@ -289,7 +289,7 @@
         },
         "matrix": {
             "description": "Connect to Matrix protocol",
-            "docsUrl": "https://docs.openclaw.ai/channels/matrix",
+            "docsUrl": "https://docs.mclaw.ai/channels/matrix",
             "fields": {
                 "homeserver": {
                     "label": "Homeserver URL",
@@ -308,7 +308,7 @@
         },
         "line": {
             "description": "Connect LINE Messaging API",
-            "docsUrl": "https://docs.openclaw.ai/channels/line",
+            "docsUrl": "https://docs.mclaw.ai/channels/line",
             "fields": {
                 "channelAccessToken": {
                     "label": "Channel Access Token",
@@ -327,7 +327,7 @@
         },
         "msteams": {
             "description": "Connect Microsoft Teams via Bot Framework",
-            "docsUrl": "https://docs.openclaw.ai/channels/msteams",
+            "docsUrl": "https://docs.mclaw.ai/channels/msteams",
             "fields": {
                 "appId": {
                     "label": "App ID",
@@ -347,7 +347,7 @@
         },
         "googlechat": {
             "description": "Connect Google Chat via webhook",
-            "docsUrl": "https://docs.openclaw.ai/channels/googlechat",
+            "docsUrl": "https://docs.mclaw.ai/channels/googlechat",
             "fields": {
                 "serviceAccountKey": {
                     "label": "Service Account JSON Path",
@@ -363,7 +363,7 @@
         },
         "mattermost": {
             "description": "Connect Mattermost via Bot API",
-            "docsUrl": "https://docs.openclaw.ai/channels/mattermost",
+            "docsUrl": "https://docs.mclaw.ai/channels/mattermost",
             "fields": {
                 "serverUrl": {
                     "label": "Server URL",

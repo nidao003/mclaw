@@ -5,12 +5,12 @@ import { join } from 'path';
 import { PORTS } from './config';
 import { prependPathEntry } from './env-path';
 import { logger } from './logger';
-import { getOpenClawConfigDir, getOpenClawDir, getOpenClawEntryPath } from './paths';
+import { getOpenClawConfigDir, getMclawDir, getOpenClawEntryPath } from './paths';
 import { getSetting } from './store';
 import { getUvMirrorEnv } from './uv-env';
 
 /** Browser Control UI client id used in OpenClaw 2026.5.x connect frames. */
-export const CONTROL_UI_BROWSER_CLIENT_ID = 'openclaw-control-ui';
+export const CONTROL_UI_BROWSER_CLIENT_ID = 'mclaw-control-ui';
 
 export type PendingDevicePairingRequest = {
   requestId?: string;
@@ -64,7 +64,7 @@ function resolveWatchTimeoutMs(explicit?: number): number {
   return typeof explicit === 'number' ? explicit : DEFAULT_WATCH_TIMEOUT_MS;
 }
 
-/** Read ~/.openclaw/devices/pending.json (same store the Gateway uses on loopback). */
+/** Read ~/.mclaw/devices/pending.json (same store the Gateway uses on loopback). */
 export async function readLocalPendingPairingRequests(): Promise<PendingDevicePairingRequest[]> {
   const pendingPath = join(getOpenClawConfigDir(), 'devices', 'pending.json');
   try {
@@ -115,7 +115,7 @@ function getBundledBinPath(): string {
  */
 async function approveViaOpenClawCli(requestId: string, _port: number): Promise<boolean> {
   const entryScript = getOpenClawEntryPath();
-  const openclawDir = getOpenClawDir();
+  const mclawDir = getMclawDir();
   if (!existsSync(entryScript)) {
     logger.warn('[control-ui] Cannot run devices approve: OpenClaw entry missing');
     return false;
@@ -133,13 +133,15 @@ async function approveViaOpenClawCli(requestId: string, _port: number): Promise<
 
   return await new Promise<boolean>((resolve) => {
     const child = utilityProcess.fork(entryScript, args, {
-      cwd: openclawDir,
+      cwd: mclawDir,
       stdio: 'pipe',
       env: {
         ...baseEnv,
         ...uvEnv,
         OPENCLAW_NO_RESPAWN: '1',
-        OPENCLAW_EMBEDDED_IN: 'ClawX',
+        OPENCLAW_EMBEDDED_IN: 'mclaw',
+        // Pin OpenClaw pairing helper to mclaw's own state directory.
+        OPENCLAW_STATE_DIR: getOpenClawConfigDir(),
       } as NodeJS.ProcessEnv,
     });
 

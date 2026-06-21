@@ -28,7 +28,7 @@ func (TransactionLog) Annotations() []schema.Annotation {
 // Fields of the TransactionLog.
 func (TransactionLog) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Unique(),
+		field.UUID("id", uuid.UUID{}).Unique().Default(uuid.New),
 		field.UUID("user_id", uuid.UUID{}),
 		field.String("kind").GoType(consts.TransactionKind("")),     // transaction type
 		field.String("inout_type").GoType(consts.TransactionInoutType("")), // in or out

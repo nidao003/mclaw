@@ -1,5 +1,5 @@
 import type { CompleteHostServiceRegistry } from '../main/ipc/host-contract';
-import { runOpenClawDoctor, runOpenClawDoctorFix } from '../utils/openclaw-doctor';
+import { runOpenClawDoctor, runOpenClawDoctorFix } from '../utils/mclaw-doctor';
 import { isRecord } from './payload-utils';
 
 type OpenClawDoctorPayload = {

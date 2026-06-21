@@ -79,8 +79,8 @@ function stripAssistantMediaTags(text: string): string {
   // to the user when the underlying path detection succeeds.
   const tagged = new RegExp(`(^|[\\s(\\[{>])(?:MEDIA|media):(?:\\/|~\\/|[A-Za-z]:\\\\)[^\\n"'()\\[\\],<>]*?\\.(?:${exts})(?=$|[\\s\\n"'()\\[\\],<>]|[，。；;,.!?])`, 'g');
   // Bare OpenClaw artifact paths emitted alongside `_attachedFiles` cards.
-  // Scope to `.openclaw/media/` so normal absolute paths in prose stay visible.
-  const bareOpenClawMedia = new RegExp(`(^|[\\s(\\[{>])(?:(?:\\/|~\\/|[A-Za-z]:\\\\)[^\\n"'()\\[\\],<>]*?\\.openclaw[\\\\/]media[\\\\/][^\\n"'()\\[\\],<>]*?\\.(?:${exts}))(?=$|[\\s\\n"'()\\[\\],<>]|[，。；;,.!?])`, 'g');
+  // Scope to `.mclaw/media/` so normal absolute paths in prose stay visible.
+  const bareOpenClawMedia = new RegExp(`(^|[\\s(\\[{>])(?:(?:\\/|~\\/|[A-Za-z]:\\\\)[^\\n"'()\\[\\],<>]*?\\.mclaw[\\\\/]media[\\\\/][^\\n"'()\\[\\],<>]*?\\.(?:${exts}))(?=$|[\\s\\n"'()\\[\\],<>]|[，。；;,.!?])`, 'g');
   return text
     .replace(tagged, (_, lead: string) => lead)
     .replace(bareOpenClawMedia, (_, lead: string) => lead)
@@ -236,7 +236,7 @@ export function isUnresolvableImageUrl(url: string): boolean {
   if (/^https?:\/\//i.test(trimmed)) return false;
   if (trimmed.startsWith('/api/chat/media/')) return true;
   if (trimmed.startsWith('file://')) return true;
-  if (trimmed.includes('.openclaw/media/')) return true;
+  if (trimmed.includes('.mclaw/media/')) return true;
   if (trimmed.startsWith('/') || trimmed.startsWith('~/')) return true;
   return false;
 }

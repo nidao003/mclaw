@@ -28,13 +28,13 @@ const seededHistory = [
   { role: 'assistant', content: 'Here is the final action plan.', timestamp: 1007 },
 ];
 
-test.describe('ClawX chat question directory', () => {
+test.describe('mclaw chat question directory', () => {
   test('shows a toolbar button that opens a clickable in-conversation question directory', async ({ launchElectronApp }) => {
     const app = await launchElectronApp({ skipSetup: true });
 
     try {
       await installIpcMocks(app, {
-        gatewayStatus: { state: 'running', port: 18789, pid: 12345 },
+        gatewayStatus: { state: 'running', port: 18999, pid: 12345 },
         gatewayRpc: {
           [stableStringify(['sessions.list', {}])]: {
             success: true,
@@ -57,7 +57,7 @@ test.describe('ClawX chat question directory', () => {
             data: {
               status: 200,
               ok: true,
-              json: { state: 'running', port: 18789, pid: 12345 },
+              json: { state: 'running', port: 18999, pid: 12345 },
             },
           },
           [stableStringify(['/api/agents', 'GET'])]: {

@@ -33,6 +33,7 @@ type SkillHandler struct {
 	skillRepo    domain.SkillRepo
 	versionRepo  domain.SkillVersionRepo
 	storage      *service.SkillStorage
+	npmPublisher *service.NpmPublisher
 	logger       *slog.Logger
 }
 
@@ -67,6 +68,14 @@ func NewSkillHandler(i *do.Injector) (*SkillHandler, error) {
 		versionRepo:  versionRepo,
 		storage:      skillStorage,
 		logger:       logger.With("module", "skill.handler"),
+	}
+
+	// NPM publisher (optional — only if token is configured)
+	if cfg.Npm.Token != "" {
+		h.npmPublisher = service.NewNpmPublisher(service.NpmPublishConfig{
+			Token:    cfg.Npm.Token,
+			Registry: cfg.Npm.Registry,
+		}, logger)
 	}
 
 	// Public skill browsing
@@ -327,9 +336,52 @@ func (h *SkillHandler) ReviewSkill(c *web.Context) error {
 	if req.Status == "approved" {
 		status = "published"
 	}
-	return h.skillRepo.Update(c.Request().Context(), id, map[string]any{
+	if err := h.skillRepo.Update(c.Request().Context(), id, map[string]any{
 		"status": status,
-	})
+	}); err != nil {
+		return err
+	}
+
+	// Trigger async npm publish after approval
+	if status == "published" && h.npmPublisher != nil {
+		go func(skillID uuid.UUID) {
+			ctx := context.Background()
+			skill, err := h.skillRepo.Get(ctx, skillID)
+			if err != nil {
+				h.logger.Error("npm publish: failed to get skill", "error", err)
+				return
+			}
+
+			scope := "@mclaw-skill"
+			if skill.SourceType == "third_party" {
+				scope = "@mclaw-community"
+			}
+
+			// Determine latest version
+			latestVersion := "1.0.0"
+			versions, _ := h.versionRepo.ListBySkill(ctx, skill.ID)
+			if len(versions) > 0 {
+				latestVersion = versions[len(versions)-1].Version
+			}
+
+			if err := h.npmPublisher.Publish(ctx, skill.Name, skill.SkillID, latestVersion, skill.Summary, scope, nil); err != nil {
+				h.logger.Error("npm publish failed", "slug", skill.SkillID, "error", err)
+				// Update npm_publish_status to failed
+				h.skillRepo.Update(ctx, skillID, map[string]any{
+					"npm_publish_status": "failed",
+				})
+				return
+			}
+
+			// Update npm_publish_status to published
+			h.skillRepo.Update(ctx, skillID, map[string]any{
+				"npm_publish_status": "published",
+			})
+			h.logger.Info("npm publish succeeded", "slug", skill.SkillID)
+		}(id)
+	}
+
+	return nil
 }
 
 // UploadSkill receives ZIP upload, validates, and stores to S3.

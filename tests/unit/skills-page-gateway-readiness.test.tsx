@@ -16,7 +16,7 @@ const shellOpenExternalMock = vi.fn();
 
 const { gatewayState, skillsState } = vi.hoisted(() => ({
   gatewayState: {
-    status: { state: 'running', port: 18789, gatewayReady: true } as {
+    status: { state: 'running', port: 18999, gatewayReady: true } as {
       state: string;
       port: number;
       gatewayReady?: boolean;
@@ -94,9 +94,9 @@ describe('Skills page gateway readiness', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
-    gatewayState.status = { state: 'running', port: 18789, gatewayReady: true };
+    gatewayState.status = { state: 'running', port: 18999, gatewayReady: true };
     skillsState.skills = [];
-    openclawGetSkillsDirMock.mockResolvedValue('/tmp/.openclaw/skills');
+    openclawGetSkillsDirMock.mockResolvedValue('/tmp/.mclaw/skills');
     shellOpenExternalMock.mockResolvedValue(undefined);
     clawhubCapabilityMock.mockResolvedValue({ success: true, capability: { canSearch: false, canInstall: false } });
     clawhubOpenSkillPathMock.mockResolvedValue({ success: true });
@@ -108,7 +108,7 @@ describe('Skills page gateway readiness', () => {
   });
 
   it('keeps loading skills while gatewayReady is false and hides the banner once local skills fetch succeeds', async () => {
-    gatewayState.status = { state: 'running', port: 18789, gatewayReady: false };
+    gatewayState.status = { state: 'running', port: 18999, gatewayReady: false };
     render(<Skills />);
 
     await act(async () => {
@@ -122,7 +122,7 @@ describe('Skills page gateway readiness', () => {
 
   it('keeps startup readiness feedback out of the Skills page banner', async () => {
     fetchSkillsMock.mockResolvedValue(false);
-    gatewayState.status = { state: 'running', port: 18789, gatewayReady: false };
+    gatewayState.status = { state: 'running', port: 18999, gatewayReady: false };
     render(<Skills />);
 
     await act(async () => {
@@ -135,7 +135,7 @@ describe('Skills page gateway readiness', () => {
   });
 
   it('still fetches local skills when the gateway is stopped', async () => {
-    gatewayState.status = { state: 'stopped', port: 18789 };
+    gatewayState.status = { state: 'stopped', port: 18999 };
     render(<Skills />);
 
     await act(async () => {
@@ -148,10 +148,10 @@ describe('Skills page gateway readiness', () => {
   });
 
   it('filters the list via enabled and disabled buttons', async () => {
-    gatewayState.status = { state: 'stopped', port: 18789 };
+    gatewayState.status = { state: 'stopped', port: 18999 };
     skillsState.skills = [
-      { id: 'pdf', name: 'PDF', description: 'enabled skill', enabled: true, source: 'openclaw-managed' },
-      { id: 'xlsx', name: 'XLSX', description: 'disabled skill', enabled: false, source: 'openclaw-managed' },
+      { id: 'pdf', name: 'PDF', description: 'enabled skill', enabled: true, source: 'mclaw-managed' },
+      { id: 'xlsx', name: 'XLSX', description: 'disabled skill', enabled: false, source: 'mclaw-managed' },
     ];
 
     render(<Skills />);
@@ -174,7 +174,7 @@ describe('Skills page gateway readiness', () => {
   });
 
   it('shows manifest versions but still hides slug badges and hash-only preinstalled versions', async () => {
-    gatewayState.status = { state: 'stopped', port: 18789 };
+    gatewayState.status = { state: 'stopped', port: 18999 };
     skillsState.skills = [
       {
         id: 'self-improvement-agent',
@@ -182,7 +182,7 @@ describe('Skills page gateway readiness', () => {
         name: 'self-improvement',
         description: 'versionless local skill',
         enabled: true,
-        source: 'openclaw-managed',
+        source: 'mclaw-managed',
         baseDir: '/tmp/self-improvement',
       },
       {
@@ -192,7 +192,7 @@ describe('Skills page gateway readiness', () => {
         description: 'placeholder version skill',
         enabled: true,
         version: '1.0.0',
-        source: 'openclaw-managed',
+        source: 'mclaw-managed',
         baseDir: '/tmp/pdf',
       },
       {
@@ -201,7 +201,7 @@ describe('Skills page gateway readiness', () => {
         name: 'docx',
         description: 'hash version skill',
         enabled: true,
-        source: 'openclaw-managed',
+        source: 'mclaw-managed',
         baseDir: '/tmp/docx',
       },
       {
@@ -211,7 +211,7 @@ describe('Skills page gateway readiness', () => {
         description: 'real version skill',
         enabled: true,
         version: '0.1.3',
-        source: 'openclaw-managed',
+        source: 'mclaw-managed',
         baseDir: '/tmp/custom-skill',
       },
     ];
@@ -232,9 +232,9 @@ describe('Skills page gateway readiness', () => {
   });
 
   it('does not show uninstall for plugin-provided skills', async () => {
-    gatewayState.status = { state: 'stopped', port: 18789 };
+    gatewayState.status = { state: 'stopped', port: 18999 };
     skillsState.skills = [
-      { id: 'browser-automation', slug: 'browser-automation', name: 'Browser Automation', description: 'plugin skill', enabled: true, source: 'openclaw-plugin', baseDir: '/tmp/plugin-skill' },
+      { id: 'browser-automation', slug: 'browser-automation', name: 'Browser Automation', description: 'plugin skill', enabled: true, source: 'mclaw-plugin', baseDir: '/tmp/plugin-skill' },
     ];
 
     render(<Skills />);

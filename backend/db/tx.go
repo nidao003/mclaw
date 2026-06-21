@@ -18,6 +18,8 @@ type Tx struct {
 	Audit *AuditClient
 	// CheckIn is the client for interacting with the CheckIn builders.
 	CheckIn *CheckInClient
+	// DataApiPricing is the client for interacting with the DataApiPricing builders.
+	DataApiPricing *DataApiPricingClient
 	// ExchangeCode is the client for interacting with the ExchangeCode builders.
 	ExchangeCode *ExchangeCodeClient
 	// Expert is the client for interacting with the Expert builders.
@@ -255,6 +257,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Audit = NewAuditClient(tx.config)
 	tx.CheckIn = NewCheckInClient(tx.config)
+	tx.DataApiPricing = NewDataApiPricingClient(tx.config)
 	tx.ExchangeCode = NewExchangeCodeClient(tx.config)
 	tx.Expert = NewExpertClient(tx.config)
 	tx.GitBot = NewGitBotClient(tx.config)

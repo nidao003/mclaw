@@ -6,10 +6,10 @@ const gatewayImageEcho = [
   'Sender (untrusted metadata):',
   '```json',
   '{',
-  '  "label": "ClawX (gateway-client)",',
+  '  "label": "mclaw (gateway-client)",',
   '  "id": "gateway-client",',
-  '  "name": "ClawX",',
-  '  "username": "ClawX"',
+  '  "name": "mclaw",',
+  '  "username": "mclaw"',
   '}',
   '```',
   '',
@@ -17,7 +17,7 @@ const gatewayImageEcho = [
   '[Image]',
   'User text:',
   'Process the attached file(s).',
-  '[media attached: /Users/test/.openclaw/media/outbound/out.png (image/png) | /Users/test/.openclaw/media/outbound/out.png]',
+  '[media attached: /Users/test/.mclaw/media/outbound/out.png (image/png) | /Users/test/.mclaw/media/outbound/out.png]',
   'Description:',
   'An astronaut in a white space suit floats in space, reaching a gloved hand toward the viewer.',
 ].join('\n');
@@ -44,7 +44,7 @@ describe('user message display cleanup', () => {
         mimeType: 'image/png',
         fileSize: 123,
         preview: null,
-        filePath: '/Users/test/.openclaw/media/outbound/out.png',
+        filePath: '/Users/test/.mclaw/media/outbound/out.png',
       }],
     };
     const candidate = {

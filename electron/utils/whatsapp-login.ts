@@ -279,7 +279,7 @@ export class WhatsAppLoginManager extends EventEmitter {
             } = loadBaileys();
 
             // Path where OpenClaw expects WhatsApp credentials
-            const authDir = join(homedir(), '.openclaw', 'credentials', 'whatsapp', accountId);
+            const authDir = join(homedir(), '.mclaw', 'credentials', 'whatsapp', accountId);
 
             // Ensure directory exists
             if (!existsSync(authDir)) {
@@ -328,7 +328,7 @@ export class WhatsAppLoginManager extends EventEmitter {
                 logger: pino({ level: 'silent' }), // Silent logger
                 connectTimeoutMs: 60000,
                 // mobile: false,
-                // browser: ['ClawX', 'Chrome', '1.0.0'],
+                // browser: ['mclaw', 'Chrome', '1.0.0'],
             });
 
             let connectionOpened = false;
@@ -461,12 +461,12 @@ export class WhatsAppLoginManager extends EventEmitter {
         // as configured based solely on the existence of this directory.
         if (shouldCleanup && cleanupAccountId) {
             try {
-                const authDir = join(homedir(), '.openclaw', 'credentials', 'whatsapp', cleanupAccountId);
+                const authDir = join(homedir(), '.mclaw', 'credentials', 'whatsapp', cleanupAccountId);
                 if (existsSync(authDir)) {
                     rmSync(authDir, { recursive: true, force: true });
                     console.log(`[WhatsAppLogin] Cleaned up auth dir for cancelled login: ${authDir}`);
                     // Also remove the parent whatsapp dir if it's now empty
-                    const parentDir = join(homedir(), '.openclaw', 'credentials', 'whatsapp');
+                    const parentDir = join(homedir(), '.mclaw', 'credentials', 'whatsapp');
                     if (existsSync(parentDir)) {
                         const remaining = readdirSync(parentDir);
                         if (remaining.length === 0) {

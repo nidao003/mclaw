@@ -139,7 +139,7 @@ const SUCCESS_NOTICE_CLASS = 'border-black/10 bg-black/5 text-foreground/80 dark
 // the top-right action cluster looks consistent across pages. Outline
 // is used for secondary actions (refresh, disable, open-full-UI); the
 // primary is the brand-filled pill (enable / new task / add agent).
-const HEADER_PILL_OUTLINE_CLASS = 'h-9 rounded-full px-4 text-meta font-medium border-black/10 dark:border-white/10 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 shadow-none text-foreground/80 hover:text-foreground transition-colors';
+const HEADER_PILL_OUTLINE_CLASS = 'h-9 rounded-full px-4 text-meta font-medium border-border bg-transparent hover:bg-accent/50 shadow-none text-foreground/80 hover:text-foreground transition-colors';
 const HEADER_PILL_PRIMARY_CLASS = 'h-9 rounded-full px-4 text-meta font-medium shadow-none';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -345,7 +345,7 @@ export function Dreams() {
       await rpc<unknown>('config.patch', {
         raw: buildDreamingEnabledPatchRaw(enabled),
         baseHash: snapshot.hash,
-        note: enabled ? 'Enable memory dreaming from ClawX Dreams.' : 'Disable memory dreaming from ClawX Dreams.',
+        note: enabled ? 'Enable memory dreaming from mclaw Dreams.' : 'Disable memory dreaming from mclaw Dreams.',
       }, 30_000);
       const message = enabled ? t('actions.enableSuccess') : t('actions.disableSuccess');
       setDreaming((current) => ({ ...(current ?? {}), enabled }));

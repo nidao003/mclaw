@@ -1,10 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 
 /* ──────────────────────────────────────────────────────────────────────────
- * ClawX Tailwind design tokens
+ * mclaw Tailwind design tokens
  * ──────────────────────────────────────────────────────────────────────────
  *
- * This config layers ClawX's own visual language on top of shadcn/ui:
+ * This config layers mclaw's own visual language on top of shadcn/ui:
  *
  *   1. fontFamily — All three stacks (sans / serif / mono) are pinned
  *      explicitly so we never silently inherit Tailwind's evolving defaults.
@@ -18,16 +18,16 @@
  *      change only touches this file.
  *
  *   3. colors — On top of shadcn's semantic tokens (primary / destructive /
- *      ...) we add three ClawX-private groups:
- *        - brand        : Apple-system blue used for primary CTAs
- *        - skill        : highlight blue for inline /skill chips in chat
- *        - surface.{modal,input,sidebar}: a 3-layer cream-paper background
+ *      ...) we add three mclaw-private groups:
+ *        - brand        : warm coral orange (#EE7C4B) for branded CTAs
+ *        - skill        : warm orange for inline /skill chips in chat
+ *        - surface.{modal,input,sidebar}: a 3-layer stone-paper background
  *                          system in light mode. In dark mode each layer
  *                          collapses to an existing shadcn token through
  *                          CSS variables, so callers don't need to write
  *                          `dark:bg-card` style double-declarations.
  *
- *   4. Naming — All ClawX-private tokens live under their own top-level
+ *   4. Naming — All mclaw-private tokens live under their own top-level
  *      key (`brand`, `skill`, `surface`) instead of being merged into
  *      the root `colors` namespace, so they're trivially distinguishable
  *      from shadcn semantic tokens.
@@ -61,28 +61,22 @@ module.exports = {
        * All three stacks are pinned explicitly to remove dependency on
        * Tailwind's default fontFamily values. The intent:
        *
-       *   - sans  : the everyday UI body / control font. Apple-first
-       *             on macOS (-apple-system), then BlinkMacSystemFont
-       *             so Chromium on macOS picks the same metrics, then
-       *             Segoe UI for Windows, Roboto for Linux/Android,
-       *             and finally the four Apple/Segoe/Noto color emoji
-       *             fonts so emoji never fall back to a serif.
+       *   - sans  : Inter-first UI body / control font. Skills Hub 设计
+       *             规范要求 Inter 作为统一无衬线字体族，回退系统字体。
+       *             Inter 400 正文、500 按钮/导航、600 标题。
        *
-       *   - serif : Georgia-first display stack used by all page H1/H2.
-       *             Previously written as inline `style={{ fontFamily }}`
-       *             in 17 places — that's been collapsed to this token,
-       *             so `font-serif` alone now reproduces the original
-       *             rendering exactly. (NOTE: deliberately omits
-       *             `ui-serif` — on macOS that resolves to "New York"
-       *             which we explicitly do not want.)
+       *   - serif : Georgia-first display stack used by desktop-app page
+       *             H1/H2. (NOTE: deliberately omits `ui-serif` — on macOS
+       *             that resolves to "New York" which we explicitly do not
+       *             want.)
        *
-       *   - mono  : standard developer-font stack. Used for IDs, paths,
-       *             tokens, timestamps, code blocks, CLI output etc.
-       *             We pin this so behaviour is identical to Tailwind's
-       *             current default but immune to upstream changes.
+       *   - mono  : JetBrains Mono-first developer-font stack. Skills Hub
+       *             设计规范要求所有代码/命令/日志表面使用 JetBrains Mono。
+       *             回退 Fira Code → SF Mono → 系统等宽字体。
        * ────────────────────────────────────────────────────────────── */
       fontFamily: {
         sans: [
+          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           '"Segoe UI"',
@@ -104,6 +98,8 @@ module.exports = {
           'serif',
         ],
         mono: [
+          '"JetBrains Mono"',
+          '"Fira Code"',
           'ui-monospace',
           'SFMono-Regular',
           '"SF Mono"',
@@ -121,8 +117,8 @@ module.exports = {
        * ──────────────────────────────────────────────────────────────
        *
        * Naming is by visual *role*, not pixel count, so a future density
-       * change only edits the values here. ClawX's full size ladder
-       * (combining Tailwind defaults + ClawX additions, smallest first):
+       * change only edits the values here. mclaw's full size ladder
+       * (combining Tailwind defaults + mclaw additions, smallest first):
        *
        *   ┌──────────────┬──────────┬─────────────┬──────────────────────────────┐
        *   │ Token        │ FontSize │ LineHeight  │ Primary use                  │
@@ -165,9 +161,9 @@ module.exports = {
        * Three groups:
        *   A. shadcn standard semantic tokens — read via `hsl(var(--xxx))`
        *      from globals.css. Kept fully compatible.
-       *   B. ClawX brand tokens (brand / skill) — plain hex values that
+       *   B. mclaw brand tokens (brand / skill) — plain hex values that
        *      do not change between light and dark themes.
-       *   C. ClawX surface tokens (surface.{modal,input,sidebar}) — use
+       *   C. mclaw surface tokens (surface.{modal,input,sidebar}) — use
        *      `hsl(var(--surface-xxx) / <alpha-value>)` so the alpha
        *      modifier still works (e.g. `bg-surface-sidebar/60`). The
        *      actual values live in globals.css, where dark mode redirects
@@ -222,40 +218,49 @@ module.exports = {
           foreground: 'hsl(var(--card-foreground))',
         },
 
-        // ── B. ClawX brand tokens ────────────────────────────────────
-        // Apple-system blue used for primary CTAs. The same pixel value
-        // works in both themes (sufficient WCAG-AA contrast in light
-        // mode and stays vivid in dark mode), so no CSS variable needed.
-        // Pair with `brand-hover` for the hover state.
+        // ── B. mclaw brand tokens ────────────────────────────────────
+        // Warm coral orange (#EE7C4B) — mclaw's distinctive brand accent.
+        // Paired with amber tones in a warm gradient for CTAs and branded
+        // surfaces. Uses plain hex for broad compatibility; sufficient
+        // contrast in both light (stone bg) and dark modes.
         brand: {
-          DEFAULT: '#0a84ff',
-          hover: '#007aff',
+          DEFAULT: '#EE7C4B',
+          hover: '#D95A2B',
         },
 
-        // Highlight blue for inline /skill chips in the chat input.
+        // Highlight orange for inline /skill chips in the chat input.
         // The chip combines bg + text + text-shadow to produce a glow
         // effect, so we expose three separate tokens (bg, light fg,
         // dark fg) instead of a 50/100/.../900 ramp — this palette is
         // intentionally not extensible.
         skill: {
-          bg: '#2F6BFF',          // chip backdrop (used at /14 or /18)
-          fg: '#1D4ED8',          // chip text (light mode)
-          'fg-dark': '#2563EB',   // chip text (dark mode)
+          bg: '#EE7C4B',          // chip backdrop (used at /14 or /18)
+          fg: '#D95A2B',          // chip text (light mode)
+          'fg-dark': '#F5976B',   // chip text (dark mode)
         },
 
-        // ── C. ClawX cream surfaces ──────────────────────────────────
+        // ── C. mclaw stone surfaces ──────────────────────────────────
         // We use `<alpha-value>` placeholders so Tailwind auto-emits
         // `bg-surface-xxx/{alpha}` rules. Concrete pixel values live in
         // globals.css; in dark mode the same CSS variables redirect to
         // shadcn's existing dark tokens to avoid maintaining a second
-        // (dark) cream palette.
+        // (dark) stone palette.
         surface: {
           modal: 'hsl(var(--surface-modal) / <alpha-value>)',
           input: 'hsl(var(--surface-input) / <alpha-value>)',
           sidebar: 'hsl(var(--surface-sidebar) / <alpha-value>)',
         },
 
-        // ── D. ClawX usage accents ──────────────────────────────────
+        // ── E. mclaw sidebar tokens (light = warm cream; dark = warm deep) ──
+        sidebar: {
+          DEFAULT: 'hsl(var(--surface-sidebar))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          muted: 'hsl(var(--sidebar-foreground-muted))',
+          hover: 'hsl(var(--sidebar-hover) / <alpha-value>)',
+          active: 'hsl(var(--sidebar-active))',
+        },
+
+        // ── D. mclaw usage accents ──────────────────────────────────
         // Semantic chart palette shared by the Models token-usage
         // visualisation and any future input/output/cache indicator.
         // Mirrors Cron's stat-tile palette (blue / green / yellow).
@@ -267,9 +272,13 @@ module.exports = {
         },
       },
       borderRadius: {
+        '4xl': 'calc(var(--radius) * 2.6)',
+        '3xl': 'calc(var(--radius) * 2.2)',
+        '2xl': 'calc(var(--radius) * 1.8)',
+        xl: 'calc(var(--radius) * 1.4)',
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) * 0.8)',
+        sm: 'calc(var(--radius) * 0.6)',
       },
       keyframes: {
         'accordion-down': {

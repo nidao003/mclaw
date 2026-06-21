@@ -15,7 +15,7 @@ export interface AttachedFileMeta {
    * `/api/chat/media/outgoing/<sessionKey>/<attachmentId>/full`. The renderer
    * cannot reach Gateway HTTP directly (CORS / env drift), so this URL is
    * resolved through the Main-process proxy in `media:getThumbnails`, which
-   * looks up `~/.openclaw/media/outgoing/records/<attachmentId>.json` and
+   * looks up `~/.mclaw/media/outgoing/records/<attachmentId>.json` and
    * loads the original file off disk.
    */
   gatewayUrl?: string;
