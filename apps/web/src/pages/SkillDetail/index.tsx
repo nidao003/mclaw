@@ -7,7 +7,7 @@ import { copyToClipboard } from '../../lib/clipboard';
 function InstallGuideDialog({ slug, onClose, onInstall }: { slug: string; onClose: () => void; onInstall: () => void }) {
   const [copied, setCopied] = useState<string | null>(null);
 
-  const chatPrompt = `帮我用 SkillHub 安装 ${slug} 技能：npx mclaw-skills add mclaw/${slug}`;
+  const chatPrompt = `帮我用 MClaw 安装 ${slug} 技能：npx mclaw-skills add mclaw/${slug}`;
 
   const commands = [
     {

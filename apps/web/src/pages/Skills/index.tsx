@@ -97,7 +97,7 @@ export default function Skills() {
             npx mclaw-skills add mclaw/&lt;技能名&gt;
           </code>
           <span className="text-sm text-black/55">
-            Skills Hub 官方技能；第三方技能用 Git 格式: npx mclaw-skills add user/repo
+            MClaw 平台官方技能；第三方技能用 Git 格式: npx mclaw-skills add user/repo
           </span>
         </div>
       )}

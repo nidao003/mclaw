@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/GoYoko/web"
@@ -11,12 +12,16 @@ import (
 	"github.com/nidao003/mclaw/backend/domain"
 	"github.com/nidao003/mclaw/backend/errcode"
 	"github.com/nidao003/mclaw/backend/middleware"
+	"github.com/nidao003/mclaw/backend/pkg/clickhouse"
 )
 
 // SkillAdminHandler Skills Hub 管理后台 API handler（V2 权限系统）。
 type SkillAdminHandler struct {
-	userRepo domain.UserRepo
-	logger   *slog.Logger
+	userRepo      domain.UserRepo
+	subUsecase    domain.SubscriptionUsecase
+	walletUsecase domain.WalletUsecase
+	chClient      *clickhouse.Client
+	logger        *slog.Logger
 }
 
 func NewSkillAdminHandler(i *do.Injector) (*SkillAdminHandler, error) {
@@ -24,8 +29,22 @@ func NewSkillAdminHandler(i *do.Injector) (*SkillAdminHandler, error) {
 	logger := do.MustInvoke[*slog.Logger](i)
 	auth := do.MustInvoke[*middleware.AuthMiddleware](i)
 	userRepo := do.MustInvoke[domain.UserRepo](i)
+	subUsecase := do.MustInvoke[domain.SubscriptionUsecase](i)
+	walletUsecase := do.MustInvoke[domain.WalletUsecase](i)
 
-	h := &SkillAdminHandler{userRepo: userRepo, logger: logger.With("module", "skill-admin.handler")}
+	// clickhouse 可选 —— 未配置（如 133 测试环境）时 token 用量返回 0
+	var chClient *clickhouse.Client
+	if c, err := do.Invoke[*clickhouse.Client](i); err == nil {
+		chClient = c
+	}
+
+	h := &SkillAdminHandler{
+		userRepo:      userRepo,
+		subUsecase:    subUsecase,
+		walletUsecase: walletUsecase,
+		chClient:      chClient,
+		logger:        logger.With("module", "skill-admin.handler"),
+	}
 
 	// 管理员路由组 —— 需要认证 + 超级管理员权限
 	adminGroup := w.Group("/api/v1/admin", auth.Auth(), middleware.RequireSuperAdmin())
@@ -37,6 +56,7 @@ func NewSkillAdminHandler(i *do.Injector) (*SkillAdminHandler, error) {
 
 // ListUsers 返回用户列表（超级管理员专用）。
 func (h *SkillAdminHandler) ListUsers(c *web.Context) error {
+	ctx := c.Request().Context()
 	req := &domain.AdminUserListReq{Limit: 20}
 	req.Cursor = c.QueryParam("cursor")
 	req.Search = c.QueryParam("search")
@@ -46,12 +66,37 @@ func (h *SkillAdminHandler) ListUsers(c *web.Context) error {
 			req.Limit = n
 		}
 	}
-	users, total, err := h.userRepo.ListUsers(c.Request().Context(), req)
+	users, total, err := h.userRepo.ListUsers(ctx, req)
 	if err != nil {
 		h.logger.Error("failed to list users", "error", err)
 		return err
 	}
+
+	// 填充订阅套餐、积分余额、token 消耗
+	for _, u := range users {
+		h.enrichUser(ctx, u)
+	}
+
 	return c.Success(map[string]any{"users": users, "total": total})
+}
+
+// enrichUser 补充用户的订阅/积分/token 字段（任何子查询失败都优雅降级）
+func (h *SkillAdminHandler) enrichUser(ctx context.Context, u *domain.AdminUserListItem) {
+	if h.subUsecase != nil {
+		if sub, err := h.subUsecase.Get(ctx, u.ID); err == nil && sub != nil {
+			u.PlanName = sub.Plan
+		}
+	}
+	if h.walletUsecase != nil {
+		if w, err := h.walletUsecase.Get(ctx, u.ID); err == nil && w != nil {
+			u.Balance = w.Balance
+		}
+	}
+	if h.chClient != nil {
+		if total, err := h.chClient.QueryUserTokenUsage(ctx, u.ID.String()); err == nil {
+			u.TokensUsed = total
+		}
+	}
 }
 
 // UpdateUserRole 修改用户角色（超级管理员专用）。

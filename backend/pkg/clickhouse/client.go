@@ -335,6 +335,22 @@ LIMIT ?`, tableIdentifier)
 	return users, nil
 }
 
+func (c *Client) QueryUserTokenUsage(ctx context.Context, userID string) (int64, error) {
+	var total int64
+	if c == nil || c.db == nil {
+		return 0, fmt.Errorf("clickhouse client is nil")
+	}
+	tableIdentifier, err := quoteIdentifier(c.ModelUsageTable())
+	if err != nil {
+		return 0, err
+	}
+	query := fmt.Sprintf(`SELECT coalesce(sum(total_tokens), 0) FROM %s WHERE user_id = ?`, tableIdentifier)
+	if err := c.db.QueryRowContext(ctx, query, userID).Scan(&total); err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
 func (c *Client) QueryTeamConversationStats(ctx context.Context, q TeamConversationQuery) (TeamConversationStats, error) {
 	var stats TeamConversationStats
 	if c == nil || c.db == nil {

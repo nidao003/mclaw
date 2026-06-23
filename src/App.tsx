@@ -21,15 +21,19 @@ import { Dreams } from './pages/Dreams';
 import { ImageGenerationPage } from './pages/ImageGeneration';
 import { Settings } from './pages/Settings';
 import { Setup } from './pages/Setup';
+import LoginPage from './pages/Login';
+import RequireAuth from './components/auth/RequireAuth';
 import { useSettingsStore } from './stores/settings';
 import { useUpdateStore } from './stores/update';
 import { useGatewayStore } from './stores/gateway';
 import { useProviderStore } from './stores/providers';
+import { useAuthStore } from '@mclaw/shared';
 import { rendererExtensionRegistry } from './extensions/registry';
 import { loadExternalRendererExtensions } from './extensions/_ext-bridge.generated';
 import { UpdateNotifier } from './components/update/UpdateNotifier';
 import { useNewChatAction } from './components/layout/use-new-chat-action';
 import { hostEvents } from './lib/host-events';
+import { useCloudModelSyncOnLogin } from './hooks/useCloudModelSyncOnLogin';
 
 
 /**
@@ -114,6 +118,8 @@ function SettingsDialog() {
 }
 
 function App() {
+  useCloudModelSyncOnLogin();
+
   const navigate = useNavigate();
   const location = useLocation();
   const skipSetupForE2E = typeof window !== 'undefined'
@@ -165,6 +171,20 @@ function App() {
       navigate('/setup');
     }
   }, [setupComplete, skipSetupForE2E, location.pathname, navigate]);
+
+  // App 启动时检查登录态（首次启动如果 setup 未完成，跳过登录检查）
+  const checkAuth = useAuthStore((s) => s.checkAuth);
+  useEffect(() => {
+    if (!setupComplete || skipSetupForE2E) return;
+    void checkAuth().then(() => {
+      const u = useAuthStore.getState().user;
+      // 已登录或正在 login 页/setup 页则不跳
+      if (!u && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/setup')) {
+        navigate('/login', { replace: true });
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setupComplete]);
 
   // Listen for navigation events from main process
   useEffect(() => {
@@ -218,24 +238,29 @@ function App() {
     <ErrorBoundary>
       <TooltipProvider delayDuration={300}>
         <Routes>
-          {/* Setup wizard (shown on first launch) */}
+          {/* Setup wizard (shown on first launch, before login) */}
           <Route path="/setup/*" element={<Setup />} />
 
-          {/* Main application routes */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Chat />} />
-            <Route path="/models" element={<Models />} />
-            <Route path="/agents" element={<Agents />} />
-            <Route path="/channels" element={<Channels />} />
-            <Route path="/skills" element={<Skills />} />
-            <Route path="/extensions" element={<ExtensionsPage />} />
-            <Route path="/cron" element={<Cron />} />
-            <Route path="/image-generation" element={devModeUnlocked ? <ImageGenerationPage /> : <Navigate to="/" replace />} />
-            <Route path="/dreams" element={devModeUnlocked ? <Dreams /> : <Navigate to="/" replace />} />
-            <Route path="/settings/*" element={<Settings />} />
-            {extraRoutes.map((r) => (
-              <Route key={r.path} path={r.path} element={<r.component />} />
-            ))}
+          {/* Login page (standalone, no auth required) */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Authenticated main routes */}
+          <Route element={<RequireAuth />}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Chat />} />
+              <Route path="/models" element={<Models />} />
+              <Route path="/agents" element={<Agents />} />
+              <Route path="/channels" element={<Channels />} />
+              <Route path="/skills" element={<Skills />} />
+              <Route path="/extensions" element={<ExtensionsPage />} />
+              <Route path="/cron" element={<Cron />} />
+              <Route path="/image-generation" element={devModeUnlocked ? <ImageGenerationPage /> : <Navigate to="/" replace />} />
+              <Route path="/dreams" element={devModeUnlocked ? <Dreams /> : <Navigate to="/" replace />} />
+              <Route path="/settings/*" element={<Settings />} />
+              {extraRoutes.map((r) => (
+                <Route key={r.path} path={r.path} element={<r.component />} />
+              ))}
+            </Route>
           </Route>
         </Routes>
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/nidao003/mclaw/backend/consts"
 	"github.com/nidao003/mclaw/backend/domain"
+	"github.com/nidao003/mclaw/backend/pkg/cvt"
 	"github.com/nidao003/mclaw/backend/pkg/session"
 )
 
@@ -70,6 +71,7 @@ type AuthMiddleware struct {
 	Session       *session.Session
 	usecase       domain.UserUsecase
 	apiKeyUsecase domain.ApiKeyUsecase
+	userRepo      domain.UserRepo
 	logger        *slog.Logger
 }
 
@@ -89,6 +91,11 @@ func NewAuthMiddleware(
 // InitApiKeyUsecase 延迟注入 ApiKeyUsecase（因为 AuthMiddleware 注册早于 ApiKeyUsecase）
 func (a *AuthMiddleware) InitApiKeyUsecase(uc domain.ApiKeyUsecase) {
 	a.apiKeyUsecase = uc
+}
+
+// InitUserRepo 延迟注入 UserRepo（用于 TeamAuth fallback 重新加载 user.Team）
+func (a *AuthMiddleware) InitUserRepo(repo domain.UserRepo) {
+	a.userRepo = repo
 }
 
 // Auth 强制要求认证
@@ -169,23 +176,33 @@ func (a *AuthMiddleware) TeamAuth() echo.MiddlewareFunc {
 			ctx := c.Request().Context()
 
 			user, err := session.Get[*domain.User](a.Session, c, consts.MonkeyCodeAITeamSession)
-			if err != nil {
-				a.logger.DebugContext(ctx, "get team session failed", "error", err)
-				return c.String(http.StatusUnauthorized, "Unauthorized")
+			if err == nil && user != nil && user.Team != nil {
+				SetTeamUser(c, &domain.TeamUser{User: user, Team: user.Team})
+				return next(c)
 			}
 
-			if user == nil {
+			// Fallback: TeamSession 缺失或 user 无 team 时，从 AISession 取 userID，
+			// 重新查 DB 加载带 team 的 user，回填 TeamSession。用于兼容旧 session（部署前登录的）
+			if a.userRepo == nil {
 				return c.String(http.StatusUnauthorized, "Unauthorized")
 			}
-
-			if user.Team == nil {
+			aiUser, aiErr := session.Get[*domain.User](a.Session, c, consts.MonkeyCodeAISession)
+			if aiErr != nil || aiUser == nil || aiUser.ID == uuid.Nil {
+				return c.String(http.StatusUnauthorized, "Unauthorized")
+			}
+			dbUser, dbErr := a.userRepo.GetUserWithTeams(ctx, aiUser.ID)
+			if dbErr != nil || dbUser == nil {
+				a.logger.DebugContext(ctx, "team session fallback: GetUserWithTeams failed", "error", dbErr)
+				return c.String(http.StatusUnauthorized, "Unauthorized")
+			}
+			fullUser := cvt.From(dbUser, &domain.User{})
+			if fullUser.Team == nil {
 				return c.String(http.StatusUnauthorized, "User has no team")
 			}
-
-			SetTeamUser(c, &domain.TeamUser{
-				User: user,
-				Team: user.Team,
-			})
+			if _, err := a.Session.Save(c, consts.MonkeyCodeAITeamSession, fullUser.ID, fullUser); err != nil {
+				a.logger.DebugContext(ctx, "team session fallback: Save team session failed", "error", err)
+			}
+			SetTeamUser(c, &domain.TeamUser{User: fullUser, Team: fullUser.Team})
 			return next(c)
 		}
 	}

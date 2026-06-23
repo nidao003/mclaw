@@ -9,3 +9,4 @@ export { dataDocApi } from './dataDoc';
 export type { ApiDocItem, ApiDocGroup, ApiDocSubGroup, ApiDocsResp, ApiField } from './dataDoc';
 export { walletApi } from './wallet';
 export { teamApi } from './team';
+export { adminUserApi } from './adminUser';

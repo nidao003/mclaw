@@ -24,6 +24,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { ExpertBrowser } from '@/components/experts/ExpertBrowser';
 import telegramIcon from '@/assets/channels/telegram.svg';
 import discordIcon from '@/assets/channels/discord.svg';
 import whatsappIcon from '@/assets/channels/whatsapp.svg';
@@ -53,6 +54,7 @@ export function Agents() {
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
   const [settingsModalAgent, setSettingsModalAgent] = useState<AgentSummary | null>(null);
   const [agentToDelete, setAgentToDelete] = useState<AgentSummary | null>(null);
+  const [expertBrowserOpen, setExpertBrowserOpen] = useState(false);
 
   const fetchChannelAccounts = useCallback(async () => {
     try {
@@ -137,6 +139,15 @@ export function Agents() {
               {t('refresh')}
             </Button>
             <Button
+              variant="outline"
+              onClick={() => setExpertBrowserOpen(true)}
+              data-testid="agents-open-expert-browser"
+              className="h-9 text-meta font-medium rounded-full px-4 border-border bg-transparent hover:bg-accent/50 shadow-none text-foreground/80 hover:text-foreground transition-colors"
+            >
+              <Bot className="h-3.5 w-3.5 mr-2" />
+              浏览专家
+            </Button>
+            <Button
               data-testid="agents-add-button"
               onClick={() => setShowAddDialog(true)}
               className="h-9 text-meta font-medium rounded-full px-4 shadow-none"
@@ -216,6 +227,9 @@ export function Agents() {
         }}
         onCancel={() => setAgentToDelete(null)}
       />
+
+      {/* 云端专家浏览器（Go 后端） */}
+      <ExpertBrowser open={expertBrowserOpen} onOpenChange={setExpertBrowserOpen} />
     </div>
   );
 }

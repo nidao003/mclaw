@@ -10,9 +10,19 @@ export default function RequireAuth() {
 
   useEffect(() => {
     if (!user) {
-      checkAuth().finally(() => setChecking(false));
+      console.log('[RequireAuth] No user, calling checkAuth...');
+      checkAuth()
+        .then(() => {
+          console.log('[RequireAuth] checkAuth succeeded, user:', useAuthStore.getState().user);
+        })
+        .catch((err) => {
+          console.error('[RequireAuth] checkAuth failed:', err);
+        })
+        .finally(() => setChecking(false));
     }
   }, [user, checkAuth]);
+
+  console.log('[RequireAuth] Render - user:', user, 'checking:', checking);
 
   if (checking) {
     return (
@@ -23,8 +33,10 @@ export default function RequireAuth() {
   }
 
   if (!user) {
+    console.log('[RequireAuth] No user, redirecting to /login');
     return <Navigate to="/login" replace />;
   }
 
+  console.log('[RequireAuth] User authenticated, rendering outlet');
   return <Outlet />;
 }

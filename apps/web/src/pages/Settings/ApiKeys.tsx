@@ -83,7 +83,7 @@ export default function ApiKeys() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <p className="text-meta text-muted-foreground">
-          管理你的 API Keys，用于外部服务访问 SkillHub
+          管理你的 API Keys，用于外部服务访问 MClaw 平台
         </p>
       </div>
 
@@ -156,7 +156,7 @@ export default function ApiKeys() {
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <Key className="mx-auto h-8 w-8 text-muted-foreground" />
           <p className="mt-3 text-meta text-muted-foreground">还没有 API Key</p>
-          <p className="mt-1 text-2xs text-muted-foreground">创建一个 Key 以在外部服务中调用 SkillHub API</p>
+          <p className="mt-1 text-2xs text-muted-foreground">创建一个 Key 以在外部服务中调用 MClaw API</p>
         </div>
       ) : (
         <div className="space-y-3">

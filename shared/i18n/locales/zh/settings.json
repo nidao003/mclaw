@@ -14,7 +14,7 @@
     "launchAtStartupDesc": "登录系统后自动启动 mclaw"
   },
   "aiProviders": {
-    "title": "AI 模型提供商",
+    "title": "自定义模型提供商",
     "description": "配置 AI 模型提供商和 API 密钥",
     "overview": {
       "title": "提供商账户",

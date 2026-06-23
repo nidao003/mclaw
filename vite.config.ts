@@ -31,6 +31,9 @@ const alias = {
   '@': resolve(__dirname, 'src'),
   '@electron': resolve(__dirname, 'electron'),
   '@shared': resolve(__dirname, 'shared'),
+  // packages/shared（@mclaw/shared）—— 跨桌面端/Web 共享的 types/api/stores/components/hooks
+  '@mclaw/shared': resolve(__dirname, 'packages/shared/src'),
+  '@mclaw/shared/*': resolve(__dirname, 'packages/shared/src/*'),
 };
 
 function isMainProcessExternal(id: string): boolean {
@@ -94,6 +97,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    proxy: {
+      '/api': {
+        target: 'https://[REDACTED]',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   build: {
     outDir: 'dist',

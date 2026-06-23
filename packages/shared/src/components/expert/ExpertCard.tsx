@@ -10,7 +10,7 @@ interface ExpertCardProps {
 /** 专家卡片组件 — 白底圆角卡片，hover轻微上移 */
 export function ExpertCard({ expert, className }: ExpertCardProps) {
   const IconComponent =
-    (LucideIcons as Record<string, React.ComponentType<{ className?: string }>>)[expert.icon] ??
+    (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[expert.icon] ??
     LucideIcons.Sparkles;
 
   return (

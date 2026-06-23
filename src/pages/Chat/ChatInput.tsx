@@ -7,7 +7,7 @@
  * are sent with the message (no base64 over WebSocket).
  */
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { SendHorizontal, Square, X, Paperclip, FileText, Film, Music, FileArchive, File, FolderOpen, Loader2, AtSign, Search, ChevronDown } from 'lucide-react';
+import { SendHorizontal, Square, X, Paperclip, FileText, Film, Music, FileArchive, File, FolderOpen, Loader2, AtSign, Search, ChevronDown, Cloud, Server } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -19,6 +19,7 @@ import { useChatStore } from '@/stores/chat';
 import { useArtifactPanel } from '@/stores/artifact-panel';
 import { buildPreviewTarget } from '@/components/file-preview/build-preview-target';
 import { useProviderStore } from '@/stores/providers';
+import { useCloudModelStore } from '@mclaw/shared/stores/cloudModelStore';
 import { buildConfiguredModelOptions, formatModelRefLabel } from '@/lib/model-options';
 import type { AgentSummary } from '@/types/agent';
 import type { QuickAccessSkill } from '@/types/skill';
@@ -199,6 +200,8 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
   const [pickerOpen, setPickerOpen] = useState(false);
   const [skillPickerOpen, setSkillPickerOpen] = useState(false);
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
+  const [globalModelPickerOpen, setGlobalModelPickerOpen] = useState(false);
+  const [switchingGlobalModel, setSwitchingGlobalModel] = useState(false);
   const [skillQuery, setSkillQuery] = useState('');
   const [quickSkills, setQuickSkills] = useState<QuickAccessSkill[]>([]);
   const [skillsLoading, setSkillsLoading] = useState(false);
@@ -210,6 +213,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
   const pickerRef = useRef<HTMLDivElement>(null);
   const skillPickerRef = useRef<HTMLDivElement>(null);
   const modelPickerRef = useRef<HTMLDivElement>(null);
+  const globalModelPickerRef = useRef<HTMLDivElement>(null);
   const isComposingRef = useRef(false);
   const gatewayStatus = useGatewayStore((s) => s.status);
   const agents = useAgentsStore((s) => s.agents);
@@ -234,6 +238,51 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
   );
   const effectiveModelRef = optimisticModelRef || currentAgent?.modelRef || defaultModelRef || modelOptions[0]?.modelRef || null;
   const currentModelLabel = formatModelRefLabel(effectiveModelRef);
+
+  // ── 全局模型（云端账号默认 / 本地服务商覆盖） ───────────────────────
+  const cloudDefaultModel = useCloudModelStore((s) => s.defaultCloudModel);
+  const userOverrideDefaultToLocal = useCloudModelStore((s) => s.userOverrideDefaultToLocal);
+  const activeLocalAccountId = useCloudModelStore((s) => s.activeLocalAccountId);
+  const localAccountsForChat = useMemo(
+    () => (providerAccounts ?? []).filter((account) => account.enabled),
+    [providerAccounts],
+  );
+  const activeLocalAccount = useMemo(() => {
+    if (!userOverrideDefaultToLocal) return null;
+    const targetId = activeLocalAccountId ?? providerDefaultAccountId;
+    return localAccountsForChat.find((account) => account.id === targetId)
+      ?? localAccountsForChat[0]
+      ?? null;
+  }, [userOverrideDefaultToLocal, activeLocalAccountId, providerDefaultAccountId, localAccountsForChat]);
+  const globalModelLabel = userOverrideDefaultToLocal
+    ? (activeLocalAccount?.label ?? '本地模型（未指定）')
+    : (cloudDefaultModel?.id ?? '未设置云端默认');
+  const isGlobalModelCloud = !userOverrideDefaultToLocal;
+  const isGlobalModelLocal = userOverrideDefaultToLocal;
+
+  // 切换全局模型：云端默认
+  const handleUseCloudDefault = useCallback(async () => {
+    if (!cloudDefaultModel) return;
+    if (switchingGlobalModel) return;
+    setSwitchingGlobalModel(true);
+    try {
+      const store = useCloudModelStore.getState();
+      store.clearLocalOverride();
+      await store.setDefault(cloudDefaultModel.id);
+      setGlobalModelPickerOpen(false);
+    } catch (error) {
+      toast.error(`${t('composer.modelSwitchFailed', { error: String(error) })}`);
+    } finally {
+      setSwitchingGlobalModel(false);
+    }
+  }, [cloudDefaultModel, switchingGlobalModel, t]);
+
+  // 切换全局模型：某个本地服务商
+  const handleUseLocalAccount = useCallback((accountId: string) => {
+    if (switchingGlobalModel) return;
+    useCloudModelStore.getState().switchToLocal(accountId);
+    setGlobalModelPickerOpen(false);
+  }, [switchingGlobalModel]);
   const mentionableAgents = useMemo(
     () => (agents ?? []).filter((agent) => agent.id !== currentAgentId),
     [agents, currentAgentId],
@@ -312,23 +361,25 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
   }, [agents, currentAgentId, targetAgentId]);
 
   useEffect(() => {
-    if (!pickerOpen && !skillPickerOpen && !modelPickerOpen) return;
+    if (!pickerOpen && !skillPickerOpen && !modelPickerOpen && !globalModelPickerOpen) return;
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as Node;
       const insideAgentPicker = pickerRef.current?.contains(target);
       const insideSkillPicker = skillPickerRef.current?.contains(target);
       const insideModelPicker = modelPickerRef.current?.contains(target);
-      if (!insideAgentPicker && !insideSkillPicker && !insideModelPicker) {
+      const insideGlobalModelPicker = globalModelPickerRef.current?.contains(target);
+      if (!insideAgentPicker && !insideSkillPicker && !insideModelPicker && !insideGlobalModelPicker) {
         setPickerOpen(false);
         setSkillPickerOpen(false);
         setModelPickerOpen(false);
+        setGlobalModelPickerOpen(false);
       }
     };
     document.addEventListener('mousedown', handlePointerDown);
     return () => {
       document.removeEventListener('mousedown', handlePointerDown);
     };
-  }, [modelPickerOpen, pickerOpen, skillPickerOpen]);
+  }, [modelPickerOpen, pickerOpen, skillPickerOpen, globalModelPickerOpen]);
 
   useEffect(() => {
     setSelectedSkill((prev) => {
@@ -818,6 +869,114 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
               )}
               rows={1}
             />
+          </div>
+
+          {/* Global Model Indicator — 提示当前对话真正使用的云端/本地模型，并支持一键切换 */}
+          <div ref={globalModelPickerRef} className="relative mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              data-testid="chat-global-model-indicator"
+              onClick={() => {
+                setPickerOpen(false);
+                setSkillPickerOpen(false);
+                setGlobalModelPickerOpen((open) => !open);
+              }}
+              disabled={switchingGlobalModel}
+              className={cn(
+                'inline-flex h-7 max-w-full items-center gap-1.5 rounded-lg px-2 text-meta font-medium transition-colors',
+                'border border-border/60',
+                isGlobalModelCloud
+                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/15'
+                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15',
+              )}
+              title="点击切换当前对话使用的模型（云端默认 / 本地服务商）"
+            >
+              {switchingGlobalModel ? (
+                <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
+              ) : isGlobalModelCloud ? (
+                <Cloud className="h-3 w-3 shrink-0" />
+              ) : (
+                <Server className="h-3 w-3 shrink-0" />
+              )}
+              <span className="shrink-0">{isGlobalModelCloud ? '云端' : '本地'}</span>
+              <span className="truncate font-mono">{globalModelLabel}</span>
+              <ChevronDown className={cn('h-3 w-3 shrink-0 transition-transform', globalModelPickerOpen && 'rotate-180')} />
+            </button>
+            {globalModelPickerOpen && (
+              <div
+                className="absolute left-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl border border-black/10 bg-surface-modal p-1.5 shadow-xl dark:border-white/10"
+                data-testid="chat-global-model-picker-menu"
+              >
+                <div className="px-3 py-2 text-tiny font-medium text-muted-foreground/80">
+                  {'切换当前对话使用的模型'}
+                </div>
+
+                {/* 云端默认 */}
+                <div className="px-3 pb-1 pt-1 text-tiny font-semibold text-muted-foreground">
+                  {'云端账号默认'}
+                </div>
+                {cloudDefaultModel ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleUseCloudDefault()}
+                    disabled={switchingGlobalModel || isGlobalModelCloud}
+                    className={cn(
+                      'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors',
+                      isGlobalModelCloud ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50',
+                    )}
+                    data-testid="chat-global-model-option-cloud"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Cloud className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+                      <span className="truncate font-medium">{cloudDefaultModel.id}</span>
+                    </span>
+                    {isGlobalModelCloud && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />}
+                  </button>
+                ) : (
+                  <div className="px-3 py-2 text-meta text-muted-foreground">
+                    {'当前账号未配置云端默认模型'}
+                  </div>
+                )}
+
+                {/* 本地服务商 */}
+                <div className="mt-1 px-3 pb-1 pt-1 text-tiny font-semibold text-muted-foreground">
+                  {'本地服务商'}
+                </div>
+                {localAccountsForChat.length === 0 ? (
+                  <div className="px-3 py-2 text-meta text-muted-foreground">
+                    {'尚未配置本地服务商，请前往「模型」页面添加'}
+                  </div>
+                ) : (
+                  <div className="max-h-56 overflow-y-auto">
+                    {localAccountsForChat.map((account) => {
+                      const isActive = isGlobalModelLocal && account.id === activeLocalAccount?.id;
+                      return (
+                        <button
+                          key={account.id}
+                          type="button"
+                          onClick={() => handleUseLocalAccount(account.id)}
+                          disabled={switchingGlobalModel || isActive}
+                          className={cn(
+                            'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors',
+                            isActive ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50',
+                          )}
+                          data-testid={`chat-global-model-option-local-${account.id}`}
+                        >
+                          <span className="flex min-w-0 items-center gap-2">
+                            <Server className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                            <span className="truncate font-medium">{account.label}</span>
+                            <span className="truncate text-tiny text-muted-foreground">
+                              {[account.model, account.vendorId].filter(Boolean).join(' · ')}
+                            </span>
+                          </span>
+                          {isActive && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Action Row — icons on their own line */}

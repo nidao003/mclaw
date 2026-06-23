@@ -17,6 +17,40 @@ export type UsageHistoryEntry = {
 export type UsageWindow = '7d' | '30d' | 'all';
 export type UsageGroupBy = 'model' | 'day';
 
+/** 单条 token 记录归属：'cloud' 账号绑定的云端模型；'local' 用户本地配置的 ProviderAccount；'unknown' 无法判定 */
+export type UsageSourceKind = 'cloud' | 'local' | 'unknown';
+
+/** 归类一条 entry 的来源：cloudProviders 是当前账号云端模型 provider 字符串集合（如 { 'minimax', 'anthropic' }）；provider 不在白名单里就归为本地 */
+export function classifyUsageEntry(
+  entry: Pick<UsageHistoryEntry, 'provider'>,
+  cloudProviders: ReadonlySet<string>,
+): UsageSourceKind {
+  const provider = entry.provider?.trim().toLowerCase();
+  if (!provider) return 'unknown';
+  if (cloudProviders.has(provider)) return 'cloud';
+  return 'local';
+}
+
+/** 给一组 entry 批量打标 */
+export function classifyUsageEntries(
+  entries: UsageHistoryEntry[],
+  cloudProviders: ReadonlySet<string>,
+): UsageSourceKind[] {
+  return entries.map((entry) => classifyUsageEntry(entry, cloudProviders));
+}
+
+/** 中文显示文案 */
+export function getUsageSourceKindLabel(kind: UsageSourceKind): string {
+  switch (kind) {
+    case 'cloud':
+      return '云端';
+    case 'local':
+      return '本地';
+    default:
+      return '未知';
+  }
+}
+
 export type UsageGroup = {
   label: string;
   totalTokens: number;

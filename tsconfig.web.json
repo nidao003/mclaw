@@ -26,7 +26,9 @@
     "paths": {
       "@/*": ["src/*"],
       "@electron/*": ["electron/*"],
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["shared/*"],
+      "@mclaw/shared": ["packages/shared/src"],
+      "@mclaw/shared/*": ["packages/shared/src/*"]
     }
   },
   "include": ["src", "shared"],

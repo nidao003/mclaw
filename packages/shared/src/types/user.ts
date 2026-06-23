@@ -31,3 +31,26 @@ export interface RegisterReq {
   password: string;
   name: string;
 }
+
+// 管理后台用户列表项 —— 对齐后端 domain.AdminUserListItem
+export interface AdminUserItem {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string;
+  role: string;
+  status: string;
+  created_at: string;
+  /** 订阅套餐名（来自 active subscription 或 default plan） */
+  plan_name: string;
+  /** 积分余额（wallet） */
+  balance: number;
+  /** token 消耗（来自 clickhouse，未配置时为 0） */
+  tokens_used: number;
+}
+
+// 管理后台用户列表响应
+export interface AdminUserListResp {
+  users: AdminUserItem[];
+  total: number;
+}

@@ -96,7 +96,8 @@ func NewTeamGroupUserHandler(i *do.Injector) (*TeamGroupUserHandler, error) {
 //	@Router			/api/v1/teams/users/login [post]
 func (h *TeamGroupUserHandler) Login(c *web.Context, req domain.TeamLoginReq) error {
 	ctx := c.Request().Context()
-	if !h.captcha.ValidateToken(ctx, req.CaptchaToken) {
+	// captcha_token 可选：为空时跳过验证（测试环境免验证码）
+	if req.CaptchaToken != "" && !h.captcha.ValidateToken(ctx, req.CaptchaToken) {
 		return errcode.ErrForbidden
 	}
 

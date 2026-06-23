@@ -28,7 +28,7 @@ export default function ExpertDetail() {
     );
   }
 
-  const IconComponent = (LucideIcons as Record<string, React.ComponentType<{ className?: string }>>)[expert.icon] ?? LucideIcons.Sparkles;
+  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[expert.icon] ?? LucideIcons.Sparkles;
 
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-16 md:px-10">

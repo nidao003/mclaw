@@ -25,6 +25,8 @@ import {
   Plug,
   Plus,
   Brain,
+  PanelLeftClose,
+  PanelLeftOpen,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,13 +37,16 @@ import { useGatewayStore } from '@/stores/gateway';
 import { useAgentsStore } from '@/stores/agents';
 import { getSessionActivityMs, getSessionBucket, type SessionBucketKey } from './session-buckets';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { MAC_SIDEBAR_CHROME_HEIGHT } from '@shared/sidebar-layout';
 import { useTranslation } from 'react-i18next';
 import logoSvg from '@/assets/logo.svg';
 import { useNewChatAction } from './use-new-chat-action';
+import { UserMenu } from './UserMenu';
 
 // 三栏布局宽度（参考设计图）
 const ICON_RAIL_WIDTH = 140;    // 菜单列：固定 140px（图标+文字）
+const ICON_RAIL_COLLAPSED_WIDTH = 60; // 折叠后仅显示图标（60px）
 // 对话列表列的拖动范围
 const HISTORY_PANE_MIN = 220;
 const HISTORY_PANE_MAX = 360;
@@ -110,6 +115,8 @@ export function Sidebar() {
 
   // 对话历史列宽度（仅 / 路由使用）
   const [historyPaneWidth, setHistoryPaneWidth] = useState(HISTORY_PANE_DEFAULT);
+  const [historyPaneCollapsed, setHistoryPaneCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const historyResizeStopRef = useRef<(() => void) | null>(null);
   const handleHistoryResizePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -120,8 +127,8 @@ export function Sidebar() {
       // 忽略
     }
     const onMove = (e: PointerEvent) => {
-      // 拖动条位置 = e.clientX - 菜单列宽。直接得到历史列的目标宽度。
-      const next = Math.max(HISTORY_PANE_MIN, Math.min(HISTORY_PANE_MAX, e.clientX - ICON_RAIL_WIDTH));
+      const currentIconRailWidth = sidebarCollapsed ? ICON_RAIL_COLLAPSED_WIDTH : ICON_RAIL_WIDTH;
+      const next = Math.max(HISTORY_PANE_MIN, Math.min(HISTORY_PANE_MAX, e.clientX - currentIconRailWidth));
       setHistoryPaneWidth(next);
     };
     const onUp = () => {
@@ -134,7 +141,7 @@ export function Sidebar() {
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
-  }, []);
+  }, [sidebarCollapsed]);
 
   useEffect(() => () => historyResizeStopRef.current?.(), []);
 
@@ -275,13 +282,15 @@ export function Sidebar() {
   }
 
   // Sidebar 总宽：菜单列(140) + 对话路由额外历史列
-  const sidebarTotalWidth = ICON_RAIL_WIDTH + (isOnChat ? historyPaneWidth : 0);
+  const currentIconRailWidth = sidebarCollapsed ? ICON_RAIL_COLLAPSED_WIDTH : ICON_RAIL_WIDTH;
+  const currentHistoryPaneWidth = historyPaneCollapsed ? 40 : historyPaneWidth;
+  const sidebarTotalWidth = currentIconRailWidth + (isOnChat ? currentHistoryPaneWidth : 0);
 
   return (
     <aside
       data-testid="sidebar"
       className={cn(
-        'relative flex min-h-0 shrink-0 overflow-hidden bg-surface-sidebar',
+        'relative flex min-h-0 shrink-0 overflow-hidden bg-surface-sidebar transition-[width] duration-200 ease-out',
       )}
       style={{ width: sidebarTotalWidth }}
     >
@@ -300,7 +309,7 @@ export function Sidebar() {
       <div
         data-testid="sidebar-icon-rail"
         className="flex shrink-0 flex-col gap-1 border-r border-border/40 bg-surface-sidebar py-2 px-2"
-        style={{ width: ICON_RAIL_WIDTH }}
+        style={{ width: currentIconRailWidth }}
       >
         {/* macOS 顶部留白：避免 Logo 与 traffic lights 按钮重叠 */}
         {isMac && <div aria-hidden className="shrink-0" style={{ height: MAC_SIDEBAR_CHROME_HEIGHT }} />}
@@ -312,6 +321,34 @@ export function Sidebar() {
           </div>
           <span className="text-sm font-semibold text-sidebar-foreground truncate">mclaw</span>
         </div>
+
+        {/* 折叠/展开按钮（Logo 正下方，永远可见） */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              data-testid="sidebar-collapse-toggle"
+              aria-label={sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'}
+              className={cn(
+                'no-drag flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 transition-all duration-200',
+                'text-sidebar-foreground/80 hover:bg-sidebar-hover hover:text-sidebar-foreground',
+              )}
+            >
+              {sidebarCollapsed ? (
+                <PanelLeftOpen className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
+              ) : (
+                <PanelLeftClose className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
+              )}
+              {!sidebarCollapsed && (
+                <span className="text-meta font-medium truncate">折叠侧边栏</span>
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={6}>
+            <p>{sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'}</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* 主导航（无分组标题） */}
         <IconRailItem to="/" icon={MessageSquare} label={t('sidebar.chat')} active={isOnChat} testId="sidebar-nav-chat" />
@@ -338,6 +375,11 @@ export function Sidebar() {
         {/* 中部留白推到底部 */}
         <div className="flex-1" />
 
+        {/* 底部：用户菜单（头像 + 套餐 + 余额） */}
+        <div className="px-1 pb-1">
+          <UserMenu collapsed={sidebarCollapsed} />
+        </div>
+
         {/* 底部：仅设置（历史记录已合并到对话路由内的历史列） */}
         <IconRailItem
           icon={SettingsIcon}
@@ -351,6 +393,8 @@ export function Sidebar() {
       {isOnChat && (
         <ChatSidebarPane
           width={historyPaneWidth}
+          collapsed={historyPaneCollapsed}
+          onToggleCollapse={() => setHistoryPaneCollapsed(!historyPaneCollapsed)}
           sessions={sessions}
           currentSessionKey={currentSessionKey}
           isOnChat={isOnChat}
@@ -387,6 +431,8 @@ export function Sidebar() {
 //   可拖动调整宽度（220-360px，默认 260px）
 interface ChatSidebarPaneProps {
   width: number;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
   sessions: Array<{ key: string; displayName?: string; label?: string }>;
   currentSessionKey: string | null;
   isOnChat: boolean;
@@ -418,6 +464,8 @@ interface ChatSidebarPaneProps {
 function ChatSidebarPane(props: ChatSidebarPaneProps) {
   const {
     width,
+    collapsed,
+    onToggleCollapse,
     sessions,
     currentSessionKey,
     isOnChat,
@@ -448,25 +496,66 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
   return (
     <div
       data-testid="chat-sidebar-pane"
-      className="relative flex min-w-0 shrink-0 flex-col overflow-hidden border-l border-border/40"
-      style={{ width }}
+      className="relative flex min-w-0 shrink-0 flex-col overflow-hidden border-l border-border/40 transition-[width] duration-200 ease-out"
+      style={{ width: collapsed ? 40 : width }}
     >
-      {/* 顶部：搜索框 + 新对话按钮（按设计图从上到下） */}
-      <div className="flex flex-col gap-2 p-2 border-b border-border/40 shrink-0">
-        <input
-          type="text"
-          placeholder="搜索"
-          className="w-full h-8 px-3 rounded-lg bg-sidebar-hover/60 border border-transparent text-meta text-sidebar-foreground placeholder:text-sidebar-muted focus:outline-none focus:bg-background focus:border-brand/40 focus:ring-2 focus:ring-brand/15 transition-all"
-        />
-        <button
-          type="button"
-          onClick={onNewChat}
-          className="flex items-center justify-center gap-1.5 h-9 rounded-lg bg-gradient-to-r from-brand to-brand-hover text-white text-sm font-semibold shadow-sm hover:shadow-md hover:brightness-105 active:translate-y-px transition-all duration-200"
-        >
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
-          <span>{newChatLabel}</span>
-        </button>
-      </div>
+      {/* 折叠按钮（折叠态：顶部居中把手；展开态：标题栏操作） */}
+      {collapsed ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              data-testid="chat-history-toggle"
+              aria-label="展开历史"
+              className="no-drag mt-1 mx-auto flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/80 hover:bg-brand/10 hover:text-brand transition-all duration-200"
+            >
+              <PanelLeftOpen className="h-4 w-4" strokeWidth={2} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={6}>
+            <p>展开历史</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <>
+          {/* 折叠按钮：右对齐文本+图标，hover 高亮 */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                data-testid="chat-history-toggle"
+                aria-label="收起历史"
+                className="no-drag flex h-9 w-full items-center justify-end gap-1.5 px-2.5 text-sidebar-foreground/80 hover:bg-sidebar-hover hover:text-sidebar-foreground transition-all duration-200"
+              >
+                <span className="text-tiny text-sidebar-muted">收起历史</span>
+                <PanelLeftClose className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" sideOffset={6}>
+              <p>收起历史</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* 顶部：搜索框 + 新对话按钮（按设计图从上到下） */}
+          <div className="flex flex-col gap-2 p-2 border-b border-border/40 shrink-0">
+            <input
+              type="text"
+              placeholder="搜索"
+              className="w-full h-8 px-3 rounded-lg bg-sidebar-hover/60 border border-transparent text-meta text-sidebar-foreground placeholder:text-sidebar-muted focus:outline-none focus:bg-background focus:border-brand/40 focus:ring-2 focus:ring-brand/15 transition-all"
+            />
+            <button
+              type="button"
+              onClick={onNewChat}
+              className="flex items-center justify-center gap-1.5 h-9 rounded-lg bg-gradient-to-r from-brand to-brand-hover text-white text-sm font-semibold shadow-sm hover:shadow-md hover:brightness-105 active:translate-y-px transition-all duration-200"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.5} />
+              <span>{newChatLabel}</span>
+            </button>
+          </div>
+        </>
+      )}
 
       {sessions.length > 0 ? (
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2 space-y-1">
@@ -583,40 +672,44 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
       )}
 
       {/* Gateway 重启提示（底部） */}
-      <div
-        data-testid="chat-pane-gateway-restarting"
-        data-state={gatewayRestarting ? 'visible' : 'hidden'}
-        aria-hidden={!gatewayRestarting}
-        className={cn(
-          'overflow-hidden transition-[max-height,opacity,transform] duration-200 ease-out border-t border-border/40',
-          gatewayRestarting ? 'max-h-12 translate-y-0 opacity-100' : 'max-h-0 translate-y-1 opacity-0',
-        )}
-      >
+      {!collapsed && (
         <div
-          aria-live="polite"
-          aria-label={gatewayLabel}
-          title={gatewayLabel}
-          className="flex items-center gap-2 px-2.5 py-1.5 m-2 rounded-lg border border-yellow-500/25 bg-yellow-500/10 text-yellow-700 dark:border-yellow-500/30 dark:text-yellow-400"
+          data-testid="chat-pane-gateway-restarting"
+          data-state={gatewayRestarting ? 'visible' : 'hidden'}
+          aria-hidden={!gatewayRestarting}
+          className={cn(
+            'overflow-hidden transition-[max-height,opacity,transform] duration-200 ease-out border-t border-border/40',
+            gatewayRestarting ? 'max-h-12 translate-y-0 opacity-100' : 'max-h-0 translate-y-1 opacity-0',
+          )}
         >
-          <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-          <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-meta">{gatewayLabel}</span>
+          <div
+            aria-live="polite"
+            aria-label={gatewayLabel}
+            title={gatewayLabel}
+            className="flex items-center gap-2 px-2.5 py-1.5 m-2 rounded-lg border border-yellow-500/25 bg-yellow-500/10 text-yellow-700 dark:border-yellow-500/30 dark:text-yellow-400"
+          >
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+            <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-meta">{gatewayLabel}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 拖动条 */}
-      <div
-        data-testid="chat-pane-resize"
-        role="separator"
-        aria-orientation="vertical"
-        title="拖动调整宽度"
-        onPointerDown={onResizeStart}
-        className="no-drag absolute inset-y-0 right-0 z-20 w-1.5 translate-x-1/2 cursor-col-resize select-none group"
-      >
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-transparent transition-colors group-hover:bg-brand/50"
-        />
-      </div>
+      {!collapsed && (
+        <div
+          data-testid="chat-pane-resize"
+          role="separator"
+          aria-orientation="vertical"
+          title="拖动调整宽度"
+          onPointerDown={onResizeStart}
+          className="no-drag absolute inset-y-0 right-0 z-20 w-1.5 translate-x-1/2 cursor-col-resize select-none group"
+        >
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-transparent transition-colors group-hover:bg-brand/50"
+          />
+        </div>
+      )}
     </div>
   );
 }

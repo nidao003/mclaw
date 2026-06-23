@@ -34,6 +34,7 @@ import type { TFunction } from 'i18next';
 import { SkillFileSections } from '@/components/file-preview/SkillFileSections';
 import type { FilePreviewTarget } from '@/components/file-preview/FilePreviewOverlay';
 import type { SkillFile } from '@/lib/skill-files';
+import { SkillMarketplace } from '@/components/skills/SkillMarketplace';
 
 const FilePreviewOverlayLazy = lazy(() =>
   import('@/components/file-preview/FilePreviewOverlay').then((m) => ({ default: m.FilePreviewOverlay })),
@@ -405,6 +406,7 @@ export function Skills() {
   }, [t]);
 
   const [skillsDirPath, setSkillsDirPath] = useState('~/.mclaw/skills');
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
 
   useEffect(() => {
     hostApi.openclaw.getSkillsDir()
@@ -555,6 +557,16 @@ export function Skills() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setMarketplaceOpen(true)}
+              data-testid="skills-open-marketplace"
+              className="h-8 text-meta font-medium rounded-md px-3 shadow-none"
+            >
+              <Package className="h-3.5 w-3.5 mr-1.5" />
+              浏览市场
+            </Button>
             {marketplaceAvailable && (
               <Button
                 variant="outline"
@@ -781,6 +793,9 @@ export function Skills() {
         onUninstall={handleUninstall}
         onOpenFolder={handleOpenSkillFolder}
       />
+
+      {/* 云端技能市场（Go 后端） */}
+      <SkillMarketplace open={marketplaceOpen} onOpenChange={setMarketplaceOpen} />
     </div>
   );
 }

@@ -105,6 +105,13 @@ func (h *AuthHandler) PasswordLogin(c *web.Context, req domain.TeamLoginReq) err
 		return errcode.ErrInternalServer
 	}
 
+	// 若用户归属团队，同时建立 team session，使 /api/v1/teams/* 接口（TeamAuth）可用
+	if user.Team != nil {
+		if _, err := h.authMiddleware.Session.Save(c, consts.MonkeyCodeAITeamSession, user.ID, user); err != nil {
+			h.logger.ErrorContext(ctx, "save team session failed", "error", err)
+		}
+	}
+
 	return c.Success(user)
 }
 
@@ -245,6 +252,11 @@ func (h *AuthHandler) Logout(c *web.Context) error {
 	err := h.authMiddleware.Session.Del(c, consts.MonkeyCodeAISession, user.ID)
 	if err != nil {
 		h.logger.ErrorContext(ctx, "delete session failed", "error", err)
+	}
+
+	// 同步清理 team session（登录时双存，登出时一并清除）
+	if err := h.authMiddleware.Session.Del(c, consts.MonkeyCodeAITeamSession, user.ID); err != nil {
+		h.logger.ErrorContext(ctx, "delete team session failed", "error", err)
 	}
 
 	return c.Success(nil)

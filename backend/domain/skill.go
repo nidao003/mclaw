@@ -193,6 +193,12 @@ type AdminUserListItem struct {
 	Role      string    `json:"role"`
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
+	// 订阅套餐名（来自 active subscription 或 default plan）
+	PlanName string `json:"plan_name"`
+	// 积分余额（wallet）
+	Balance int64 `json:"balance"`
+	// token 消耗（来自 clickhouse，未配置时为 0）
+	TokensUsed int64 `json:"tokens_used"`
 }
 
 // AdminUpdateUserRoleReq 修改用户角色请求。

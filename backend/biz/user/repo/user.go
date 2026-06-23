@@ -81,6 +81,7 @@ func (u *userRepo) PasswordLogin(ctx context.Context, req *domain.TeamLoginReq) 
 		WithTeamMembers(func(q *db.TeamMemberQuery) {
 			q.WithTeam()
 		}).
+		WithTeams().
 		First(ctx)
 	if err != nil {
 		return nil, errcode.ErrLoginFailed.Wrap(err)
