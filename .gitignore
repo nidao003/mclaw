@@ -74,6 +74,13 @@ artifacts/
 .delivery/
 docs/pr-session-notes-*.md
 
+# 开发参考截图（竞品/自家页面截图，仅本地留存，不进 git）
+docs/screenshots/**/*.png
+docs/screenshots/**/*.jpg
+docs/screenshots/**/*.jpeg
+docs/screenshots/**/*.gif
+docs/screenshots/**/*.webp
+
 .cursor/
 .pnpm-store/
 package-lock.json
