@@ -5,14 +5,13 @@
  * This module provides pure mapping functions and a sync workflow.
  */
 
-import type { Model, InterfaceType } from '@mclaw/shared/types/model';
+import type { Model } from '@mclaw/shared/types/model';
 import type {
   ProviderAccount,
   ProviderType,
-  ProviderProtocol,
-  ProviderVendorInfo,
 } from '@/lib/providers';
 import { hostApi } from '@/lib/host-api';
+import { modelsApi } from '@mclaw/shared';
 
 // ============================================================================
 // Error Types
@@ -81,122 +80,70 @@ export function resolveVendorForCloudModel(model: Model): ProviderType {
 }
 
 // ============================================================================
-// OAuth Vendor Handling
+// Runtime Provider Key（与 electron getOpenClawProviderKey 对齐）
 // ============================================================================
 
 /**
- * 后端 provider 字符串集合：这些 vendor 的凭据只能由用户在 mclaw UI 走 OAuth
- * 登录获得（token 存在 auth-profiles.json），云端 sync 不应为其创建 api_key
- * account，而应复用用户已登录的本地 OAuth account。
+ * 推导一个云端模型在 OpenClaw 运行时（openclaw.json / token usage 记录）里的 provider key。
  *
- * MiniMax 即典型代表：OpenClaw 内置 minimax-portal / minimax-portal-cn 两个
- * OAuth provider，若误将其映射成 custom api_key vendor，会生成 models.providers
- * 里不存在的 custom-XXXXXXXX key，导致 Gateway 报 "Unknown model"。
+ * 云端模型 vendorId 固定 'custom'，account id = `cloud-${model.id}`。
+ * OpenClaw 对未注册类型（custom）的 runtime key 派生规则：
+ *   `custom-` + accountId 去掉所有连字符后取前 8 位
+ * 例：model.id=b8c63adc-884e-... → accountId=cloud-b8c63adc-... → runtime key=custom-cloudb8c
  *
- * 注意：后端 models 表的 provider 列大小写不固定（实测既有 "MiniMax" 也有
- * "minimax"），故匹配须大小写不敏感。
+ * 这里的推导必须与 electron/services/providers/provider-runtime-sync.ts 的 getOpenClawProviderKey
+ * 保持一致，否则 token usage 来源分类（cloud/local）会判错。
  */
-const OAUTH_CLOUD_VENDORS = new Set<string>(['minimax']);
-
-/**
- * 判断云端模型是否属于 OAuth vendor（其 token 须由用户在 UI 登录获得）。
- * 大小写不敏感。
- */
-export function isOAuthCloudModel(model: Model): boolean {
-  return OAUTH_CLOUD_VENDORS.has(model.provider.trim().toLowerCase());
-}
-
-/**
- * 根据 base_url 推断 OAuth 云端模型对应的本地 ProviderType。
- * - base_url 含 minimax.io  → minimax-portal（国际版）
- * - base_url 含 minimaxi.com → minimax-portal-cn（国内版）
- * - 为空默认 minimax-portal-cn（用户在国内）
- * 非 OAuth vendor 返回 null。
- */
-export function resolveOAuthVendorForCloudModel(model: Model): ProviderType | null {
-  if (!isOAuthCloudModel(model)) return null;
-  const provider = model.provider.trim().toLowerCase();
-  if (provider === 'minimax') {
-    const url = (model.base_url || '').toLowerCase();
-    if (url.includes('minimax.io')) return 'minimax-portal';
-    return 'minimax-portal-cn';
-  }
-  return null;
+export function resolveCloudRuntimeProviderKey(model: Pick<Model, 'id'>): string {
+  const accountId = `cloud-${model.id}`;
+  const suffix = accountId.replace(/-/g, '').slice(0, 8);
+  return `custom-${suffix}`;
 }
 
 // ============================================================================
 // Protocol Mapping
 // ============================================================================
 
-/**
- * Derives the OpenClaw protocol from backend interface_type + vendor.
- */
-export function deriveInterfaceProtocol(
-  interfaceType: InterfaceType,
-  vendorId: ProviderType
-): ProviderProtocol {
-  // Direct interface type mappings
-  switch (interfaceType) {
-    case 'openai_chat':
-      return 'openai-completions';
-    case 'openai_responses':
-      return 'openai-responses';
-    case 'anthropic':
-      return 'anthropic-messages';
-  }
-
-  // Vendor-specific fallbacks
-  if (vendorId === 'ollama') {
-    return 'ollama';
-  }
-
-  // Default fallback - vendorInfo.apiProtocol would be used if available
-  return 'openai-completions';
-}
-
 // ============================================================================
 // Pure Mapping Function
 // ============================================================================
 
 /**
+ * 后端 llmproxy 的公网入口（OpenClaw Gateway 是用户本地进程，不走 Vite proxy，
+ * 必须直连后端公网地址）。dev/prod 都用此地址。
+ */
+const LLMPROXY_BASE_URL =
+  import.meta.env.VITE_LLMPROXY_BASE_URL || 'https://[REDACTED]/v1';
+
+/**
  * Maps a backend Model to an OpenClaw ProviderAccount.
+ *
+ * 云端模型统一走 Go 后端 llmproxy 转发（不直连大模型）：
+ * - vendorId 固定 'custom'，baseUrl 指向后端 llmproxy
+ * - api_key 用后端签发的 runtime key（见 syncCloudModelAsProviderAccount），非模型明文 key
+ * - model 用后端 Model.model 字段（llmproxy 用 runtime key 解析模型，请求体 model 字段须与之一致）
  *
  * NOTE: This is a pure mapping - no API calls are made.
  * The apiKey is intentionally omitted and must be passed separately.
  *
  * @param model - The backend Model to map
- * @param vendorInfo - Optional vendor metadata for additional context
  * @returns A ProviderAccount ready for creation
  */
-export function mapCloudModelToProviderAccount(
-  model: Model,
-  vendorInfo?: ProviderVendorInfo
-): ProviderAccount {
-  const vendorId = resolveVendorForCloudModel(model);
-
-  // Build label: use remark if available, otherwise provider/model
-  const label = model.remark || `${model.provider} / ${model.model}`;
-
-  // Auth mode: Ollama uses local auth, others require API key
-  const authMode = vendorId === 'ollama' ? 'local' : 'api_key';
-
-  // Determine API protocol
-  const apiProtocol = deriveInterfaceProtocol(model.interface_type, vendorId);
+export function mapCloudModelToProviderAccount(model: Model): ProviderAccount {
+  // label: provider + 模型名（如 "minimax MiniMax-M3"），用 remark 兜底
+  const label = model.remark || `${model.provider} ${model.model}`;
 
   // Convert Unix timestamps to ISO strings
   const createdAt = new Date(model.created_at * 1000).toISOString();
   const updatedAt = new Date(model.updated_at * 1000).toISOString();
 
-  // Build base URL - prefer model.base_url if provided
-  const baseUrl = model.base_url || vendorInfo?.defaultBaseUrl;
-
   return {
     id: `cloud-${model.id}`,
-    vendorId,
+    vendorId: 'custom',
     label,
-    authMode,
-    baseUrl,
-    apiProtocol,
+    authMode: 'api_key',
+    baseUrl: LLMPROXY_BASE_URL,
+    apiProtocol: 'openai-completions',
     model: model.model,
     enabled: true,
     isDefault: model.is_default, // May be overridden by caller
@@ -213,11 +160,6 @@ export function mapCloudModelToProviderAccount(
  * Sync options for cloud model → provider account.
  */
 export interface SyncCloudModelOptions {
-  /**
-   * If true, overwrites existing account even if it already exists.
-   * @default false
-   */
-  force?: boolean;
   /**
    * If true, sets the account as default after sync.
    * @default true
@@ -240,10 +182,8 @@ export interface SyncCloudModelResult {
  *
  * Steps:
  * 1. Fetch existing local accounts
- * 2. Check for existing account by ID
- * 3. Create or update based on force flag
- * 4. Optionally set as default
- * 5. Ensure API key is persisted
+ * 2. Create or update account with latest fields (refresh stale残留)
+ * 3. Optionally set as default (refreshes openclaw.json primary)
  *
  * @param model - The backend Model to sync
  * @param options - Sync options
@@ -253,7 +193,7 @@ export async function syncCloudModelAsProviderAccount(
   model: Model,
   options?: SyncCloudModelOptions
 ): Promise<SyncCloudModelResult> {
-  const { force = false, setAsDefault = true } = options ?? {};
+  const { setAsDefault = true } = options ?? {};
 
   const localId = `cloud-${model.id}`;
   let created = false;
@@ -261,95 +201,34 @@ export async function syncCloudModelAsProviderAccount(
   try {
     // Step a: Fetch existing accounts
     const existingAccounts = await hostApi.providers.accounts();
-
-    // OAuth vendor（如 MiniMax）：token 只能由用户在 UI 登录获得，不创建
-    // api_key account，而是复用已登录的同名 OAuth account 并设为默认。
-    // 误走 custom api_key 路径会生成 models.providers 里不存在的 custom-XXXX
-    // provider key，导致 Gateway 报 "Unknown model"。
-    const oauthVendor = resolveOAuthVendorForCloudModel(model);
-    if (oauthVendor) {
-      // 优先找 vendorId 精确匹配的已登录 OAuth account；
-      // 退而找任意 minimax OAuth account（CN/Global 同一时刻只激活一个区域，
-      // token 都落在 minimax-portal:default）。
-      const preferred = existingAccounts.find(
-        (a) => a.vendorId === oauthVendor && a.authMode !== 'api_key' && a.enabled,
-      );
-      const fallback = existingAccounts.find(
-        (a) =>
-          (a.vendorId === 'minimax-portal' || a.vendorId === 'minimax-portal-cn') &&
-          a.authMode !== 'api_key' &&
-          a.enabled,
-      );
-      const target = preferred ?? fallback;
-      if (target) {
-        if (setAsDefault) {
-          await hostApi.providers.setDefaultAccount(target.id);
-        }
-        return { accountId: target.id, created: false };
-      }
-      // 用户尚未登录 MiniMax OAuth：跳过，不创建错误 account。
-      console.warn(
-        '[CloudSync] MiniMax OAuth account not found locally; skipping sync. ' +
-          'Please sign in to MiniMax in Settings → Providers.',
-      );
-      return { accountId: '', created: false };
-    }
-
     const existingAccount = existingAccounts.find((acc) => acc.id === localId);
 
-    // Step b & c: Check existence and decide action
-    if (existingAccount && !force) {
-      // Already exists and not forcing - just ensure it's enabled
-      if (!existingAccount.enabled) {
-        await hostApi.providers.updateAccount(
-          localId,
-          { enabled: true },
-          undefined
-        );
-      }
-      return { accountId: localId, created: false };
-    }
-
-    // Step d: Map the model to account
+    // Step b: 用最新字段映射（baseUrl/apiProtocol/model/label 可能因旧版 sync 残留过时值，
+    // 例如 6/21 旧 OAuth 时代留下的 apiProtocol=anthropic-messages、baseUrl 缺失）。
     const mappedAccount = mapCloudModelToProviderAccount(model);
-
-    // Override isDefault based on options
     if (setAsDefault) {
       mappedAccount.isDefault = true;
     }
 
-    if (existingAccount && force) {
-      // Update existing account
-      await hostApi.providers.updateAccount(
-        localId,
-        mappedAccount,
-        model.api_key || undefined
-      );
+    if (existingAccount) {
+      // 已存在 —— 始终用最新字段刷新，避免旧残留 account 挡路。
+      // key 缺失才重新签发（后端 issueRuntimeKey 复用同 (uid,modelID) 已有 key，不泛滥）；
+      // 已有 key 则复用，不重复签发。
+      const hasKey = await hostApi.providers.hasAccountApiKey(localId);
+      const runtimeKey = hasKey ? undefined : await modelsApi.issueRuntimeKey(model.id);
+      await hostApi.providers.updateAccount(localId, mappedAccount, runtimeKey);
+      created = false;
     } else {
-      // Create new account
-      // createAccount accepts { account, apiKey? }
-      await hostApi.providers.createAccount({
-        account: mappedAccount,
-        apiKey: model.api_key,
-      });
+      // 不存在 —— 签发 runtime key 并创建指向后端 llmproxy 的 custom provider account。
+      const runtimeKey = await modelsApi.issueRuntimeKey(model.id);
+      await hostApi.providers.createAccount({ account: mappedAccount, apiKey: runtimeKey });
       created = true;
     }
 
-    // Step e: Set as default if requested
+    // Step c: Set as default if requested（即便已是默认，setDefaultAccount 也会幂等刷新
+    // openclaw.json 的 agents.defaults.model.primary + 注册 models.providers）
     if (setAsDefault) {
       await hostApi.providers.setDefaultAccount(localId);
-    }
-
-    // Step f: Ensure API key is persisted (double-check after creation)
-    // The createAccount with apiKey should handle this, but verify if needed
-    if (model.api_key && !created) {
-      // If we updated and have an API key, ensure it's set
-      // This is a safety check - typically not needed
-      await hostApi.providers.updateAccount(
-        localId,
-        {},
-        model.api_key
-      );
     }
 
     return { accountId: localId, created };

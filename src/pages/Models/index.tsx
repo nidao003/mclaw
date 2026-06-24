@@ -18,6 +18,7 @@ import { useProviderStore } from '@/stores/providers';
 import { useCloudModelStore } from '@mclaw/shared/stores/cloudModelStore';
 import { hostApi } from '@/lib/host-api';
 import { trackUiEvent } from '@/lib/telemetry';
+import { syncCloudModelAsProviderAccount, resolveCloudRuntimeProviderKey } from '@/lib/cloud-provider-sync';
 import { ProvidersSettings } from '@/components/settings/ProvidersSettings';
 import { FeedbackState } from '@/components/common/FeedbackState';
 import {
@@ -79,6 +80,17 @@ function CloudModelsSection() {
   const handleUseNow = async (id: string) => {
     clearLocalOverride();
     await setDefault(id);
+    // setDefault 内部已 fetchModels(true) 刷新 defaultCloudModel；
+    // 同步新默认模型到 OpenClaw provider：创建指向后端 llmproxy 的 custom provider
+    // 并设为默认，对话走 mclaw→Gateway→后端 llmproxy→大模型，后端统一凭证+计费。
+    const { defaultCloudModel } = useCloudModelStore.getState();
+    if (defaultCloudModel) {
+      try {
+        await syncCloudModelAsProviderAccount(defaultCloudModel, { setAsDefault: true });
+      } catch (err) {
+        console.warn('[Models] sync cloud model to provider failed:', err);
+      }
+    }
   };
 
   // 格式化 provider 名称（首字母大写）
@@ -553,11 +565,18 @@ export function Models() {
   const usageLoading = isGatewayRunning && fetchState.status === 'loading' && visibleUsageHistory.length === 0;
   const usageRefreshing = isGatewayRunning && fetchState.status === 'loading' && visibleUsageHistory.length > 0;
 
-  // 云端 provider 白名单：来自当前账号绑定的云端模型。命中即"云端"，否则视为本地
-  const cloudProviderSet = useMemo(
-    () => new Set(cloudModels.map((model) => model.provider?.trim().toLowerCase()).filter(Boolean) as string[]),
-    [cloudModels],
-  );
+  // 云端 provider 白名单：来自当前账号绑定的云端模型。命中即"云端"，否则视为本地。
+  // 注意：token usage 记录里的 provider 字段是 OpenClaw runtime provider key
+  // （如 custom-cloudb8c，由 cloud account id 派生），不是后端 Model.provider（如 minimax）。
+  // 所以白名单必须同时收入两者，否则云端消耗会被误判成本地。
+  const cloudProviderSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const model of cloudModels) {
+      if (model.provider) set.add(model.provider.trim().toLowerCase());
+      set.add(resolveCloudRuntimeProviderKey(model).toLowerCase());
+    }
+    return set;
+  }, [cloudModels]);
   const entrySourceKindBySessionTimestamp = useMemo(() => {
     const map = new Map<string, UsageSourceKind>();
     for (const entry of filteredUsageHistory) {

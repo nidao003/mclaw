@@ -380,12 +380,15 @@ async function setDefaultAccount(payload: ProviderPayload<'setDefaultAccount'>, 
   const accountId = getAccountId(payload, 'setDefaultAccount');
   try {
     const currentDefault = await providerService.getDefaultAccountId();
-    if (currentDefault === accountId) {
-      return { success: true, noChange: true };
+    const noChange = currentDefault === accountId;
+    if (!noChange) {
+      await providerService.setDefaultAccount(accountId);
     }
-    await providerService.setDefaultAccount(accountId);
+    // 即便已是默认，也要同步刷新 openclaw.json 的 agents.defaults.model.primary +
+    // 注册 models.providers。否则旧残留 primary（如 custom-<旧前缀>）永不更新，
+    // gateway 读到不存在的 provider 报 Unknown model。
     await syncDefaultProviderToRuntime(accountId, gatewayManager);
-    return { success: true };
+    return { success: true, noChange };
   } catch (error) {
     return { success: false, error: String(error) };
   }

@@ -17,6 +17,7 @@ import {
   Copy,
   XCircle,
   ChevronDown,
+  Cloud,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -356,6 +357,10 @@ function ProviderCard({
 }: ProviderCardProps) {
   const { t, i18n } = useTranslation('settings');
   const { account, vendor, status } = item;
+  // 云端模型 provider：由后端配置 + sync 自动同步（指向后端 llmproxy 转发）。
+  // 用户不应手动编辑/删除/切换默认，否则会破坏转发链路（再次 Unknown model）。
+  // 要换模型请去「模型」页点对应云端模型的「立即使用」。
+  const isCloudAccount = account.id.startsWith('cloud-');
   const [newKey, setNewKey] = useState('');
   const [baseUrl, setBaseUrl] = useState(account.baseUrl || '');
   const [apiProtocol, setApiProtocol] = useState<ProviderAccount['apiProtocol']>(account.apiProtocol || 'openai-completions');
@@ -536,6 +541,12 @@ function ProviderCard({
                   {t('aiProviders.card.default')}
                 </span>
               )}
+              {isCloudAccount && (
+                <span className="flex items-center gap-1 font-mono text-2xs font-medium px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20" title="云端模型，由账号配置自动同步，经后端转发计费">
+                  <Cloud className="h-3 w-3" />
+                  云端模型
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2 mt-0.5 text-meta text-muted-foreground">
               <span className="capitalize">{vendor?.name || account.vendorId}</span>
@@ -572,7 +583,7 @@ function ProviderCard({
           </div>
         </div>
 
-        {!isEditing && (
+        {!isEditing && !isCloudAccount && (
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {!isDefault && (
             <Button
@@ -607,6 +618,11 @@ function ProviderCard({
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
+        )}
+        {!isEditing && isCloudAccount && (
+          <span className="text-2xs text-muted-foreground" title="云端模型由账号配置自动同步，经后端转发计费，不可手动编辑">
+            由账号配置自动同步
+          </span>
         )}
       </div>
 
