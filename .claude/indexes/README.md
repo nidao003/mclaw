@@ -41,6 +41,7 @@
 |------|------|
 | docs/changelog.md | 修改记录（按日期倒序） |
 | docs/knowledge/skills-hub-distribution.md | Skills Hub 分发系统 |
+| docs/knowledge/cloud-model-llmproxy-forwarding-2026-06-24.md | 云端模型走后端 llmproxy 转发+计费排查经验（5 个坑 + 教训汇总） |
 | docs/deploy.md | 部署文档 |
 | docs/dev-workflow.md | 开发工作流 |
 | docs/project-restructure-plan.md | 项目重构计划 |

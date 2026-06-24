@@ -89,15 +89,17 @@ export const useCloudModelStore = create<CloudModelState>()(
         }
         pendingDefaultId = id;
 
-        set({ loading: true, error: null });
+        // 注意：不在此处 set loading:true。fetchModels 内部有 `if (isLoading) return`
+        // 防重，若这里先置 loading:true，紧接着的 fetchModels(true) 会被直接跳过，
+        // 导致列表不刷新、loading 永远卡在 true（卡片右上角一直转圈）。
+        // loading 的生命周期交由 fetchModels 全权管理。
         try {
           await modelsApi.setDefault(id);
-          // 成功后重新拉取
+          // 成功后重新拉取（fetchModels 会自己 set loading:true→false）
           await get().fetchModels(true);
         } catch (err) {
           set({
             error: err instanceof Error ? err.message : 'Failed to set default model',
-            loading: false,
           });
         } finally {
           pendingDefaultId = null;

@@ -34,6 +34,7 @@ func (r *walletRepo) GetByUserID(ctx context.Context, userID uuid.UUID) (*db.Wal
 
 func (r *walletRepo) Create(ctx context.Context, w *db.Wallet) (*db.Wallet, error) {
 	result, err := r.db.Wallet.Create().
+		SetID(uuid.New()).
 		SetUserID(w.UserID).
 		SetBalance(w.Balance).
 		SetTotalRecharged(w.TotalRecharged).

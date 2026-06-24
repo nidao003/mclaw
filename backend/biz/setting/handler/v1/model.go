@@ -41,6 +41,7 @@ func NewModelHandler(i *do.Injector) (*ModelHandler, error) {
 	v1.PUT("/:id", web.BindHandler(h.Update))
 	v1.DELETE("/:id", web.BindHandler(h.Delete))
 	v1.GET("/:id/health-check", web.BindHandler(h.CheckByID))
+	v1.POST("/:id/runtime-key", web.BindHandler(h.IssueRuntimeKey))
 	v1.POST("/health-check", web.BindHandler(h.CheckByConfig))
 
 	return h, nil
@@ -191,6 +192,29 @@ func (h *ModelHandler) CheckByID(c *web.Context, req domain.CheckModelReq) error
 		return errcode.ErrDatabaseOperation.Wrap(err)
 	}
 	return c.Success(resp)
+}
+
+// IssueRuntimeKey 为当前用户签发访问指定模型的 runtime key
+//
+//	@Summary		签发模型 runtime key
+//	@Description	签发（或复用）当前用户访问指定模型的 runtime key，供桌面端经 llmproxy 转发对话
+//	@Tags			【用户】模型管理
+//	@Produce		json
+//	@Security		MonkeyCodeAIAuth
+//	@Param			id	path		string									true	"模型 ID"
+//	@Success		200	{object}	web.Resp{data=domain.RuntimeKeyResp}	"成功"
+//	@Failure		401	{object}	web.Resp								"未授权"
+//	@Failure		404	{object}	web.Resp								"模型不存在或无访问权"
+//	@Failure		500	{object}	web.Resp								"服务器内部错误"
+//	@Router			/api/v1/users/models/{id}/runtime-key [post]
+func (h *ModelHandler) IssueRuntimeKey(c *web.Context, req domain.CheckModelReq) error {
+	user := middleware.GetUser(c)
+	key, err := h.usecase.IssueRuntimeKey(c.Request().Context(), user.ID, req.ID)
+	if err != nil {
+		h.logger.ErrorContext(c.Request().Context(), "failed to issue runtime key", "error", err, "user_id", user.ID, "model_id", req.ID)
+		return errcode.ErrDatabaseOperation.Wrap(err)
+	}
+	return c.Success(&domain.RuntimeKeyResp{Key: key})
 }
 
 // CheckByConfig 检查模型健康状态（通过配置）

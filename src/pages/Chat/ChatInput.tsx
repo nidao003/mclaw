@@ -256,7 +256,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
   }, [userOverrideDefaultToLocal, activeLocalAccountId, providerDefaultAccountId, localAccountsForChat]);
   const globalModelLabel = userOverrideDefaultToLocal
     ? (activeLocalAccount?.label ?? '本地模型（未指定）')
-    : (cloudDefaultModel?.id ?? '未设置云端默认');
+    : (cloudDefaultModel ? `${cloudDefaultModel.provider} ${cloudDefaultModel.model}` : '未设置云端默认');
   const isGlobalModelCloud = !userOverrideDefaultToLocal;
   const isGlobalModelLocal = userOverrideDefaultToLocal;
 

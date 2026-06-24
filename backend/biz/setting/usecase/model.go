@@ -136,6 +136,25 @@ func (u *modelUsecase) Update(ctx context.Context, uid, id uuid.UUID, req *domai
 	return nil
 }
 
+// IssueRuntimeKey 为当前用户签发访问指定模型的 runtime key。
+// 先校验用户对该模型有访问权（含 admin 公共模型），再复用已有的非 VM runtime key，
+// 没有才新建。桌面端用此 key 作为 llmproxy 的鉴权凭证。
+func (u *modelUsecase) IssueRuntimeKey(ctx context.Context, uid, modelID uuid.UUID) (string, error) {
+	// 校验访问权（Get 谓词含 admin 公共模型），无权则报错
+	if _, err := u.repo.Get(ctx, uid, modelID); err != nil {
+		u.logger.ErrorContext(ctx, "failed to get model for runtime key", "error", err, "user_id", uid, "model_id", modelID)
+		return "", fmt.Errorf("failed to get model: %w", err)
+	}
+	// 复用已有的非 VM runtime key
+	if existing, err := u.repo.GetRuntimeAPIKeyByUserModel(ctx, uid, modelID); err == nil && existing != nil {
+		return existing.APIKey, nil
+	} else if err != nil && !db.IsNotFound(err) {
+		u.logger.WarnContext(ctx, "failed to query existing runtime key, will issue new one", "error", err, "user_id", uid, "model_id", modelID)
+	}
+	// 签发新 key（vmID 传空，表示桌面端对话用）
+	return u.repo.CreateRuntimeAPIKey(ctx, uid, modelID, "")
+}
+
 func (u *modelUsecase) Check(ctx context.Context, uid, id uuid.UUID) (*domain.CheckModelResp, error) {
 	m, err := u.repo.Get(ctx, uid, id)
 	if err != nil {

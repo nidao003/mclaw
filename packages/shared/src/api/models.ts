@@ -72,6 +72,18 @@ export const modelsApi = {
   },
 
   /**
+   * 签发（或复用）访问指定模型的 runtime key (POST /api/v1/users/models/:id/runtime-key)
+   * 桌面端用此 key 作为 OpenClaw custom provider 的 api_key，请求经 Go 后端 llmproxy
+   * 转发到真实大模型，由后端统一持有模型凭证 + 计费扣费。
+   */
+  issueRuntimeKey(id: string): Promise<string> {
+    return apiRequest<{ key: string }>(
+      `/api/v1/users/models/${encodeURIComponent(id)}/runtime-key`,
+      { method: 'POST' },
+    ).then((resp) => resp.key);
+  },
+
+  /**
    * 获取供应商模型列表 (GET /api/v1/users/models/providers)
    */
   listProviderModels(req: GetProviderModelListReq): Promise<GetProviderModelListResp> {

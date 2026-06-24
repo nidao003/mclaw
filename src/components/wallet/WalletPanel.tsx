@@ -21,21 +21,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { walletApi, type Wallet } from '@mclaw/shared';
 
 // --- Types ---
-
-interface WalletData {
-  id: string;
-  user_id: string;
-  balance: number;
-  total_recharged: number;
-  total_consumed: number;
-  total_granted: number;
-  daily_basic_token_balance: number;
-  daily_pro_token_balance: number;
-  daily_ultra_token_balance: number;
-  enable_credit_consumption: boolean;
-}
 
 interface TransactionItem {
   id: string;
@@ -80,7 +68,7 @@ interface WalletPanelProps {
 
 export function WalletPanel({ className }: WalletPanelProps) {
   const { t } = useTranslation('wallet');
-  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [checkedIn, setCheckedIn] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -90,19 +78,17 @@ export function WalletPanel({ className }: WalletPanelProps) {
   // Fetch wallet data
   const fetchWallet = useCallback(async () => {
     try {
-      // TODO: replace with shared API client
-      const res = await fetch('/api/v1/users/wallet', { headers: authHeaders() });
-      const data = await res.json();
-      if (data?.data) setWallet(data.data);
+      const data = await walletApi.getWallet();
+      setWallet(data);
     } catch {
       toast.error(t('fetchError', { defaultValue: '获取钱包信息失败' }));
     }
-  }, [t]);
+  }, []);
 
   // Fetch check-in status
   const fetchCheckIn = useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/users/wallet/checkin', { headers: authHeaders() });
+      const res = await fetch('/api/v1/users/wallet/checkin', { credentials: 'include' });
       const data = await res.json();
       setCheckedIn(data?.data?.checked_in ?? false);
     } catch {
@@ -113,7 +99,7 @@ export function WalletPanel({ className }: WalletPanelProps) {
   // Fetch recent transactions
   const fetchTransactions = useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/users/wallet/transaction?limit=10', { headers: authHeaders() });
+      const res = await fetch('/api/v1/users/wallet/transaction?limit=10', { credentials: 'include' });
       const data = await res.json();
       setTransactions(data?.data?.transactions || []);
     } catch {
@@ -132,7 +118,7 @@ export function WalletPanel({ className }: WalletPanelProps) {
     try {
       const res = await fetch('/api/v1/users/wallet/checkin', {
         method: 'POST',
-        headers: authHeaders(),
+        credentials: 'include',
       });
       const data = await res.json();
       if (data?.code === 0 || data?.code === 200) {
@@ -156,7 +142,8 @@ export function WalletPanel({ className }: WalletPanelProps) {
     try {
       const res = await fetch('/api/v1/users/wallet/recharge', {
         method: 'POST',
-        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credits }),
       });
       const data = await res.json();
@@ -352,10 +339,4 @@ function formatTokens(n: number): string {
   if (n >= 10000000) return `${(n / 10000000).toFixed(0)}千万`;
   if (n >= 10000) return `${(n / 10000).toFixed(0)}万`;
   return n.toLocaleString();
-}
-
-function authHeaders(): Record<string, string> {
-  // TODO: read JWT from auth store
-  const token = localStorage.getItem('token') || '';
-  return token ? { Authorization: `Bearer ${token}` } : {};
 }

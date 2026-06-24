@@ -10,3 +10,4 @@ export type { ApiDocItem, ApiDocGroup, ApiDocSubGroup, ApiDocsResp, ApiField } f
 export { walletApi } from './wallet';
 export { teamApi } from './team';
 export { adminUserApi } from './adminUser';
+export { modelsApi } from './models';

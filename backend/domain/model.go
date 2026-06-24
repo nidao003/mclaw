@@ -18,12 +18,17 @@ type ModelUsecase interface {
 	Check(ctx context.Context, uid, id uuid.UUID) (*CheckModelResp, error)
 	CheckByConfig(ctx context.Context, req *CheckByConfigReq) (*CheckModelResp, error)
 	GetProviderModelList(ctx context.Context, req *GetProviderModelListReq) (*GetProviderModelListResp, error)
+	// IssueRuntimeKey 为当前用户签发访问指定模型的 runtime key（复用已有，避免泛滥）。
+	// 桌面端用此 key 作为 OpenClaw custom provider 的 api_key，请求经 Go 后端 llmproxy 转发+计费。
+	IssueRuntimeKey(ctx context.Context, uid, modelID uuid.UUID) (string, error)
 }
 
 // ModelRepo 模型配置数据仓库接口
 type ModelRepo interface {
 	Get(ctx context.Context, uid, id uuid.UUID) (*db.Model, error)
 	CreateRuntimeAPIKey(ctx context.Context, uid, modelID uuid.UUID, vmID string) (string, error)
+	// GetRuntimeAPIKeyByUserModel 查询用户对某模型已签发的、非 VM 绑定的 runtime key（复用，无则返回 NotFound）。
+	GetRuntimeAPIKeyByUserModel(ctx context.Context, uid, modelID uuid.UUID) (*db.ModelApiKey, error)
 	List(ctx context.Context, uid uuid.UUID, cursor CursorReq) ([]*db.Model, *db.Cursor, error)
 	Create(ctx context.Context, uid uuid.UUID, req *CreateModelReq) (*db.Model, error)
 	Delete(ctx context.Context, uid, id uuid.UUID) error
@@ -225,6 +230,11 @@ type DeleteModelConfigReq struct {
 // CheckModelReq 检查模型健康状态请求（通过ID）
 type CheckModelReq struct {
 	ID uuid.UUID `param:"id" validate:"required"`
+}
+
+// RuntimeKeyResp runtime key 签发响应（供桌面端经 llmproxy 转发对话使用）
+type RuntimeKeyResp struct {
+	Key string `json:"key"`
 }
 
 // CheckByConfigReq 检查模型健康状态请求（通过配置）

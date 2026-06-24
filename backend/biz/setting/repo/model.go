@@ -43,6 +43,8 @@ func modelListWithUserPredicate(uid uuid.UUID) predicate.Model {
 	return model.Or(
 		model.UserID(uid),
 		model.HasGroupsWith(teamgroup.HasMembersWith(user.ID(uid))),
+		// admin 名下模型即公共模型，所有用户可见（密钥由 HideSharedCredentials 隐藏，额度走后端计费）
+		model.HasUserWith(user.Role(consts.UserRoleAdmin)),
 	)
 }
 
@@ -105,6 +107,20 @@ func (r *modelRepo) CreateRuntimeAPIKey(ctx context.Context, uid, modelID uuid.U
 		return "", err
 	}
 	return runtimeKey, nil
+}
+
+// GetRuntimeAPIKeyByUserModel 查询用户对某模型已签发的、非 VM 绑定的 runtime key。
+// 用于桌面端复用同一把 key，避免每次签发都新建记录导致 key 泛滥。
+// 未找到时返回 ent NotFound 错误（调用方用 db.IsNotFound 判断）。
+func (r *modelRepo) GetRuntimeAPIKeyByUserModel(ctx context.Context, uid, modelID uuid.UUID) (*db.ModelApiKey, error) {
+	return r.db.ModelApiKey.Query().
+		Where(
+			modelapikey.UserID(uid),
+			modelapikey.ModelID(modelID),
+			modelapikey.VirtualmachineIDIsNil(),
+		).
+		Order(modelapikey.ByCreatedAt(sql.OrderDesc()), modelapikey.ByID(sql.OrderDesc())).
+		First(ctx)
 }
 
 func (r *modelRepo) List(ctx context.Context, uid uuid.UUID, cursor domain.CursorReq) ([]*db.Model, *db.Cursor, error) {
