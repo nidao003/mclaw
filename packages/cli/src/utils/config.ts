@@ -12,7 +12,7 @@ const CONFIG_PATH = join(SKILLS_HOME, 'config.json');
 
 const DEFAULT_CONFIG: SkillsConfig = {
   skillsDir: join(SKILLS_HOME, 'skills'),
-  registryUrl: 'https://[REDACTED]/api/v1',
+  registryUrl: 'https://skills.mclaw.example.com/api/v1',
   autoDetect: true,
   detectedTools: [],
 };

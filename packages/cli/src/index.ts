@@ -49,7 +49,7 @@ Skills Hub CLI — 通用 AI 技能包管理器
   npx mclaw-skills list                                  # 查看已装
   npx mclaw-skills remove web-search                     # 卸载
 
-更多信息: https://[REDACTED]/skills
+更多信息: https://skills.mclaw.example.com/skills
 `);
 }
 

@@ -289,7 +289,7 @@ export function SkillMarketplace({ open, onOpenChange }: SkillMarketplaceProps) 
                 variant="ghost"
                 onClick={() => {
                   const slug = selected.skill_id || selected.id;
-                  window.open(`https://[REDACTED]/api/v1/skills/by-slug/${slug}`, '_blank');
+                  window.open(`https://skills.mclaw.example.com/api/v1/skills/by-slug/${slug}`, '_blank');
                 }}
                 className="h-8 rounded-full"
               >

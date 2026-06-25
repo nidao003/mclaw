@@ -414,7 +414,7 @@ jobs:
   #   - electron-updater 自动更新（{channel}-*.yml feed）
   #
   # MinIO 信息：
-  #   endpoint（公网 S3 API）: https://[REDACTED]
+  #   endpoint（公网 S3 API）: https://minio.example.com
   #   bucket: mclaw（已建，public-read）
   #
   # 目录结构（单 bucket 内用前缀隔离 channel）：
@@ -496,7 +496,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           CHANNEL="${{ steps.version.outputs.channel }}"
           # MinIO 公网 S3 API，bucket=mclaw，按 channel 前缀隔离
-          BASE_URL="${{ vars.MINIO_PUBLIC_BASE_URL || 'https://[REDACTED]' }}/mclaw/${CHANNEL}"
+          BASE_URL="${{ vars.MINIO_PUBLIC_BASE_URL || 'https://minio.example.com' }}/mclaw/${CHANNEL}"
 
           jq -n \
             --arg version "$VERSION" \
@@ -531,7 +531,7 @@ jobs:
         env:
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://[REDACTED]' }}
+          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://minio.example.com' }}
         run: |
           # Ubuntu runner 自带 aws-cli；MinIO 兼容 S3v4 签名。
           aws configure set aws_access_key_id "${MINIO_ACCESS_KEY}"
@@ -541,7 +541,7 @@ jobs:
 
       - name: "Upload to MinIO: mclaw/{channel}/ (overwrite)"
         env:
-          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://[REDACTED]' }}
+          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://minio.example.com' }}
         run: |
           CHANNEL="${{ steps.version.outputs.channel }}"
           BUCKET="mclaw"
@@ -558,7 +558,7 @@ jobs:
 
       - name: "Upload to MinIO: mclaw/releases/{tag}/ (archive)"
         env:
-          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://[REDACTED]' }}
+          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://minio.example.com' }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           BUCKET="mclaw"
@@ -572,7 +572,7 @@ jobs:
 
       - name: Verify MinIO upload
         env:
-          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://[REDACTED]' }}
+          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://minio.example.com' }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           CHANNEL="${{ steps.version.outputs.channel }}"

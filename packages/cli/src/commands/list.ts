@@ -13,7 +13,7 @@ export async function cmdList(): Promise<void> {
   if (installed.length === 0) {
     console.log('📭 还没有安装任何技能。\n');
     console.log('试试: npx skills add <技能名>');
-    console.log('或去 Skills Hub 市场逛逛: https://[REDACTED]/skills');
+    console.log('或去 Skills Hub 市场逛逛: https://skills.mclaw.example.com/skills');
     return;
   }
 

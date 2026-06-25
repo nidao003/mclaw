@@ -113,7 +113,7 @@ export function resolveCloudRuntimeProviderKey(model: Pick<Model, 'id'>): string
  * 必须直连后端公网地址）。dev/prod 都用此地址。
  */
 const LLMPROXY_BASE_URL =
-  import.meta.env.VITE_LLMPROXY_BASE_URL || 'https://[REDACTED]/v1';
+  import.meta.env.VITE_LLMPROXY_BASE_URL || '';
 
 /**
  * Maps a backend Model to an OpenClaw ProviderAccount.

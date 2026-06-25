@@ -174,7 +174,7 @@ export async function launchGatewayProcess(options: {
   // MCLAW_LLMPROXY_HOST 用于 preload 判断哪些出站请求需要签名。
   try {
     runtimeEnv.MCLAW_DEVICE_SECRET = getOrCreateDeviceSecret();
-    runtimeEnv.MCLAW_LLMPROXY_HOST = process.env.MCLAW_LLMPROXY_HOST || 'mclaw.[REDACTED]';
+    runtimeEnv.MCLAW_LLMPROXY_HOST = process.env.MCLAW_LLMPROXY_HOST || '';
   } catch (err) {
     logger.warn('[gateway-launch] failed to inject device secret env:', err);
   }
@@ -185,7 +185,7 @@ export async function launchGatewayProcess(options: {
   try {
     runtimeEnv.MCLAW_DATA_API_KEY = getDataApiKey() || '';
     runtimeEnv.MCLAW_DATA_BASE_URL =
-      process.env.MCLAW_DATA_BASE_URL || 'https://[REDACTED]';
+      process.env.MCLAW_DATA_BASE_URL || '';
   } catch (err) {
     logger.warn('[gateway-launch] failed to inject data api key env:', err);
   }

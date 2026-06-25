@@ -27,6 +27,24 @@ function getExtensionPackages(): Set<string> {
 }
 
 const extensionPackages = getExtensionPackages();
+
+// dev 模式 /api 代理目标：从本地 .env 读 VITE_API_BASE_URL（不进 git），
+// 读不到则 fallback 到 localhost，避免硬编码后端地址进仓库。
+function getDevApiTarget(): string {
+  try {
+    const envPath = resolve(__dirname, '.env');
+    if (existsSync(envPath)) {
+      const match = readFileSync(envPath, 'utf-8')
+        .split('\n')
+        .find((l) => l.trim().startsWith('VITE_API_BASE_URL=') && !l.trim().startsWith('#'));
+      if (match) return match.split('=')[1].trim();
+    }
+  } catch {
+    /* ignore */
+  }
+  return 'http://localhost:8888';
+}
+
 const alias = {
   '@': resolve(__dirname, 'src'),
   '@electron': resolve(__dirname, 'electron'),
@@ -99,7 +117,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://[REDACTED]',
+        target: getDevApiTarget(),
         changeOrigin: true,
         secure: false,
       },
