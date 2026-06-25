@@ -93,11 +93,14 @@ mac:
         - x64
         - arm64
   darkModeSupport: true
-  hardenedRuntime: true
+  # 首发（0.0.1-alpha）阶段无 Apple 开发者证书，关闭 hardenedRuntime + notarize。
+  # 产物为未签名包，用户首次打开需右键 → 打开（或 xattr -cr）。
+  # 后续取得证书后改回 hardenedRuntime: true + notarize: true 并配 GHA secrets。
+  hardenedRuntime: false
   gatekeeperAssess: false
   entitlements: entitlements.mac.plist
   entitlementsInherit: entitlements.mac.plist
-  notarize: true
+  notarize: false
   extendInfo:
     NSMicrophoneUsageDescription: mclaw requires microphone access for voice features
     NSCameraUsageDescription: mclaw requires camera access for video features

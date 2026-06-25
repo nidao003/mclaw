@@ -1,6 +1,6 @@
 {
     "name": "mclaw",
-    "version": "0.4.9-alpha.0",
+    "version": "0.0.1-alpha.0",
     "pnpm": {
         "onlyBuiltDependencies": [
             "@discordjs/opus",
@@ -25,11 +25,15 @@
             ]
         }
     },
-    "description": "mclaw - Graphical AI Assistant based on OpenClaw",
+    "description": "mclaw - 面向地铁行业的图形化 AI 桌面助手（基于 OpenClaw）",
     "main": "dist-electron/main/index.js",
     "author": "mclaw Team",
     "license": "MIT",
     "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nidao003/mclaw.git"
+    },
     "scripts": {
         "postinstall": "node scripts/patch-browser-hint.mjs",
         "init": "pnpm install && pnpm run uv:download && pnpm run agent-browser:download",

@@ -333,46 +333,53 @@ jobs:
             release-artifacts/**/*.yml
           draft: false
           prerelease: true
-          make_latest: false
+          make_latest: true
           generate_release_notes: true
           body: |
-            ## 🚀 mclaw ${{ github.ref_name }}
-            
-            mclaw - Graphical AI Assistant based on OpenClaw
-            
-            ### 📦 Downloads
-            
-            Please select the appropriate installer for your operating system and architecture:
-            
+            ## 🚀 mclaw ${{ github.ref_name }} 首次公开发布
+
+            **mclaw** —— 面向地铁行业的图形化 AI 桌面助手，基于 OpenClaw 二次开发。三端架构：Electron 桌面端 + Go 后端 + Web 管理后台。
+
+            ### 🎉 首发特性
+
+            #### 1. 地铁数据查询 Skills
+            内置 4 个数据查询技能：query-service（18 类查询）/ station-profile / data-fusion / query-guide。查询车站客流、人口、画像、商业、产业等数据（车站中心 800 米半径口径）。数据 API key 在 mclaw 内自动注入无需配置。
+
+            #### 2. 云端模型访问绑定加固
+            客户端 HMAC 签名（X-Mclaw-Sig），deviceSecret 存 macOS Keychain，明文不落配置文件。runtime key 24h 时效 + 可撤销，纯 curl 拿 key 算不出签名，防白嫖。
+
+            #### 3. 会员计费 + auto 智能模型路由
+            三档套餐 × 日/周/月 token 配额，1 积分 = 1 万 token。云端模型 auto 路由按模型自动选最优转发目标。
+
+            ### 📦 下载
+
+            根据操作系统和架构选择对应安装包：
+
             #### macOS
             - **Apple Silicon (M1/M2/M3/M4)**: `mclaw-*-mac-arm64.dmg`
             - **Intel (x64)**: `mclaw-*-mac-x64.dmg`
-            
+
             #### Windows
-            - **Installer (x64)**: `mclaw-*-win-x64.exe`
-            - **Installer (ARM64)**: `mclaw-*-win-arm64.exe`
-            
+            - **安装包 (x64)**: `mclaw-*-win-x64.exe`
+
             #### Linux
-            - **AppImage (x64)**: `mclaw-*-linux-x86_64.AppImage` (Universal format, recommended)
-            - **AppImage (ARM64)**: `mclaw-*-linux-arm64.AppImage`
+            - **AppImage (x64)**: `mclaw-*-linux-x86_64.AppImage`（通用格式，推荐）
             - **Debian/Ubuntu (x64)**: `mclaw-*-linux-amd64.deb`
-            - **Debian/Ubuntu (ARM64)**: `mclaw-*-linux-arm64.deb`
-            - **RPM (x64)**: `mclaw-*-linux-x86_64.rpm`
-            
-            ### 📝 Release Notes
-            
-            See the auto-generated release notes below for detailed changes.
-            
-            ### ⚠️ Installation Notes
-            
-            - **macOS**: On first launch, you may see "cannot verify developer". Go to System Preferences → Security & Privacy to allow the app to run
-            - **Windows**: SmartScreen may block the app. Click "More info" → "Run anyway" to proceed
-            - **Linux AppImage**: First run `chmod +x mclaw-*.AppImage` to add execute permission. On Ubuntu 22.04 you may also need `sudo apt install libfuse2`; on Ubuntu 24.04 use `sudo apt install libfuse2t64`
-            - **Linux .deb (Ubuntu 24.04)**: If installation fails due to missing dependencies, use `sudo apt install libgtk-3-0t64 libnotify4t64 libxss1t64` before installing
-            
+
+            ### ⚠️ 安装注意事项
+
+            - **macOS**：首发版本未签名，首次打开提示"无法验证开发者"→ 右键应用 → 打开；或终端执行 `xattr -cr /Applications/mclaw.app`
+            - **Windows**：SmartScreen 可能拦截 → "更多信息" → "仍要运行"
+            - **Linux AppImage**：首次运行 `chmod +x mclaw-*.AppImage` 添加执行权限；Ubuntu 22.04 需 `sudo apt install libfuse2`，Ubuntu 24.04 用 `sudo apt install libfuse2t64`
+            - **Linux .deb (Ubuntu 24.04)**：若依赖缺失，安装前执行 `sudo apt install libgtk-3-0t64 libnotify4t64 libxss1t64`
+
+            ### 📝 更新日志
+
+            下方为自动生成的提交记录。
+
             ---
-            
-            💬 Found an issue? Please submit an [Issue](https://github.com/${{ github.repository }}/issues)
+
+            💬 遇到问题？请提交 [Issue](https://github.com/${{ github.repository }}/issues)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -391,6 +398,10 @@ jobs:
   upload-oss:
     needs: release
     runs-on: ubuntu-latest
+    # 首发（0.0.1-alpha）阶段未配置阿里云 OSS secrets（OSS_ACCESS_KEY_ID/SECRET），
+    # 且 bucket valuecell-clawx 为上游 ClawX 资产。首发跳过 OSS，客户端从 GitHub Release 下载。
+    # 后续自建 OSS bucket 并配 secrets 后，移除此 if 即恢复 OSS 上传 + electron-updater 自动更新。
+    if: ${{ vars.ENABLE_OSS_UPLOAD == 'true' }}
 
     steps:
       - name: Download release artifacts only
@@ -575,7 +586,7 @@ jobs:
   # all platform artifacts are ready.
   # ──────────────────────────────────────────────────────────────
   finalize:
-    needs: [publish, upload-oss]
+    needs: [publish]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
