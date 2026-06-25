@@ -319,7 +319,10 @@ jobs:
   publish:
     needs: release
     runs-on: ubuntu-latest
-    
+    # 即使某平台（如 Windows）构建失败，只要 mac/Linux 产出 artifact 就继续发版，
+    # 避免单平台失败导致其他平台产物白白构建不发。always() 让 job 不被 needs 失败跳过。
+    if: always() && !cancelled() && needs.release.result != 'skipped'
+
     steps:
       - name: Download release artifacts only
         uses: actions/download-artifact@v4
@@ -425,7 +428,8 @@ jobs:
     runs-on: ubuntu-latest
     # 需要 MinIO 凭证 secrets（MINIO_ACCESS_KEY/MINIO_SECRET_KEY）。缺则跳过，
     # 客户端仍可从 GitHub Release 下载，仅 electron-updater 自动更新不可用。
-    if: ${{ vars.ENABLE_OSS_UPLOAD == 'true' }}
+    # always()：某平台构建失败时仍上传已成功的平台产物。
+    if: always() && !cancelled() && needs.release.result != 'skipped' && vars.ENABLE_OSS_UPLOAD == 'true'
 
     steps:
       - name: Download release artifacts only
