@@ -384,23 +384,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ──────────────────────────────────────────────────────────────
-  # Job: Upload to Alibaba Cloud OSS
-  # Uploads all release artifacts to OSS for:
-  #   - Official website downloads (via release-info.json)
-  #   - electron-updater auto-update (via {channel}-*.yml)
+  # Job: Upload to MinIO (S3-compatible)
+  # 上传所有发布产物到自建 MinIO，用于：
+  #   - 官网/客户端下载（release-info.json）
+  #   - electron-updater 自动更新（{channel}-*.yml feed）
   #
-  # Directory structure on OSS (channel-separated):
-  #   latest/          → stable releases (latest.yml, latest-mac.yml, …)
-  #   alpha/           → alpha  releases (alpha.yml,  alpha-mac.yml, …)
-  #   beta/            → beta   releases (beta.yml,   beta-mac.yml,  …)
-  #   releases/vX.Y.Z/ → permanent archive, never deleted
+  # MinIO 信息：
+  #   endpoint（公网 S3 API）: https://[REDACTED]
+  #   bucket: mclaw（已建，public-read）
+  #
+  # 目录结构（单 bucket 内用前缀隔离 channel）：
+  #   mclaw/latest/          → stable（latest.yml, latest-mac.yml, …）
+  #   mclaw/alpha/           → alpha（alpha.yml, alpha-mac.yml, …）
+  #   mclaw/beta/            → beta
+  #   mclaw/releases/vX.Y.Z/ → 永久归档
   # ──────────────────────────────────────────────────────────────
   upload-oss:
     needs: release
     runs-on: ubuntu-latest
-    # 首发（0.0.1-alpha）阶段未配置阿里云 OSS secrets（OSS_ACCESS_KEY_ID/SECRET），
-    # 且 bucket valuecell-clawx 为上游 ClawX 资产。首发跳过 OSS，客户端从 GitHub Release 下载。
-    # 后续自建 OSS bucket 并配 secrets 后，移除此 if 即恢复 OSS 上传 + electron-updater 自动更新。
+    # 需要 MinIO 凭证 secrets（MINIO_ACCESS_KEY/MINIO_SECRET_KEY）。缺则跳过，
+    # 客户端仍可从 GitHub Release 下载，仅 electron-updater 自动更新不可用。
     if: ${{ vars.ENABLE_OSS_UPLOAD == 'true' }}
 
     steps:
@@ -420,7 +423,7 @@ jobs:
           fi
 
           # Detect channel from semver prerelease tag
-          # e.g. 0.1.8-alpha.0 → alpha, 1.0.0-beta.1 → beta, 1.0.0 → latest
+          # e.g. 0.0.1-alpha.0 → alpha, 1.0.0-beta.1 → beta, 1.0.0 → latest
           if [[ "$VERSION" =~ -([a-zA-Z]+) ]]; then
             CHANNEL="${BASH_REMATCH[1]}"
           else
@@ -456,7 +459,7 @@ jobs:
 
       # Note: Do NOT rename yml files. electron-updater (generic provider) always
       # requests "latest-mac.yml", "latest.yml", etc. regardless of feed URL.
-      # Channel separation is achieved by directory: /alpha/, /beta/, /latest/.
+      # Channel separation is achieved by path prefix: /alpha/, /beta/, /latest/.
       - name: Verify yml files present
         run: |
           CHANNEL="${{ steps.version.outputs.channel }}"
@@ -467,7 +470,8 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           CHANNEL="${{ steps.version.outputs.channel }}"
-          BASE_URL="https://oss.intelli-spectrum.com/${CHANNEL}"
+          # MinIO 公网 S3 API，bucket=mclaw，按 channel 前缀隔离
+          BASE_URL="${{ vars.MINIO_PUBLIC_BASE_URL || 'https://[REDACTED]' }}/mclaw/${CHANNEL}"
 
           jq -n \
             --arg version "$VERSION" \
@@ -485,15 +489,11 @@ jobs:
                   arm64: ($base + "/mclaw-" + $version + "-mac-arm64.dmg")
                 },
                 win: {
-                  x64: ($base + "/mclaw-" + $version + "-win-x64.exe"),
-                  arm64: ($base + "/mclaw-" + $version + "-win-arm64.exe")
+                  x64: ($base + "/mclaw-" + $version + "-win-x64.exe")
                 },
                 linux: {
                   deb_amd64: ($base + "/mclaw-" + $version + "-linux-amd64.deb"),
-                  deb_arm64: ($base + "/mclaw-" + $version + "-linux-arm64.deb"),
-                  appimage_x64: ($base + "/mclaw-" + $version + "-linux-x86_64.AppImage"),
-                  appimage_arm64: ($base + "/mclaw-" + $version + "-linux-arm64.AppImage"),
-                  rpm_x64: ($base + "/mclaw-" + $version + "-linux-x86_64.rpm")
+                  appimage_x64: ($base + "/mclaw-" + $version + "-linux-x86_64.AppImage")
                 }
               },
               changelog: $changelog
@@ -502,77 +502,79 @@ jobs:
           echo "=== release-info.json ==="
           cat staging/${CHANNEL}/release-info.json
 
-      - name: Install and configure ossutil
+      - name: Configure aws-cli for MinIO (S3-compatible)
         env:
-          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
-          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://[REDACTED]' }}
         run: |
-          curl -sL https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
+          # Ubuntu runner 自带 aws-cli；MinIO 兼容 S3v4 签名。
+          aws configure set aws_access_key_id "${MINIO_ACCESS_KEY}"
+          aws configure set aws_secret_access_key "${MINIO_SECRET_KEY}"
+          aws configure set default.region "us-east-1"
+          aws --version
 
-          # Write config file for non-interactive use
-          cat > $HOME/.ossutilconfig << EOF
-          [Credentials]
-          language=EN
-          endpoint=oss-cn-hangzhou.aliyuncs.com
-          accessKeyID=${OSS_ACCESS_KEY_ID}
-          accessKeySecret=${OSS_ACCESS_KEY_SECRET}
-          EOF
-
-          ossutil --version
-
-      - name: "Upload to OSS: {channel}/ (overwrite)"
+      - name: "Upload to MinIO: mclaw/{channel}/ (overwrite)"
+        env:
+          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://[REDACTED]' }}
         run: |
           CHANNEL="${{ steps.version.outputs.channel }}"
+          BUCKET="mclaw"
 
-          # Only clean the current channel's directory — never touch other channels
-          ossutil rm -r -f oss://valuecell-clawx/${CHANNEL}/ || true
+          # 清理当前 channel 目录（只清这一 channel，不碰其他）
+          aws --endpoint-url "${MINIO_ENDPOINT}" s3 rm "s3://${BUCKET}/${CHANNEL}/" --recursive || true
 
-          # Upload all files with no-cache so clients always get the freshest version
-          ossutil cp -r -f \
-            --meta="Cache-Control:no-cache,no-store,must-revalidate" \
-            staging/${CHANNEL}/ \
-            oss://valuecell-clawx/${CHANNEL}/
+          # 上传 channel 目录，no-cache 让客户端始终拿最新 yml feed
+          aws --endpoint-url "${MINIO_ENDPOINT}" s3 cp "staging/${CHANNEL}/" \
+            "s3://${BUCKET}/${CHANNEL}/" --recursive \
+            --cache-control "no-cache,no-store,must-revalidate"
 
-          echo "Uploaded to ${CHANNEL}/"
+          echo "Uploaded to ${BUCKET}/${CHANNEL}/"
 
-      - name: "Upload to OSS: releases/vX.Y.Z/ (archive)"
+      - name: "Upload to MinIO: mclaw/releases/{tag}/ (archive)"
+        env:
+          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://[REDACTED]' }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
+          BUCKET="mclaw"
 
-          # Upload to permanent archive (long cache, immutable)
-          ossutil cp -r \
-            staging/releases/${TAG}/ \
-            oss://valuecell-clawx/releases/${TAG}/ \
-            --meta "Cache-Control:public,max-age=31536000,immutable"
+          # 永久归档，长缓存不可变
+          aws --endpoint-url "${MINIO_ENDPOINT}" s3 cp "staging/releases/${TAG}/" \
+            "s3://${BUCKET}/releases/${TAG}/" --recursive \
+            --cache-control "public,max-age=31536000,immutable"
 
-          echo "Uploaded to releases/${TAG}/"
+          echo "Uploaded to ${BUCKET}/releases/${TAG}/"
 
-      - name: Verify OSS upload
+      - name: Verify MinIO upload
+        env:
+          MINIO_ENDPOINT: ${{ vars.MINIO_ENDPOINT || 'https://[REDACTED]' }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           CHANNEL="${{ steps.version.outputs.channel }}"
+          BUCKET="mclaw"
 
-          echo "=== ${CHANNEL}/ ==="
-          ossutil ls oss://valuecell-clawx/${CHANNEL}/ --short
-
-          echo ""
-          echo "=== releases/${TAG}/ ==="
-          ossutil ls oss://valuecell-clawx/releases/${TAG}/ --short
+          echo "=== ${BUCKET}/${CHANNEL}/ ==="
+          aws --endpoint-url "${MINIO_ENDPOINT}" s3 ls "s3://${BUCKET}/${CHANNEL}/"
 
           echo ""
-          echo "=== Verify release-info.json ==="
-          ossutil cp oss://valuecell-clawx/${CHANNEL}/release-info.json /tmp/release-info.json -f
-          jq . /tmp/release-info.json
+          echo "=== ${BUCKET}/releases/${TAG}/ ==="
+          aws --endpoint-url "${MINIO_ENDPOINT}" s3 ls "s3://${BUCKET}/releases/${TAG}/"
 
           echo ""
-          echo "=== Verify update yml ==="
+          echo "=== Verify release-info.json (public read) ==="
+          curl -sf "${MINIO_ENDPOINT}/${BUCKET}/${CHANNEL}/release-info.json" | jq . \
+            || echo "WARN: release-info.json not publicly readable (check bucket policy)"
+
+          echo ""
+          echo "=== Verify update yml (public read) ==="
           if [ "${CHANNEL}" = "latest" ]; then
             YML_PREFIX="latest"
           else
             YML_PREFIX="${CHANNEL}"
           fi
-          echo "electron-updater expects ${YML_PREFIX}-mac.yml, ${YML_PREFIX}.yml, etc. in ${CHANNEL}/:"
-          ossutil ls oss://valuecell-clawx/${CHANNEL}/ --short | grep "${YML_PREFIX}.*\\.yml" || echo "(none found)"
+          curl -sf -o /dev/null -w "%{http_code}" "${MINIO_ENDPOINT}/${BUCKET}/${CHANNEL}/${YML_PREFIX}-mac.yml" \
+            && echo " ← ${YML_PREFIX}-mac.yml OK" || echo "WARN: ${YML_PREFIX}-mac.yml not readable"
+
           
           echo ""
           echo "All files uploaded and verified successfully!"
