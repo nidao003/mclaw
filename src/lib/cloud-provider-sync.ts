@@ -153,6 +153,22 @@ export function mapCloudModelToProviderAccount(model: Model): ProviderAccount {
 }
 
 // ============================================================================
+// Device Secret（客户端 HMAC 签名密钥，绑 mclaw 客户端）
+// ============================================================================
+
+/**
+ * 获取客户端 deviceSecret（主进程 keychain 加密存储），提交给后端 IssueRuntimeKey
+ * 绑定 runtime key。明文仅短暂存在于渲染进程内存，不持久化。
+ */
+async function getDeviceSecret(): Promise<string> {
+  const bridge = window.mclaw?.getDeviceSecret;
+  if (!bridge) {
+    throw new Error('device secret bridge unavailable');
+  }
+  return bridge();
+}
+
+// ============================================================================
 // Sync Workflow
 // ============================================================================
 
@@ -212,15 +228,19 @@ export async function syncCloudModelAsProviderAccount(
 
     if (existingAccount) {
       // 已存在 —— 始终用最新字段刷新，避免旧残留 account 挡路。
-      // key 缺失才重新签发（后端 issueRuntimeKey 复用同 (uid,modelID) 已有 key，不泛滥）；
-      // 已有 key 则复用，不重复签发。
+      // 始终调 issueRuntimeKey：后端复用同 (uid,modelID) 已有 key，仅当 device_secret 不匹配
+      // （换设备/老 key 无绑定）或快过期（<1h）才刷新返回新 key，否则返回原 key（不频繁签发）。
+      // 续签即靠此机制——每次模型同步都会触发，后端按需刷新。本地缺失 key 时用返回的 key。
+      const deviceSecret = await getDeviceSecret();
+      const { key: runtimeKey } = await modelsApi.issueRuntimeKey(model.id, deviceSecret);
       const hasKey = await hostApi.providers.hasAccountApiKey(localId);
-      const runtimeKey = hasKey ? undefined : await modelsApi.issueRuntimeKey(model.id);
-      await hostApi.providers.updateAccount(localId, mappedAccount, runtimeKey);
+      const apiKeyToUpdate = hasKey ? undefined : runtimeKey;
+      await hostApi.providers.updateAccount(localId, mappedAccount, apiKeyToUpdate);
       created = false;
     } else {
       // 不存在 —— 签发 runtime key 并创建指向后端 llmproxy 的 custom provider account。
-      const runtimeKey = await modelsApi.issueRuntimeKey(model.id);
+      const deviceSecret = await getDeviceSecret();
+      const { key: runtimeKey } = await modelsApi.issueRuntimeKey(model.id, deviceSecret);
       await hostApi.providers.createAccount({ account: mappedAccount, apiKey: runtimeKey });
       created = true;
     }

@@ -16,6 +16,7 @@ import (
 )
 
 type subscriptionUsecase struct {
+	i        *do.Injector
 	subRepo  domain.SubscriptionRepo
 	planRepo domain.PlanRepo
 	log      *zap.Logger
@@ -26,7 +27,7 @@ func NewSubscriptionUsecase(i *do.Injector) (domain.SubscriptionUsecase, error) 
 	subRepo := do.MustInvoke[domain.SubscriptionRepo](i)
 	planRepo := do.MustInvoke[domain.PlanRepo](i)
 	logger := do.MustInvoke[*zap.Logger](i)
-	return &subscriptionUsecase{subRepo: subRepo, planRepo: planRepo, log: logger}, nil
+	return &subscriptionUsecase{i: i, subRepo: subRepo, planRepo: planRepo, log: logger}, nil
 }
 
 func (uc *subscriptionUsecase) Get(ctx context.Context, userID uuid.UUID) (*domain.SubscriptionResp, error) {
@@ -120,9 +121,28 @@ func (uc *subscriptionUsecase) Subscribe(ctx context.Context, userID uuid.UUID, 
 		if _, err := uc.subRepo.Create(ctx, sub); err != nil {
 			return nil, fmt.Errorf("failed to create subscription: %w", err)
 		}
+		// 新订阅生效即发放当月赠送积分（运行时 invoke wallet，避开构造期循环依赖）
+		uc.grantMonthlyCredits(ctx, userID, plan)
 	}
 
 	return uc.Get(ctx, userID)
+}
+
+// grantMonthlyCredits 发放 plan 的 monthly_credits 到用户钱包。失败仅记日志，不阻塞订阅流程。
+func (uc *subscriptionUsecase) grantMonthlyCredits(ctx context.Context, userID uuid.UUID, plan *db.Plan) {
+	if plan == nil || plan.MonthlyCredits <= 0 {
+		return
+	}
+	walletUC, err := do.Invoke[domain.WalletUsecase](uc.i)
+	if err != nil || walletUC == nil {
+		uc.log.Warn("wallet usecase unavailable, skip monthly credits grant", zap.Error(err))
+		return
+	}
+	remark := fmt.Sprintf("订阅赠送积分: %s", plan.Name)
+	if grantErr := walletUC.Grant(ctx, userID, consts.TransactionSubscriptionGrant, plan.MonthlyCredits, remark, ""); grantErr != nil {
+		uc.log.Warn("failed to grant monthly credits on subscribe",
+			zap.Error(grantErr), zap.String("user_id", userID.String()))
+	}
 }
 
 func (uc *subscriptionUsecase) ToggleAutoRenew(ctx context.Context, userID uuid.UUID, req *domain.AutoRenewReq) error {
@@ -175,9 +195,9 @@ func (uc *subscriptionUsecase) GetTokenQuota(ctx context.Context, userID uuid.UU
 	}
 
 	return &domain.TokenQuota{
-		BasicTokenQuota:   plan.BasicTokenQuota,
-		ProTokenQuota:     plan.ProTokenQuota,
-		UltraTokenQuota:   plan.UltraTokenQuota,
+		DailyTokenQuota:   plan.DailyTokenQuota,
+		WeeklyTokenQuota:  plan.WeeklyTokenQuota,
+		MonthlyTokenQuota: plan.MonthlyTokenQuota,
 	}, nil
 }
 

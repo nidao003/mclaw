@@ -145,7 +145,7 @@ func (a *TaskUsecase) SwitchModel(ctx context.Context, user *domain.User, taskID
 	if err != nil {
 		return nil, err
 	}
-	runtimeKey, err := a.modelRepo.CreateRuntimeAPIKey(ctx, taskOwnerID, req.ModelID, t.VirtualMachine.ID)
+	runtimeKey, err := a.modelRepo.CreateRuntimeAPIKey(ctx, taskOwnerID, req.ModelID, t.VirtualMachine.ID, "", nil)
 	if err != nil {
 		return nil, err
 	}

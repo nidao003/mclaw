@@ -86,6 +86,90 @@ func (_c *WalletCreate) SetNillableTotalGranted(v *int64) *WalletCreate {
 	return _c
 }
 
+// SetDailyTokenBalance sets the "daily_token_balance" field.
+func (_c *WalletCreate) SetDailyTokenBalance(v int64) *WalletCreate {
+	_c.mutation.SetDailyTokenBalance(v)
+	return _c
+}
+
+// SetNillableDailyTokenBalance sets the "daily_token_balance" field if the given value is not nil.
+func (_c *WalletCreate) SetNillableDailyTokenBalance(v *int64) *WalletCreate {
+	if v != nil {
+		_c.SetDailyTokenBalance(*v)
+	}
+	return _c
+}
+
+// SetWeeklyTokenBalance sets the "weekly_token_balance" field.
+func (_c *WalletCreate) SetWeeklyTokenBalance(v int64) *WalletCreate {
+	_c.mutation.SetWeeklyTokenBalance(v)
+	return _c
+}
+
+// SetNillableWeeklyTokenBalance sets the "weekly_token_balance" field if the given value is not nil.
+func (_c *WalletCreate) SetNillableWeeklyTokenBalance(v *int64) *WalletCreate {
+	if v != nil {
+		_c.SetWeeklyTokenBalance(*v)
+	}
+	return _c
+}
+
+// SetMonthlyTokenBalance sets the "monthly_token_balance" field.
+func (_c *WalletCreate) SetMonthlyTokenBalance(v int64) *WalletCreate {
+	_c.mutation.SetMonthlyTokenBalance(v)
+	return _c
+}
+
+// SetNillableMonthlyTokenBalance sets the "monthly_token_balance" field if the given value is not nil.
+func (_c *WalletCreate) SetNillableMonthlyTokenBalance(v *int64) *WalletCreate {
+	if v != nil {
+		_c.SetMonthlyTokenBalance(*v)
+	}
+	return _c
+}
+
+// SetDailyResetAt sets the "daily_reset_at" field.
+func (_c *WalletCreate) SetDailyResetAt(v time.Time) *WalletCreate {
+	_c.mutation.SetDailyResetAt(v)
+	return _c
+}
+
+// SetNillableDailyResetAt sets the "daily_reset_at" field if the given value is not nil.
+func (_c *WalletCreate) SetNillableDailyResetAt(v *time.Time) *WalletCreate {
+	if v != nil {
+		_c.SetDailyResetAt(*v)
+	}
+	return _c
+}
+
+// SetWeeklyResetAt sets the "weekly_reset_at" field.
+func (_c *WalletCreate) SetWeeklyResetAt(v time.Time) *WalletCreate {
+	_c.mutation.SetWeeklyResetAt(v)
+	return _c
+}
+
+// SetNillableWeeklyResetAt sets the "weekly_reset_at" field if the given value is not nil.
+func (_c *WalletCreate) SetNillableWeeklyResetAt(v *time.Time) *WalletCreate {
+	if v != nil {
+		_c.SetWeeklyResetAt(*v)
+	}
+	return _c
+}
+
+// SetMonthlyResetAt sets the "monthly_reset_at" field.
+func (_c *WalletCreate) SetMonthlyResetAt(v time.Time) *WalletCreate {
+	_c.mutation.SetMonthlyResetAt(v)
+	return _c
+}
+
+// SetNillableMonthlyResetAt sets the "monthly_reset_at" field if the given value is not nil.
+func (_c *WalletCreate) SetNillableMonthlyResetAt(v *time.Time) *WalletCreate {
+	if v != nil {
+		_c.SetMonthlyResetAt(*v)
+	}
+	return _c
+}
+
 // SetDailyBasicTokenBalance sets the "daily_basic_token_balance" field.
 func (_c *WalletCreate) SetDailyBasicTokenBalance(v int64) *WalletCreate {
 	_c.mutation.SetDailyBasicTokenBalance(v)
@@ -124,20 +208,6 @@ func (_c *WalletCreate) SetDailyUltraTokenBalance(v int64) *WalletCreate {
 func (_c *WalletCreate) SetNillableDailyUltraTokenBalance(v *int64) *WalletCreate {
 	if v != nil {
 		_c.SetDailyUltraTokenBalance(*v)
-	}
-	return _c
-}
-
-// SetDailyResetAt sets the "daily_reset_at" field.
-func (_c *WalletCreate) SetDailyResetAt(v time.Time) *WalletCreate {
-	_c.mutation.SetDailyResetAt(v)
-	return _c
-}
-
-// SetNillableDailyResetAt sets the "daily_reset_at" field if the given value is not nil.
-func (_c *WalletCreate) SetNillableDailyResetAt(v *time.Time) *WalletCreate {
-	if v != nil {
-		_c.SetDailyResetAt(*v)
 	}
 	return _c
 }
@@ -241,6 +311,18 @@ func (_c *WalletCreate) defaults() {
 		v := wallet.DefaultTotalGranted
 		_c.mutation.SetTotalGranted(v)
 	}
+	if _, ok := _c.mutation.DailyTokenBalance(); !ok {
+		v := wallet.DefaultDailyTokenBalance
+		_c.mutation.SetDailyTokenBalance(v)
+	}
+	if _, ok := _c.mutation.WeeklyTokenBalance(); !ok {
+		v := wallet.DefaultWeeklyTokenBalance
+		_c.mutation.SetWeeklyTokenBalance(v)
+	}
+	if _, ok := _c.mutation.MonthlyTokenBalance(); !ok {
+		v := wallet.DefaultMonthlyTokenBalance
+		_c.mutation.SetMonthlyTokenBalance(v)
+	}
 	if _, ok := _c.mutation.DailyBasicTokenBalance(); !ok {
 		v := wallet.DefaultDailyBasicTokenBalance
 		_c.mutation.SetDailyBasicTokenBalance(v)
@@ -283,6 +365,15 @@ func (_c *WalletCreate) check() error {
 	}
 	if _, ok := _c.mutation.TotalGranted(); !ok {
 		return &ValidationError{Name: "total_granted", err: errors.New(`db: missing required field "Wallet.total_granted"`)}
+	}
+	if _, ok := _c.mutation.DailyTokenBalance(); !ok {
+		return &ValidationError{Name: "daily_token_balance", err: errors.New(`db: missing required field "Wallet.daily_token_balance"`)}
+	}
+	if _, ok := _c.mutation.WeeklyTokenBalance(); !ok {
+		return &ValidationError{Name: "weekly_token_balance", err: errors.New(`db: missing required field "Wallet.weekly_token_balance"`)}
+	}
+	if _, ok := _c.mutation.MonthlyTokenBalance(); !ok {
+		return &ValidationError{Name: "monthly_token_balance", err: errors.New(`db: missing required field "Wallet.monthly_token_balance"`)}
 	}
 	if _, ok := _c.mutation.DailyBasicTokenBalance(); !ok {
 		return &ValidationError{Name: "daily_basic_token_balance", err: errors.New(`db: missing required field "Wallet.daily_basic_token_balance"`)}
@@ -358,6 +449,30 @@ func (_c *WalletCreate) createSpec() (*Wallet, *sqlgraph.CreateSpec) {
 		_spec.SetField(wallet.FieldTotalGranted, field.TypeInt64, value)
 		_node.TotalGranted = value
 	}
+	if value, ok := _c.mutation.DailyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldDailyTokenBalance, field.TypeInt64, value)
+		_node.DailyTokenBalance = value
+	}
+	if value, ok := _c.mutation.WeeklyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldWeeklyTokenBalance, field.TypeInt64, value)
+		_node.WeeklyTokenBalance = value
+	}
+	if value, ok := _c.mutation.MonthlyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldMonthlyTokenBalance, field.TypeInt64, value)
+		_node.MonthlyTokenBalance = value
+	}
+	if value, ok := _c.mutation.DailyResetAt(); ok {
+		_spec.SetField(wallet.FieldDailyResetAt, field.TypeTime, value)
+		_node.DailyResetAt = value
+	}
+	if value, ok := _c.mutation.WeeklyResetAt(); ok {
+		_spec.SetField(wallet.FieldWeeklyResetAt, field.TypeTime, value)
+		_node.WeeklyResetAt = value
+	}
+	if value, ok := _c.mutation.MonthlyResetAt(); ok {
+		_spec.SetField(wallet.FieldMonthlyResetAt, field.TypeTime, value)
+		_node.MonthlyResetAt = value
+	}
 	if value, ok := _c.mutation.DailyBasicTokenBalance(); ok {
 		_spec.SetField(wallet.FieldDailyBasicTokenBalance, field.TypeInt64, value)
 		_node.DailyBasicTokenBalance = value
@@ -369,10 +484,6 @@ func (_c *WalletCreate) createSpec() (*Wallet, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DailyUltraTokenBalance(); ok {
 		_spec.SetField(wallet.FieldDailyUltraTokenBalance, field.TypeInt64, value)
 		_node.DailyUltraTokenBalance = value
-	}
-	if value, ok := _c.mutation.DailyResetAt(); ok {
-		_spec.SetField(wallet.FieldDailyResetAt, field.TypeTime, value)
-		_node.DailyResetAt = value
 	}
 	if value, ok := _c.mutation.EnableCreditConsumption(); ok {
 		_spec.SetField(wallet.FieldEnableCreditConsumption, field.TypeBool, value)
@@ -522,6 +633,114 @@ func (u *WalletUpsert) AddTotalGranted(v int64) *WalletUpsert {
 	return u
 }
 
+// SetDailyTokenBalance sets the "daily_token_balance" field.
+func (u *WalletUpsert) SetDailyTokenBalance(v int64) *WalletUpsert {
+	u.Set(wallet.FieldDailyTokenBalance, v)
+	return u
+}
+
+// UpdateDailyTokenBalance sets the "daily_token_balance" field to the value that was provided on create.
+func (u *WalletUpsert) UpdateDailyTokenBalance() *WalletUpsert {
+	u.SetExcluded(wallet.FieldDailyTokenBalance)
+	return u
+}
+
+// AddDailyTokenBalance adds v to the "daily_token_balance" field.
+func (u *WalletUpsert) AddDailyTokenBalance(v int64) *WalletUpsert {
+	u.Add(wallet.FieldDailyTokenBalance, v)
+	return u
+}
+
+// SetWeeklyTokenBalance sets the "weekly_token_balance" field.
+func (u *WalletUpsert) SetWeeklyTokenBalance(v int64) *WalletUpsert {
+	u.Set(wallet.FieldWeeklyTokenBalance, v)
+	return u
+}
+
+// UpdateWeeklyTokenBalance sets the "weekly_token_balance" field to the value that was provided on create.
+func (u *WalletUpsert) UpdateWeeklyTokenBalance() *WalletUpsert {
+	u.SetExcluded(wallet.FieldWeeklyTokenBalance)
+	return u
+}
+
+// AddWeeklyTokenBalance adds v to the "weekly_token_balance" field.
+func (u *WalletUpsert) AddWeeklyTokenBalance(v int64) *WalletUpsert {
+	u.Add(wallet.FieldWeeklyTokenBalance, v)
+	return u
+}
+
+// SetMonthlyTokenBalance sets the "monthly_token_balance" field.
+func (u *WalletUpsert) SetMonthlyTokenBalance(v int64) *WalletUpsert {
+	u.Set(wallet.FieldMonthlyTokenBalance, v)
+	return u
+}
+
+// UpdateMonthlyTokenBalance sets the "monthly_token_balance" field to the value that was provided on create.
+func (u *WalletUpsert) UpdateMonthlyTokenBalance() *WalletUpsert {
+	u.SetExcluded(wallet.FieldMonthlyTokenBalance)
+	return u
+}
+
+// AddMonthlyTokenBalance adds v to the "monthly_token_balance" field.
+func (u *WalletUpsert) AddMonthlyTokenBalance(v int64) *WalletUpsert {
+	u.Add(wallet.FieldMonthlyTokenBalance, v)
+	return u
+}
+
+// SetDailyResetAt sets the "daily_reset_at" field.
+func (u *WalletUpsert) SetDailyResetAt(v time.Time) *WalletUpsert {
+	u.Set(wallet.FieldDailyResetAt, v)
+	return u
+}
+
+// UpdateDailyResetAt sets the "daily_reset_at" field to the value that was provided on create.
+func (u *WalletUpsert) UpdateDailyResetAt() *WalletUpsert {
+	u.SetExcluded(wallet.FieldDailyResetAt)
+	return u
+}
+
+// ClearDailyResetAt clears the value of the "daily_reset_at" field.
+func (u *WalletUpsert) ClearDailyResetAt() *WalletUpsert {
+	u.SetNull(wallet.FieldDailyResetAt)
+	return u
+}
+
+// SetWeeklyResetAt sets the "weekly_reset_at" field.
+func (u *WalletUpsert) SetWeeklyResetAt(v time.Time) *WalletUpsert {
+	u.Set(wallet.FieldWeeklyResetAt, v)
+	return u
+}
+
+// UpdateWeeklyResetAt sets the "weekly_reset_at" field to the value that was provided on create.
+func (u *WalletUpsert) UpdateWeeklyResetAt() *WalletUpsert {
+	u.SetExcluded(wallet.FieldWeeklyResetAt)
+	return u
+}
+
+// ClearWeeklyResetAt clears the value of the "weekly_reset_at" field.
+func (u *WalletUpsert) ClearWeeklyResetAt() *WalletUpsert {
+	u.SetNull(wallet.FieldWeeklyResetAt)
+	return u
+}
+
+// SetMonthlyResetAt sets the "monthly_reset_at" field.
+func (u *WalletUpsert) SetMonthlyResetAt(v time.Time) *WalletUpsert {
+	u.Set(wallet.FieldMonthlyResetAt, v)
+	return u
+}
+
+// UpdateMonthlyResetAt sets the "monthly_reset_at" field to the value that was provided on create.
+func (u *WalletUpsert) UpdateMonthlyResetAt() *WalletUpsert {
+	u.SetExcluded(wallet.FieldMonthlyResetAt)
+	return u
+}
+
+// ClearMonthlyResetAt clears the value of the "monthly_reset_at" field.
+func (u *WalletUpsert) ClearMonthlyResetAt() *WalletUpsert {
+	u.SetNull(wallet.FieldMonthlyResetAt)
+	return u
+}
+
 // SetDailyBasicTokenBalance sets the "daily_basic_token_balance" field.
 func (u *WalletUpsert) SetDailyBasicTokenBalance(v int64) *WalletUpsert {
 	u.Set(wallet.FieldDailyBasicTokenBalance, v)
@@ -573,24 +792,6 @@ func (u *WalletUpsert) UpdateDailyUltraTokenBalance() *WalletUpsert {
 // AddDailyUltraTokenBalance adds v to the "daily_ultra_token_balance" field.
 func (u *WalletUpsert) AddDailyUltraTokenBalance(v int64) *WalletUpsert {
 	u.Add(wallet.FieldDailyUltraTokenBalance, v)
-	return u
-}
-
-// SetDailyResetAt sets the "daily_reset_at" field.
-func (u *WalletUpsert) SetDailyResetAt(v time.Time) *WalletUpsert {
-	u.Set(wallet.FieldDailyResetAt, v)
-	return u
-}
-
-// UpdateDailyResetAt sets the "daily_reset_at" field to the value that was provided on create.
-func (u *WalletUpsert) UpdateDailyResetAt() *WalletUpsert {
-	u.SetExcluded(wallet.FieldDailyResetAt)
-	return u
-}
-
-// ClearDailyResetAt clears the value of the "daily_reset_at" field.
-func (u *WalletUpsert) ClearDailyResetAt() *WalletUpsert {
-	u.SetNull(wallet.FieldDailyResetAt)
 	return u
 }
 
@@ -776,6 +977,132 @@ func (u *WalletUpsertOne) UpdateTotalGranted() *WalletUpsertOne {
 	})
 }
 
+// SetDailyTokenBalance sets the "daily_token_balance" field.
+func (u *WalletUpsertOne) SetDailyTokenBalance(v int64) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetDailyTokenBalance(v)
+	})
+}
+
+// AddDailyTokenBalance adds v to the "daily_token_balance" field.
+func (u *WalletUpsertOne) AddDailyTokenBalance(v int64) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.AddDailyTokenBalance(v)
+	})
+}
+
+// UpdateDailyTokenBalance sets the "daily_token_balance" field to the value that was provided on create.
+func (u *WalletUpsertOne) UpdateDailyTokenBalance() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateDailyTokenBalance()
+	})
+}
+
+// SetWeeklyTokenBalance sets the "weekly_token_balance" field.
+func (u *WalletUpsertOne) SetWeeklyTokenBalance(v int64) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetWeeklyTokenBalance(v)
+	})
+}
+
+// AddWeeklyTokenBalance adds v to the "weekly_token_balance" field.
+func (u *WalletUpsertOne) AddWeeklyTokenBalance(v int64) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.AddWeeklyTokenBalance(v)
+	})
+}
+
+// UpdateWeeklyTokenBalance sets the "weekly_token_balance" field to the value that was provided on create.
+func (u *WalletUpsertOne) UpdateWeeklyTokenBalance() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateWeeklyTokenBalance()
+	})
+}
+
+// SetMonthlyTokenBalance sets the "monthly_token_balance" field.
+func (u *WalletUpsertOne) SetMonthlyTokenBalance(v int64) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetMonthlyTokenBalance(v)
+	})
+}
+
+// AddMonthlyTokenBalance adds v to the "monthly_token_balance" field.
+func (u *WalletUpsertOne) AddMonthlyTokenBalance(v int64) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.AddMonthlyTokenBalance(v)
+	})
+}
+
+// UpdateMonthlyTokenBalance sets the "monthly_token_balance" field to the value that was provided on create.
+func (u *WalletUpsertOne) UpdateMonthlyTokenBalance() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateMonthlyTokenBalance()
+	})
+}
+
+// SetDailyResetAt sets the "daily_reset_at" field.
+func (u *WalletUpsertOne) SetDailyResetAt(v time.Time) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetDailyResetAt(v)
+	})
+}
+
+// UpdateDailyResetAt sets the "daily_reset_at" field to the value that was provided on create.
+func (u *WalletUpsertOne) UpdateDailyResetAt() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateDailyResetAt()
+	})
+}
+
+// ClearDailyResetAt clears the value of the "daily_reset_at" field.
+func (u *WalletUpsertOne) ClearDailyResetAt() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.ClearDailyResetAt()
+	})
+}
+
+// SetWeeklyResetAt sets the "weekly_reset_at" field.
+func (u *WalletUpsertOne) SetWeeklyResetAt(v time.Time) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetWeeklyResetAt(v)
+	})
+}
+
+// UpdateWeeklyResetAt sets the "weekly_reset_at" field to the value that was provided on create.
+func (u *WalletUpsertOne) UpdateWeeklyResetAt() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateWeeklyResetAt()
+	})
+}
+
+// ClearWeeklyResetAt clears the value of the "weekly_reset_at" field.
+func (u *WalletUpsertOne) ClearWeeklyResetAt() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.ClearWeeklyResetAt()
+	})
+}
+
+// SetMonthlyResetAt sets the "monthly_reset_at" field.
+func (u *WalletUpsertOne) SetMonthlyResetAt(v time.Time) *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetMonthlyResetAt(v)
+	})
+}
+
+// UpdateMonthlyResetAt sets the "monthly_reset_at" field to the value that was provided on create.
+func (u *WalletUpsertOne) UpdateMonthlyResetAt() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateMonthlyResetAt()
+	})
+}
+
+// ClearMonthlyResetAt clears the value of the "monthly_reset_at" field.
+func (u *WalletUpsertOne) ClearMonthlyResetAt() *WalletUpsertOne {
+	return u.Update(func(s *WalletUpsert) {
+		s.ClearMonthlyResetAt()
+	})
+}
+
 // SetDailyBasicTokenBalance sets the "daily_basic_token_balance" field.
 func (u *WalletUpsertOne) SetDailyBasicTokenBalance(v int64) *WalletUpsertOne {
 	return u.Update(func(s *WalletUpsert) {
@@ -836,27 +1163,6 @@ func (u *WalletUpsertOne) AddDailyUltraTokenBalance(v int64) *WalletUpsertOne {
 func (u *WalletUpsertOne) UpdateDailyUltraTokenBalance() *WalletUpsertOne {
 	return u.Update(func(s *WalletUpsert) {
 		s.UpdateDailyUltraTokenBalance()
-	})
-}
-
-// SetDailyResetAt sets the "daily_reset_at" field.
-func (u *WalletUpsertOne) SetDailyResetAt(v time.Time) *WalletUpsertOne {
-	return u.Update(func(s *WalletUpsert) {
-		s.SetDailyResetAt(v)
-	})
-}
-
-// UpdateDailyResetAt sets the "daily_reset_at" field to the value that was provided on create.
-func (u *WalletUpsertOne) UpdateDailyResetAt() *WalletUpsertOne {
-	return u.Update(func(s *WalletUpsert) {
-		s.UpdateDailyResetAt()
-	})
-}
-
-// ClearDailyResetAt clears the value of the "daily_reset_at" field.
-func (u *WalletUpsertOne) ClearDailyResetAt() *WalletUpsertOne {
-	return u.Update(func(s *WalletUpsert) {
-		s.ClearDailyResetAt()
 	})
 }
 
@@ -1215,6 +1521,132 @@ func (u *WalletUpsertBulk) UpdateTotalGranted() *WalletUpsertBulk {
 	})
 }
 
+// SetDailyTokenBalance sets the "daily_token_balance" field.
+func (u *WalletUpsertBulk) SetDailyTokenBalance(v int64) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetDailyTokenBalance(v)
+	})
+}
+
+// AddDailyTokenBalance adds v to the "daily_token_balance" field.
+func (u *WalletUpsertBulk) AddDailyTokenBalance(v int64) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.AddDailyTokenBalance(v)
+	})
+}
+
+// UpdateDailyTokenBalance sets the "daily_token_balance" field to the value that was provided on create.
+func (u *WalletUpsertBulk) UpdateDailyTokenBalance() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateDailyTokenBalance()
+	})
+}
+
+// SetWeeklyTokenBalance sets the "weekly_token_balance" field.
+func (u *WalletUpsertBulk) SetWeeklyTokenBalance(v int64) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetWeeklyTokenBalance(v)
+	})
+}
+
+// AddWeeklyTokenBalance adds v to the "weekly_token_balance" field.
+func (u *WalletUpsertBulk) AddWeeklyTokenBalance(v int64) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.AddWeeklyTokenBalance(v)
+	})
+}
+
+// UpdateWeeklyTokenBalance sets the "weekly_token_balance" field to the value that was provided on create.
+func (u *WalletUpsertBulk) UpdateWeeklyTokenBalance() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateWeeklyTokenBalance()
+	})
+}
+
+// SetMonthlyTokenBalance sets the "monthly_token_balance" field.
+func (u *WalletUpsertBulk) SetMonthlyTokenBalance(v int64) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetMonthlyTokenBalance(v)
+	})
+}
+
+// AddMonthlyTokenBalance adds v to the "monthly_token_balance" field.
+func (u *WalletUpsertBulk) AddMonthlyTokenBalance(v int64) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.AddMonthlyTokenBalance(v)
+	})
+}
+
+// UpdateMonthlyTokenBalance sets the "monthly_token_balance" field to the value that was provided on create.
+func (u *WalletUpsertBulk) UpdateMonthlyTokenBalance() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateMonthlyTokenBalance()
+	})
+}
+
+// SetDailyResetAt sets the "daily_reset_at" field.
+func (u *WalletUpsertBulk) SetDailyResetAt(v time.Time) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetDailyResetAt(v)
+	})
+}
+
+// UpdateDailyResetAt sets the "daily_reset_at" field to the value that was provided on create.
+func (u *WalletUpsertBulk) UpdateDailyResetAt() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateDailyResetAt()
+	})
+}
+
+// ClearDailyResetAt clears the value of the "daily_reset_at" field.
+func (u *WalletUpsertBulk) ClearDailyResetAt() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.ClearDailyResetAt()
+	})
+}
+
+// SetWeeklyResetAt sets the "weekly_reset_at" field.
+func (u *WalletUpsertBulk) SetWeeklyResetAt(v time.Time) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetWeeklyResetAt(v)
+	})
+}
+
+// UpdateWeeklyResetAt sets the "weekly_reset_at" field to the value that was provided on create.
+func (u *WalletUpsertBulk) UpdateWeeklyResetAt() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateWeeklyResetAt()
+	})
+}
+
+// ClearWeeklyResetAt clears the value of the "weekly_reset_at" field.
+func (u *WalletUpsertBulk) ClearWeeklyResetAt() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.ClearWeeklyResetAt()
+	})
+}
+
+// SetMonthlyResetAt sets the "monthly_reset_at" field.
+func (u *WalletUpsertBulk) SetMonthlyResetAt(v time.Time) *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.SetMonthlyResetAt(v)
+	})
+}
+
+// UpdateMonthlyResetAt sets the "monthly_reset_at" field to the value that was provided on create.
+func (u *WalletUpsertBulk) UpdateMonthlyResetAt() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.UpdateMonthlyResetAt()
+	})
+}
+
+// ClearMonthlyResetAt clears the value of the "monthly_reset_at" field.
+func (u *WalletUpsertBulk) ClearMonthlyResetAt() *WalletUpsertBulk {
+	return u.Update(func(s *WalletUpsert) {
+		s.ClearMonthlyResetAt()
+	})
+}
+
 // SetDailyBasicTokenBalance sets the "daily_basic_token_balance" field.
 func (u *WalletUpsertBulk) SetDailyBasicTokenBalance(v int64) *WalletUpsertBulk {
 	return u.Update(func(s *WalletUpsert) {
@@ -1275,27 +1707,6 @@ func (u *WalletUpsertBulk) AddDailyUltraTokenBalance(v int64) *WalletUpsertBulk 
 func (u *WalletUpsertBulk) UpdateDailyUltraTokenBalance() *WalletUpsertBulk {
 	return u.Update(func(s *WalletUpsert) {
 		s.UpdateDailyUltraTokenBalance()
-	})
-}
-
-// SetDailyResetAt sets the "daily_reset_at" field.
-func (u *WalletUpsertBulk) SetDailyResetAt(v time.Time) *WalletUpsertBulk {
-	return u.Update(func(s *WalletUpsert) {
-		s.SetDailyResetAt(v)
-	})
-}
-
-// UpdateDailyResetAt sets the "daily_reset_at" field to the value that was provided on create.
-func (u *WalletUpsertBulk) UpdateDailyResetAt() *WalletUpsertBulk {
-	return u.Update(func(s *WalletUpsert) {
-		s.UpdateDailyResetAt()
-	})
-}
-
-// ClearDailyResetAt clears the value of the "daily_reset_at" field.
-func (u *WalletUpsertBulk) ClearDailyResetAt() *WalletUpsertBulk {
-	return u.Update(func(s *WalletUpsert) {
-		s.ClearDailyResetAt()
 	})
 }
 

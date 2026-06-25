@@ -10,6 +10,8 @@ const ROOT = join(__dirname, '..');
 const MANIFEST_PATH = join(ROOT, 'resources', 'skills', 'preinstalled-manifest.json');
 const OUTPUT_ROOT = join(ROOT, 'build', 'preinstalled-skills');
 const TMP_ROOT = join(ROOT, 'build', '.tmp-preinstalled-skills');
+// 本地自带 skill 源目录（不经过 git 拉取，直接拷贝）。进 git，build 模式从此拷到 OUTPUT_ROOT。
+const LOCAL_SOURCE_ROOT = join(ROOT, 'resources', 'preinstalled-skills-local');
 
 function loadManifest() {
   if (!existsSync(MANIFEST_PATH)) {
@@ -21,8 +23,12 @@ function loadManifest() {
     throw new Error('Invalid preinstalled-skills manifest format');
   }
   for (const item of parsed.skills) {
-    if (!item.slug || !item.repo || !item.repoPath) {
-      throw new Error(`Invalid manifest entry: ${JSON.stringify(item)}`);
+    if (!item.slug) {
+      throw new Error(`Invalid manifest entry (missing slug): ${JSON.stringify(item)}`);
+    }
+    // local skill（项目自带，不从 git 拉取）不要求 repo/repoPath
+    if (!item.local && (!item.repo || !item.repoPath)) {
+      throw new Error(`Invalid manifest entry (missing repo/repoPath): ${JSON.stringify(item)}`);
     }
   }
   return parsed.skills;
@@ -120,7 +126,27 @@ const lock = {
   skills: [],
 };
 
-const groups = groupByRepoRef(manifestSkills);
+// 本地自带 skill（local:true）：从 LOCAL_SOURCE_ROOT 拷到 OUTPUT_ROOT，不经过 git 拉取。
+for (const entry of manifestSkills.filter((s) => s.local)) {
+  const sourceDir = join(LOCAL_SOURCE_ROOT, entry.slug);
+  const targetDir = join(OUTPUT_ROOT, entry.slug);
+  if (!existsSync(sourceDir)) {
+    throw new Error(`Local skill source missing: ${sourceDir}`);
+  }
+  rmSync(targetDir, { recursive: true, force: true });
+  cpSync(sourceDir, targetDir, { recursive: true, dereference: true, filter: shouldCopySkillFile });
+  if (!existsSync(join(targetDir, 'SKILL.md'))) {
+    throw new Error(`Local skill ${entry.slug} is missing SKILL.md after copy`);
+  }
+  lock.skills.push({
+    slug: entry.slug,
+    version: (entry.version || 'local').trim() || 'local',
+    local: true,
+  });
+  echo`   OK (local) ${entry.slug}`;
+}
+
+const groups = groupByRepoRef(manifestSkills.filter((s) => !s.local));
 for (const group of groups) {
   const repoDir = join(TMP_ROOT, createRepoDirName(group.repo, group.ref));
   const sparsePaths = [...new Set(group.entries.map((entry) => entry.repoPath))];

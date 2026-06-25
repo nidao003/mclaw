@@ -23,14 +23,24 @@ const (
 	FieldTotalConsumed = "total_consumed"
 	// FieldTotalGranted holds the string denoting the total_granted field in the database.
 	FieldTotalGranted = "total_granted"
+	// FieldDailyTokenBalance holds the string denoting the daily_token_balance field in the database.
+	FieldDailyTokenBalance = "daily_token_balance"
+	// FieldWeeklyTokenBalance holds the string denoting the weekly_token_balance field in the database.
+	FieldWeeklyTokenBalance = "weekly_token_balance"
+	// FieldMonthlyTokenBalance holds the string denoting the monthly_token_balance field in the database.
+	FieldMonthlyTokenBalance = "monthly_token_balance"
+	// FieldDailyResetAt holds the string denoting the daily_reset_at field in the database.
+	FieldDailyResetAt = "daily_reset_at"
+	// FieldWeeklyResetAt holds the string denoting the weekly_reset_at field in the database.
+	FieldWeeklyResetAt = "weekly_reset_at"
+	// FieldMonthlyResetAt holds the string denoting the monthly_reset_at field in the database.
+	FieldMonthlyResetAt = "monthly_reset_at"
 	// FieldDailyBasicTokenBalance holds the string denoting the daily_basic_token_balance field in the database.
 	FieldDailyBasicTokenBalance = "daily_basic_token_balance"
 	// FieldDailyProTokenBalance holds the string denoting the daily_pro_token_balance field in the database.
 	FieldDailyProTokenBalance = "daily_pro_token_balance"
 	// FieldDailyUltraTokenBalance holds the string denoting the daily_ultra_token_balance field in the database.
 	FieldDailyUltraTokenBalance = "daily_ultra_token_balance"
-	// FieldDailyResetAt holds the string denoting the daily_reset_at field in the database.
-	FieldDailyResetAt = "daily_reset_at"
 	// FieldEnableCreditConsumption holds the string denoting the enable_credit_consumption field in the database.
 	FieldEnableCreditConsumption = "enable_credit_consumption"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -49,10 +59,15 @@ var Columns = []string{
 	FieldTotalRecharged,
 	FieldTotalConsumed,
 	FieldTotalGranted,
+	FieldDailyTokenBalance,
+	FieldWeeklyTokenBalance,
+	FieldMonthlyTokenBalance,
+	FieldDailyResetAt,
+	FieldWeeklyResetAt,
+	FieldMonthlyResetAt,
 	FieldDailyBasicTokenBalance,
 	FieldDailyProTokenBalance,
 	FieldDailyUltraTokenBalance,
-	FieldDailyResetAt,
 	FieldEnableCreditConsumption,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -77,6 +92,12 @@ var (
 	DefaultTotalConsumed int64
 	// DefaultTotalGranted holds the default value on creation for the "total_granted" field.
 	DefaultTotalGranted int64
+	// DefaultDailyTokenBalance holds the default value on creation for the "daily_token_balance" field.
+	DefaultDailyTokenBalance int64
+	// DefaultWeeklyTokenBalance holds the default value on creation for the "weekly_token_balance" field.
+	DefaultWeeklyTokenBalance int64
+	// DefaultMonthlyTokenBalance holds the default value on creation for the "monthly_token_balance" field.
+	DefaultMonthlyTokenBalance int64
 	// DefaultDailyBasicTokenBalance holds the default value on creation for the "daily_basic_token_balance" field.
 	DefaultDailyBasicTokenBalance int64
 	// DefaultDailyProTokenBalance holds the default value on creation for the "daily_pro_token_balance" field.
@@ -126,6 +147,36 @@ func ByTotalGranted(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTotalGranted, opts...).ToFunc()
 }
 
+// ByDailyTokenBalance orders the results by the daily_token_balance field.
+func ByDailyTokenBalance(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDailyTokenBalance, opts...).ToFunc()
+}
+
+// ByWeeklyTokenBalance orders the results by the weekly_token_balance field.
+func ByWeeklyTokenBalance(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeeklyTokenBalance, opts...).ToFunc()
+}
+
+// ByMonthlyTokenBalance orders the results by the monthly_token_balance field.
+func ByMonthlyTokenBalance(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMonthlyTokenBalance, opts...).ToFunc()
+}
+
+// ByDailyResetAt orders the results by the daily_reset_at field.
+func ByDailyResetAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDailyResetAt, opts...).ToFunc()
+}
+
+// ByWeeklyResetAt orders the results by the weekly_reset_at field.
+func ByWeeklyResetAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeeklyResetAt, opts...).ToFunc()
+}
+
+// ByMonthlyResetAt orders the results by the monthly_reset_at field.
+func ByMonthlyResetAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMonthlyResetAt, opts...).ToFunc()
+}
+
 // ByDailyBasicTokenBalance orders the results by the daily_basic_token_balance field.
 func ByDailyBasicTokenBalance(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDailyBasicTokenBalance, opts...).ToFunc()
@@ -139,11 +190,6 @@ func ByDailyProTokenBalance(opts ...sql.OrderTermOption) OrderOption {
 // ByDailyUltraTokenBalance orders the results by the daily_ultra_token_balance field.
 func ByDailyUltraTokenBalance(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDailyUltraTokenBalance, opts...).ToFunc()
-}
-
-// ByDailyResetAt orders the results by the daily_reset_at field.
-func ByDailyResetAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDailyResetAt, opts...).ToFunc()
 }
 
 // ByEnableCreditConsumption orders the results by the enable_credit_consumption field.

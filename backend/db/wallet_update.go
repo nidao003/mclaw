@@ -128,6 +128,129 @@ func (_u *WalletUpdate) AddTotalGranted(v int64) *WalletUpdate {
 	return _u
 }
 
+// SetDailyTokenBalance sets the "daily_token_balance" field.
+func (_u *WalletUpdate) SetDailyTokenBalance(v int64) *WalletUpdate {
+	_u.mutation.ResetDailyTokenBalance()
+	_u.mutation.SetDailyTokenBalance(v)
+	return _u
+}
+
+// SetNillableDailyTokenBalance sets the "daily_token_balance" field if the given value is not nil.
+func (_u *WalletUpdate) SetNillableDailyTokenBalance(v *int64) *WalletUpdate {
+	if v != nil {
+		_u.SetDailyTokenBalance(*v)
+	}
+	return _u
+}
+
+// AddDailyTokenBalance adds value to the "daily_token_balance" field.
+func (_u *WalletUpdate) AddDailyTokenBalance(v int64) *WalletUpdate {
+	_u.mutation.AddDailyTokenBalance(v)
+	return _u
+}
+
+// SetWeeklyTokenBalance sets the "weekly_token_balance" field.
+func (_u *WalletUpdate) SetWeeklyTokenBalance(v int64) *WalletUpdate {
+	_u.mutation.ResetWeeklyTokenBalance()
+	_u.mutation.SetWeeklyTokenBalance(v)
+	return _u
+}
+
+// SetNillableWeeklyTokenBalance sets the "weekly_token_balance" field if the given value is not nil.
+func (_u *WalletUpdate) SetNillableWeeklyTokenBalance(v *int64) *WalletUpdate {
+	if v != nil {
+		_u.SetWeeklyTokenBalance(*v)
+	}
+	return _u
+}
+
+// AddWeeklyTokenBalance adds value to the "weekly_token_balance" field.
+func (_u *WalletUpdate) AddWeeklyTokenBalance(v int64) *WalletUpdate {
+	_u.mutation.AddWeeklyTokenBalance(v)
+	return _u
+}
+
+// SetMonthlyTokenBalance sets the "monthly_token_balance" field.
+func (_u *WalletUpdate) SetMonthlyTokenBalance(v int64) *WalletUpdate {
+	_u.mutation.ResetMonthlyTokenBalance()
+	_u.mutation.SetMonthlyTokenBalance(v)
+	return _u
+}
+
+// SetNillableMonthlyTokenBalance sets the "monthly_token_balance" field if the given value is not nil.
+func (_u *WalletUpdate) SetNillableMonthlyTokenBalance(v *int64) *WalletUpdate {
+	if v != nil {
+		_u.SetMonthlyTokenBalance(*v)
+	}
+	return _u
+}
+
+// AddMonthlyTokenBalance adds value to the "monthly_token_balance" field.
+func (_u *WalletUpdate) AddMonthlyTokenBalance(v int64) *WalletUpdate {
+	_u.mutation.AddMonthlyTokenBalance(v)
+	return _u
+}
+
+// SetDailyResetAt sets the "daily_reset_at" field.
+func (_u *WalletUpdate) SetDailyResetAt(v time.Time) *WalletUpdate {
+	_u.mutation.SetDailyResetAt(v)
+	return _u
+}
+
+// SetNillableDailyResetAt sets the "daily_reset_at" field if the given value is not nil.
+func (_u *WalletUpdate) SetNillableDailyResetAt(v *time.Time) *WalletUpdate {
+	if v != nil {
+		_u.SetDailyResetAt(*v)
+	}
+	return _u
+}
+
+// ClearDailyResetAt clears the value of the "daily_reset_at" field.
+func (_u *WalletUpdate) ClearDailyResetAt() *WalletUpdate {
+	_u.mutation.ClearDailyResetAt()
+	return _u
+}
+
+// SetWeeklyResetAt sets the "weekly_reset_at" field.
+func (_u *WalletUpdate) SetWeeklyResetAt(v time.Time) *WalletUpdate {
+	_u.mutation.SetWeeklyResetAt(v)
+	return _u
+}
+
+// SetNillableWeeklyResetAt sets the "weekly_reset_at" field if the given value is not nil.
+func (_u *WalletUpdate) SetNillableWeeklyResetAt(v *time.Time) *WalletUpdate {
+	if v != nil {
+		_u.SetWeeklyResetAt(*v)
+	}
+	return _u
+}
+
+// ClearWeeklyResetAt clears the value of the "weekly_reset_at" field.
+func (_u *WalletUpdate) ClearWeeklyResetAt() *WalletUpdate {
+	_u.mutation.ClearWeeklyResetAt()
+	return _u
+}
+
+// SetMonthlyResetAt sets the "monthly_reset_at" field.
+func (_u *WalletUpdate) SetMonthlyResetAt(v time.Time) *WalletUpdate {
+	_u.mutation.SetMonthlyResetAt(v)
+	return _u
+}
+
+// SetNillableMonthlyResetAt sets the "monthly_reset_at" field if the given value is not nil.
+func (_u *WalletUpdate) SetNillableMonthlyResetAt(v *time.Time) *WalletUpdate {
+	if v != nil {
+		_u.SetMonthlyResetAt(*v)
+	}
+	return _u
+}
+
+// ClearMonthlyResetAt clears the value of the "monthly_reset_at" field.
+func (_u *WalletUpdate) ClearMonthlyResetAt() *WalletUpdate {
+	_u.mutation.ClearMonthlyResetAt()
+	return _u
+}
+
 // SetDailyBasicTokenBalance sets the "daily_basic_token_balance" field.
 func (_u *WalletUpdate) SetDailyBasicTokenBalance(v int64) *WalletUpdate {
 	_u.mutation.ResetDailyBasicTokenBalance()
@@ -188,26 +311,6 @@ func (_u *WalletUpdate) SetNillableDailyUltraTokenBalance(v *int64) *WalletUpdat
 // AddDailyUltraTokenBalance adds value to the "daily_ultra_token_balance" field.
 func (_u *WalletUpdate) AddDailyUltraTokenBalance(v int64) *WalletUpdate {
 	_u.mutation.AddDailyUltraTokenBalance(v)
-	return _u
-}
-
-// SetDailyResetAt sets the "daily_reset_at" field.
-func (_u *WalletUpdate) SetDailyResetAt(v time.Time) *WalletUpdate {
-	_u.mutation.SetDailyResetAt(v)
-	return _u
-}
-
-// SetNillableDailyResetAt sets the "daily_reset_at" field if the given value is not nil.
-func (_u *WalletUpdate) SetNillableDailyResetAt(v *time.Time) *WalletUpdate {
-	if v != nil {
-		_u.SetDailyResetAt(*v)
-	}
-	return _u
-}
-
-// ClearDailyResetAt clears the value of the "daily_reset_at" field.
-func (_u *WalletUpdate) ClearDailyResetAt() *WalletUpdate {
-	_u.mutation.ClearDailyResetAt()
 	return _u
 }
 
@@ -328,6 +431,42 @@ func (_u *WalletUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedTotalGranted(); ok {
 		_spec.AddField(wallet.FieldTotalGranted, field.TypeInt64, value)
 	}
+	if value, ok := _u.mutation.DailyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldDailyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedDailyTokenBalance(); ok {
+		_spec.AddField(wallet.FieldDailyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.WeeklyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldWeeklyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedWeeklyTokenBalance(); ok {
+		_spec.AddField(wallet.FieldWeeklyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.MonthlyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldMonthlyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedMonthlyTokenBalance(); ok {
+		_spec.AddField(wallet.FieldMonthlyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.DailyResetAt(); ok {
+		_spec.SetField(wallet.FieldDailyResetAt, field.TypeTime, value)
+	}
+	if _u.mutation.DailyResetAtCleared() {
+		_spec.ClearField(wallet.FieldDailyResetAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.WeeklyResetAt(); ok {
+		_spec.SetField(wallet.FieldWeeklyResetAt, field.TypeTime, value)
+	}
+	if _u.mutation.WeeklyResetAtCleared() {
+		_spec.ClearField(wallet.FieldWeeklyResetAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.MonthlyResetAt(); ok {
+		_spec.SetField(wallet.FieldMonthlyResetAt, field.TypeTime, value)
+	}
+	if _u.mutation.MonthlyResetAtCleared() {
+		_spec.ClearField(wallet.FieldMonthlyResetAt, field.TypeTime)
+	}
 	if value, ok := _u.mutation.DailyBasicTokenBalance(); ok {
 		_spec.SetField(wallet.FieldDailyBasicTokenBalance, field.TypeInt64, value)
 	}
@@ -345,12 +484,6 @@ func (_u *WalletUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedDailyUltraTokenBalance(); ok {
 		_spec.AddField(wallet.FieldDailyUltraTokenBalance, field.TypeInt64, value)
-	}
-	if value, ok := _u.mutation.DailyResetAt(); ok {
-		_spec.SetField(wallet.FieldDailyResetAt, field.TypeTime, value)
-	}
-	if _u.mutation.DailyResetAtCleared() {
-		_spec.ClearField(wallet.FieldDailyResetAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.EnableCreditConsumption(); ok {
 		_spec.SetField(wallet.FieldEnableCreditConsumption, field.TypeBool, value)
@@ -481,6 +614,129 @@ func (_u *WalletUpdateOne) AddTotalGranted(v int64) *WalletUpdateOne {
 	return _u
 }
 
+// SetDailyTokenBalance sets the "daily_token_balance" field.
+func (_u *WalletUpdateOne) SetDailyTokenBalance(v int64) *WalletUpdateOne {
+	_u.mutation.ResetDailyTokenBalance()
+	_u.mutation.SetDailyTokenBalance(v)
+	return _u
+}
+
+// SetNillableDailyTokenBalance sets the "daily_token_balance" field if the given value is not nil.
+func (_u *WalletUpdateOne) SetNillableDailyTokenBalance(v *int64) *WalletUpdateOne {
+	if v != nil {
+		_u.SetDailyTokenBalance(*v)
+	}
+	return _u
+}
+
+// AddDailyTokenBalance adds value to the "daily_token_balance" field.
+func (_u *WalletUpdateOne) AddDailyTokenBalance(v int64) *WalletUpdateOne {
+	_u.mutation.AddDailyTokenBalance(v)
+	return _u
+}
+
+// SetWeeklyTokenBalance sets the "weekly_token_balance" field.
+func (_u *WalletUpdateOne) SetWeeklyTokenBalance(v int64) *WalletUpdateOne {
+	_u.mutation.ResetWeeklyTokenBalance()
+	_u.mutation.SetWeeklyTokenBalance(v)
+	return _u
+}
+
+// SetNillableWeeklyTokenBalance sets the "weekly_token_balance" field if the given value is not nil.
+func (_u *WalletUpdateOne) SetNillableWeeklyTokenBalance(v *int64) *WalletUpdateOne {
+	if v != nil {
+		_u.SetWeeklyTokenBalance(*v)
+	}
+	return _u
+}
+
+// AddWeeklyTokenBalance adds value to the "weekly_token_balance" field.
+func (_u *WalletUpdateOne) AddWeeklyTokenBalance(v int64) *WalletUpdateOne {
+	_u.mutation.AddWeeklyTokenBalance(v)
+	return _u
+}
+
+// SetMonthlyTokenBalance sets the "monthly_token_balance" field.
+func (_u *WalletUpdateOne) SetMonthlyTokenBalance(v int64) *WalletUpdateOne {
+	_u.mutation.ResetMonthlyTokenBalance()
+	_u.mutation.SetMonthlyTokenBalance(v)
+	return _u
+}
+
+// SetNillableMonthlyTokenBalance sets the "monthly_token_balance" field if the given value is not nil.
+func (_u *WalletUpdateOne) SetNillableMonthlyTokenBalance(v *int64) *WalletUpdateOne {
+	if v != nil {
+		_u.SetMonthlyTokenBalance(*v)
+	}
+	return _u
+}
+
+// AddMonthlyTokenBalance adds value to the "monthly_token_balance" field.
+func (_u *WalletUpdateOne) AddMonthlyTokenBalance(v int64) *WalletUpdateOne {
+	_u.mutation.AddMonthlyTokenBalance(v)
+	return _u
+}
+
+// SetDailyResetAt sets the "daily_reset_at" field.
+func (_u *WalletUpdateOne) SetDailyResetAt(v time.Time) *WalletUpdateOne {
+	_u.mutation.SetDailyResetAt(v)
+	return _u
+}
+
+// SetNillableDailyResetAt sets the "daily_reset_at" field if the given value is not nil.
+func (_u *WalletUpdateOne) SetNillableDailyResetAt(v *time.Time) *WalletUpdateOne {
+	if v != nil {
+		_u.SetDailyResetAt(*v)
+	}
+	return _u
+}
+
+// ClearDailyResetAt clears the value of the "daily_reset_at" field.
+func (_u *WalletUpdateOne) ClearDailyResetAt() *WalletUpdateOne {
+	_u.mutation.ClearDailyResetAt()
+	return _u
+}
+
+// SetWeeklyResetAt sets the "weekly_reset_at" field.
+func (_u *WalletUpdateOne) SetWeeklyResetAt(v time.Time) *WalletUpdateOne {
+	_u.mutation.SetWeeklyResetAt(v)
+	return _u
+}
+
+// SetNillableWeeklyResetAt sets the "weekly_reset_at" field if the given value is not nil.
+func (_u *WalletUpdateOne) SetNillableWeeklyResetAt(v *time.Time) *WalletUpdateOne {
+	if v != nil {
+		_u.SetWeeklyResetAt(*v)
+	}
+	return _u
+}
+
+// ClearWeeklyResetAt clears the value of the "weekly_reset_at" field.
+func (_u *WalletUpdateOne) ClearWeeklyResetAt() *WalletUpdateOne {
+	_u.mutation.ClearWeeklyResetAt()
+	return _u
+}
+
+// SetMonthlyResetAt sets the "monthly_reset_at" field.
+func (_u *WalletUpdateOne) SetMonthlyResetAt(v time.Time) *WalletUpdateOne {
+	_u.mutation.SetMonthlyResetAt(v)
+	return _u
+}
+
+// SetNillableMonthlyResetAt sets the "monthly_reset_at" field if the given value is not nil.
+func (_u *WalletUpdateOne) SetNillableMonthlyResetAt(v *time.Time) *WalletUpdateOne {
+	if v != nil {
+		_u.SetMonthlyResetAt(*v)
+	}
+	return _u
+}
+
+// ClearMonthlyResetAt clears the value of the "monthly_reset_at" field.
+func (_u *WalletUpdateOne) ClearMonthlyResetAt() *WalletUpdateOne {
+	_u.mutation.ClearMonthlyResetAt()
+	return _u
+}
+
 // SetDailyBasicTokenBalance sets the "daily_basic_token_balance" field.
 func (_u *WalletUpdateOne) SetDailyBasicTokenBalance(v int64) *WalletUpdateOne {
 	_u.mutation.ResetDailyBasicTokenBalance()
@@ -541,26 +797,6 @@ func (_u *WalletUpdateOne) SetNillableDailyUltraTokenBalance(v *int64) *WalletUp
 // AddDailyUltraTokenBalance adds value to the "daily_ultra_token_balance" field.
 func (_u *WalletUpdateOne) AddDailyUltraTokenBalance(v int64) *WalletUpdateOne {
 	_u.mutation.AddDailyUltraTokenBalance(v)
-	return _u
-}
-
-// SetDailyResetAt sets the "daily_reset_at" field.
-func (_u *WalletUpdateOne) SetDailyResetAt(v time.Time) *WalletUpdateOne {
-	_u.mutation.SetDailyResetAt(v)
-	return _u
-}
-
-// SetNillableDailyResetAt sets the "daily_reset_at" field if the given value is not nil.
-func (_u *WalletUpdateOne) SetNillableDailyResetAt(v *time.Time) *WalletUpdateOne {
-	if v != nil {
-		_u.SetDailyResetAt(*v)
-	}
-	return _u
-}
-
-// ClearDailyResetAt clears the value of the "daily_reset_at" field.
-func (_u *WalletUpdateOne) ClearDailyResetAt() *WalletUpdateOne {
-	_u.mutation.ClearDailyResetAt()
 	return _u
 }
 
@@ -711,6 +947,42 @@ func (_u *WalletUpdateOne) sqlSave(ctx context.Context) (_node *Wallet, err erro
 	if value, ok := _u.mutation.AddedTotalGranted(); ok {
 		_spec.AddField(wallet.FieldTotalGranted, field.TypeInt64, value)
 	}
+	if value, ok := _u.mutation.DailyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldDailyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedDailyTokenBalance(); ok {
+		_spec.AddField(wallet.FieldDailyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.WeeklyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldWeeklyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedWeeklyTokenBalance(); ok {
+		_spec.AddField(wallet.FieldWeeklyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.MonthlyTokenBalance(); ok {
+		_spec.SetField(wallet.FieldMonthlyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedMonthlyTokenBalance(); ok {
+		_spec.AddField(wallet.FieldMonthlyTokenBalance, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.DailyResetAt(); ok {
+		_spec.SetField(wallet.FieldDailyResetAt, field.TypeTime, value)
+	}
+	if _u.mutation.DailyResetAtCleared() {
+		_spec.ClearField(wallet.FieldDailyResetAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.WeeklyResetAt(); ok {
+		_spec.SetField(wallet.FieldWeeklyResetAt, field.TypeTime, value)
+	}
+	if _u.mutation.WeeklyResetAtCleared() {
+		_spec.ClearField(wallet.FieldWeeklyResetAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.MonthlyResetAt(); ok {
+		_spec.SetField(wallet.FieldMonthlyResetAt, field.TypeTime, value)
+	}
+	if _u.mutation.MonthlyResetAtCleared() {
+		_spec.ClearField(wallet.FieldMonthlyResetAt, field.TypeTime)
+	}
 	if value, ok := _u.mutation.DailyBasicTokenBalance(); ok {
 		_spec.SetField(wallet.FieldDailyBasicTokenBalance, field.TypeInt64, value)
 	}
@@ -728,12 +1000,6 @@ func (_u *WalletUpdateOne) sqlSave(ctx context.Context) (_node *Wallet, err erro
 	}
 	if value, ok := _u.mutation.AddedDailyUltraTokenBalance(); ok {
 		_spec.AddField(wallet.FieldDailyUltraTokenBalance, field.TypeInt64, value)
-	}
-	if value, ok := _u.mutation.DailyResetAt(); ok {
-		_spec.SetField(wallet.FieldDailyResetAt, field.TypeTime, value)
-	}
-	if _u.mutation.DailyResetAtCleared() {
-		_spec.ClearField(wallet.FieldDailyResetAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.EnableCreditConsumption(); ok {
 		_spec.SetField(wallet.FieldEnableCreditConsumption, field.TypeBool, value)

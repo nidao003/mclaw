@@ -95,3 +95,6 @@ playground/
 # ClawX-biz bridge workspace artifacts
 resources/enterprise-skills/
 resources/openclaw-plugins/skillshub/
+
+# spec-workflow MCP tool working directory (local only)
+.spec-workflow/

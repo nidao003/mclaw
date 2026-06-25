@@ -55,6 +55,30 @@
       "ref": "main",
       "version": "main",
       "autoEnable": true
+    },
+    {
+      "slug": "query-service",
+      "version": "1.0.0",
+      "autoEnable": true,
+      "local": true
+    },
+    {
+      "slug": "station-profile",
+      "version": "1.0.0",
+      "autoEnable": true,
+      "local": true
+    },
+    {
+      "slug": "data-fusion",
+      "version": "1.0.0",
+      "autoEnable": true,
+      "local": true
+    },
+    {
+      "slug": "query-guide",
+      "version": "1.0.0",
+      "autoEnable": true,
+      "local": true
     }
   ]
 }

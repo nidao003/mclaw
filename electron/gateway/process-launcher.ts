@@ -7,6 +7,8 @@ import type { GatewayLifecycleState } from './process-policy';
 import { logger } from '../utils/logger';
 import { appendNodeRequireToNodeOptions, getOpenClawConfigDir, getMclawRuntimeDir, getMclawGatewayNodeBinary } from '../utils/paths';
 import { writeMclawPointerFile, clearMclawPointerFile } from './mclaw-pointer';
+import { getOrCreateDeviceSecret } from '../services/secrets/device-secret';
+import { getDataApiKey } from '../services/secrets/data-api-key';
 
 const GATEWAY_FETCH_PRELOAD_SOURCE = `'use strict';
 (function () {
@@ -15,30 +17,74 @@ const GATEWAY_FETCH_PRELOAD_SOURCE = `'use strict';
   if (globalThis.__mclawFetchPatched) return;
   globalThis.__mclawFetchPatched = true;
 
+  var crypto = require('crypto');
+  var DEVICE_SECRET = process.env.MCLAW_DEVICE_SECRET || '';
+  var LLMPROXY_HOST = process.env.MCLAW_LLMPROXY_HOST || '';
+
+  function flattenHeaders(prev) {
+    var flat = {};
+    if (prev && typeof prev.forEach === 'function') {
+      prev.forEach(function (v, k) { flat[k] = v; });
+    } else if (prev && typeof prev === 'object') {
+      Object.assign(flat, prev);
+    }
+    return flat;
+  }
+
+  function bodyToBuffer(body) {
+    if (body == null) return Buffer.alloc(0);
+    if (Buffer.isBuffer(body)) return body;
+    if (typeof body === 'string') return Buffer.from(body, 'utf8');
+    if (body instanceof Uint8Array) return Buffer.from(body);
+    // FormData / stream / Blob 等无法同步取字节，跳过签名（不阻断请求）
+    return null;
+  }
+
+  // 为发往 llmproxy 的请求计算并注入 X-Mclaw-Sig 签名头。
+  // 签名 = HMAC-SHA256(deviceSecret, "<t>\\n<METHOD>\\n<path>\\n<bodySha256>")
+  function signLlmProxy(url, init) {
+    if (!DEVICE_SECRET || !LLMPROXY_HOST) return;
+    if (url.indexOf(LLMPROXY_HOST) === -1) return;
+    var u;
+    try { u = new URL(url); } catch (e) { return; }
+    var method = ((init && init.method) || 'GET').toUpperCase();
+    var bodyBuf = bodyToBuffer(init && init.body);
+    if (bodyBuf === null) return; // body 不可同步读取则不签名（少见，OpenClaw chat 请求均为 JSON 字符串）
+    var t = Math.floor(Date.now() / 1000);
+    var bodySha = crypto.createHash('sha256').update(bodyBuf).digest('hex');
+    var sig = crypto.createHmac('sha256', DEVICE_SECRET)
+      .update(t + '\\n' + method + '\\n' + u.pathname + '\\n' + bodySha)
+      .digest('hex');
+    var flat = flattenHeaders(init && init.headers);
+    flat['X-Mclaw-Sig'] = 't=' + t + ', v1=' + sig;
+    if (init) {
+      init.headers = flat;
+    }
+  }
+
   globalThis.fetch = function mclawFetch(input, init) {
     var url =
       typeof input === 'string' ? input
         : input && typeof input === 'object' && typeof input.url === 'string'
           ? input.url : '';
 
-    if (url.indexOf('openrouter.ai') !== -1) {
+    if (url) {
       init = init ? Object.assign({}, init) : {};
-      var prev = init.headers;
-      var flat = {};
-      if (prev && typeof prev.forEach === 'function') {
-        prev.forEach(function (v, k) { flat[k] = v; });
-      } else if (prev && typeof prev === 'object') {
-        Object.assign(flat, prev);
+      // llmproxy 签名注入（云端模型访问绑定）
+      try { signLlmProxy(url, init); } catch (e) { /* 签名失败不阻断请求 */ }
+
+      if (url.indexOf('openrouter.ai') !== -1) {
+        var flat = flattenHeaders(init.headers);
+        delete flat['http-referer'];
+        delete flat['HTTP-Referer'];
+        delete flat['x-title'];
+        delete flat['X-Title'];
+        delete flat['x-openrouter-title'];
+        delete flat['X-OpenRouter-Title'];
+        flat['HTTP-Referer'] = 'https://claw-x.com';
+        flat['X-OpenRouter-Title'] = 'mclaw';
+        init.headers = flat;
       }
-      delete flat['http-referer'];
-      delete flat['HTTP-Referer'];
-      delete flat['x-title'];
-      delete flat['X-Title'];
-      delete flat['x-openrouter-title'];
-      delete flat['X-OpenRouter-Title'];
-      flat['HTTP-Referer'] = 'https://claw-x.com';
-      flat['X-OpenRouter-Title'] = 'mclaw';
-      init.headers = flat;
     }
     return _f.call(globalThis, input, init);
   };
@@ -82,6 +128,7 @@ const GATEWAY_FETCH_PRELOAD_SOURCE = `'use strict';
 })();
 `;
 
+
 function ensureGatewayFetchPreload(): string {
   const dest = path.join(app.getPath('userData'), 'gateway-fetch-preload.cjs');
   try {
@@ -122,6 +169,27 @@ export async function launchGatewayProcess(options: {
 
   const runtimeEnv = { ...forkEnv };
 
+  // 云端模型访问绑定加固：把 deviceSecret 经环境变量注入 Gateway 子进程，
+  // 供 fetch preload 计算 X-Mclaw-Sig 签名（deviceSecret 本身不落 openclaw.json，只进 keychain）。
+  // MCLAW_LLMPROXY_HOST 用于 preload 判断哪些出站请求需要签名。
+  try {
+    runtimeEnv.MCLAW_DEVICE_SECRET = getOrCreateDeviceSecret();
+    runtimeEnv.MCLAW_LLMPROXY_HOST = process.env.MCLAW_LLMPROXY_HOST || 'mclaw.[REDACTED]';
+  } catch (err) {
+    logger.warn('[gateway-launch] failed to inject device secret env:', err);
+  }
+
+  // 数据查询 API key（Go 后端 /api/v1/data/* 的 X-API-Key，不绑客户端、通用可用）。
+  // 与 deviceSecret 同暴露面：经 env 注入 Gateway 子进程，供数据查询 skill 脚本读取。
+  // 明文只进 keychain，不落 openclaw.json。本地无 key 时留空，skill 脚本会报错提示配置。
+  try {
+    runtimeEnv.MCLAW_DATA_API_KEY = getDataApiKey() || '';
+    runtimeEnv.MCLAW_DATA_BASE_URL =
+      process.env.MCLAW_DATA_BASE_URL || 'https://[REDACTED]';
+  } catch (err) {
+    logger.warn('[gateway-launch] failed to inject data api key env:', err);
+  }
+
   // Disable OpenClaw's mDNS/Bonjour gateway advertiser unconditionally.
   //
   // The OpenClaw gateway advertises `_mclaw-gw._tcp.local` on every
@@ -149,24 +217,6 @@ export async function launchGatewayProcess(options: {
   // OPENCLAW_CONFIG env is unset, which leaks mclaw state into a directory
   // that other projects (and the user) consider off-limits.
   runtimeEnv.OPENCLAW_STATE_DIR = getOpenClawConfigDir();
-
-  // Only apply the fetch/child_process preload in dev mode.
-  // In packaged builds Electron's UtilityProcess rejects NODE_OPTIONS
-  // with --require, logging "Most NODE_OPTIONs are not supported in
-  // packaged apps" and the preload never loads.
-  if (!app.isPackaged) {
-    try {
-      const preloadPath = ensureGatewayFetchPreload();
-      if (existsSync(preloadPath)) {
-        runtimeEnv.NODE_OPTIONS = appendNodeRequireToNodeOptions(
-          runtimeEnv.NODE_OPTIONS,
-          preloadPath,
-        );
-      }
-    } catch (err) {
-      logger.warn('Failed to set up OpenRouter headers preload:', err);
-    }
-  }
 
   return await new Promise<{ child: ChildProcess; lastSpawnSummary: string }>((resolve, reject) => {
     // ─────────────────────────────────────────────────────────────
@@ -218,7 +268,20 @@ export async function launchGatewayProcess(options: {
       // dev 模式用父进程的 NODE_OPTIONS 即可（preload patch 在 Electron 主进程里跑）；
       // packaged 模式不打 NODE_OPTIONS，由 openclaw 自己处理 OpenRouter headers。
       const envForStandalone: NodeJS.ProcessEnv = { ...runtimeEnv };
-      // 注意：不在这里设置/修改 NODE_OPTIONS，让 Node 用默认值即可
+      // 独立 Node 二进制支持 NODE_OPTIONS --require，dev/packaged 都注入 fetch preload。
+      // preload 负责：llmproxy 请求 X-Mclaw-Sig 签名注入 + OpenRouter 头改写 + windowsHide。
+      // （UtilityProcess fallback 不支持 NODE_OPTIONS --require，走它时无签名注入，但 fallback 极少触发）
+      try {
+        const preloadPath = ensureGatewayFetchPreload();
+        if (existsSync(preloadPath)) {
+          envForStandalone.NODE_OPTIONS = appendNodeRequireToNodeOptions(
+            envForStandalone.NODE_OPTIONS,
+            preloadPath,
+          );
+        }
+      } catch (err) {
+        logger.warn('[gateway-launch] failed to set up fetch preload:', err);
+      }
 
       logger.info(`[gateway-launch] mode=standalone-node node=${nodeBinary} cwd=${gatewayCwd} entry=${entryAbs} title=${childName}`);
 

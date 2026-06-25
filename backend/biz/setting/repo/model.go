@@ -56,7 +56,14 @@ func (r *modelRepo) Get(ctx context.Context, uid, id uuid.UUID) (*db.Model, erro
 		First(ctx)
 }
 
-func (r *modelRepo) CreateRuntimeAPIKey(ctx context.Context, uid, modelID uuid.UUID, vmID string) (string, error) {
+// GetByUserAndModelName 查询用户名下指定 model 名的模型记录（用于确保 auto 模型存在）。
+func (r *modelRepo) GetByUserAndModelName(ctx context.Context, uid uuid.UUID, modelName string) (*db.Model, error) {
+	return r.db.Model.Query().
+		Where(model.UserID(uid), model.ModelEQ(modelName)).
+		First(ctx)
+}
+
+func (r *modelRepo) CreateRuntimeAPIKey(ctx context.Context, uid, modelID uuid.UUID, vmID string, deviceSecret string, expiresAt *time.Time) (string, error) {
 	var runtimeKey string
 	err := entx.WithTx2(ctx, r.db, func(tx *db.Tx) error {
 		_, err := tx.Model.Query().
@@ -97,6 +104,15 @@ func (r *modelRepo) CreateRuntimeAPIKey(ctx context.Context, uid, modelID uuid.U
 		if vmID != "" {
 			create.SetVirtualmachineID(vmID)
 		}
+		// 桌面端 key（vmID 空）绑客户端 device_secret + 设过期；VM key 保持原状（第二期加固）
+		if vmID == "" {
+			if deviceSecret != "" {
+				create.SetDeviceSecret(deviceSecret)
+			}
+			if expiresAt != nil {
+				create.SetExpiresAt(*expiresAt)
+			}
+		}
 		if _, err := create.Save(ctx); err != nil {
 			return err
 		}
@@ -107,6 +123,15 @@ func (r *modelRepo) CreateRuntimeAPIKey(ctx context.Context, uid, modelID uuid.U
 		return "", err
 	}
 	return runtimeKey, nil
+}
+
+// RefreshRuntimeAPIKey 刷新现有 runtime key 的 device_secret + expires_at，
+// 用于桌面端复用同一把 UUID key 时续签/换设备绑定。
+func (r *modelRepo) RefreshRuntimeAPIKey(ctx context.Context, id uuid.UUID, deviceSecret string, expiresAt time.Time) error {
+	return r.db.ModelApiKey.UpdateOneID(id).
+		SetDeviceSecret(deviceSecret).
+		SetExpiresAt(expiresAt).
+		Exec(ctx)
 }
 
 // GetRuntimeAPIKeyByUserModel 查询用户对某模型已签发的、非 VM 绑定的 runtime key。

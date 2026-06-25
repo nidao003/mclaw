@@ -38,6 +38,8 @@ import { applyProxySettings } from './proxy';
 import { syncLaunchAtStartupSettingFromStore } from './launch-at-startup';
 import { getRecentTokenUsageHistory } from '../utils/token-usage';
 import { getProviderService } from '../services/providers/provider-service';
+import { getOrCreateDeviceSecret } from '../services/secrets/device-secret';
+import { getDataApiKey, saveDataApiKey, clearDataApiKey } from '../services/secrets/data-api-key';
 import {
   getOpenClawProviderKey,
   syncDefaultProviderToRuntime,
@@ -731,6 +733,18 @@ function registerOpenClawHandlers(): void {
     logger.info('mclaw:status IPC called', status);
     return status;
   });
+
+  // 云端模型访问绑定加固：返回客户端 HMAC 签名密钥（safeStorage 加密存 keychain）。
+  // 渲染进程拿到后提交给后端 IssueRuntimeKey 绑定 runtime key。明文仅短暂在渲染进程内存。
+  ipcMain.handle('device-secret:get', () => {
+    return getOrCreateDeviceSecret();
+  });
+
+  // 数据 API key（Go 后端 /api/v1/data/* 的 X-API-Key，不绑客户端、通用可用）。
+  // 明文只进 keychain，不落 openclaw.json。渲染进程经此三接口做 ensureDataApiKey 严谨流程。
+  ipcMain.handle('data-api-key:get', () => getDataApiKey());
+  ipcMain.handle('data-api-key:save', (_e, key: string) => saveDataApiKey(key));
+  ipcMain.handle('data-api-key:clear', () => clearDataApiKey());
 
   // Get the mclaw skills directory (~/.mclaw/skills)
   ipcMain.handle('mclaw:getSkillsDir', () => {

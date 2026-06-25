@@ -19136,6 +19136,9 @@ type ModelApiKeyMutation struct {
 	user_id           *uuid.UUID
 	virtualmachine_id *string
 	api_key           *string
+	device_secret     *string
+	expires_at        *time.Time
+	revoked_at        *time.Time
 	created_at        *time.Time
 	clearedFields     map[string]struct{}
 	model             *uuid.UUID
@@ -19455,6 +19458,153 @@ func (m *ModelApiKeyMutation) ResetAPIKey() {
 	m.api_key = nil
 }
 
+// SetDeviceSecret sets the "device_secret" field.
+func (m *ModelApiKeyMutation) SetDeviceSecret(s string) {
+	m.device_secret = &s
+}
+
+// DeviceSecret returns the value of the "device_secret" field in the mutation.
+func (m *ModelApiKeyMutation) DeviceSecret() (r string, exists bool) {
+	v := m.device_secret
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeviceSecret returns the old "device_secret" field's value of the ModelApiKey entity.
+// If the ModelApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ModelApiKeyMutation) OldDeviceSecret(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeviceSecret is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeviceSecret requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeviceSecret: %w", err)
+	}
+	return oldValue.DeviceSecret, nil
+}
+
+// ClearDeviceSecret clears the value of the "device_secret" field.
+func (m *ModelApiKeyMutation) ClearDeviceSecret() {
+	m.device_secret = nil
+	m.clearedFields[modelapikey.FieldDeviceSecret] = struct{}{}
+}
+
+// DeviceSecretCleared returns if the "device_secret" field was cleared in this mutation.
+func (m *ModelApiKeyMutation) DeviceSecretCleared() bool {
+	_, ok := m.clearedFields[modelapikey.FieldDeviceSecret]
+	return ok
+}
+
+// ResetDeviceSecret resets all changes to the "device_secret" field.
+func (m *ModelApiKeyMutation) ResetDeviceSecret() {
+	m.device_secret = nil
+	delete(m.clearedFields, modelapikey.FieldDeviceSecret)
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *ModelApiKeyMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *ModelApiKeyMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the ModelApiKey entity.
+// If the ModelApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ModelApiKeyMutation) OldExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (m *ModelApiKeyMutation) ClearExpiresAt() {
+	m.expires_at = nil
+	m.clearedFields[modelapikey.FieldExpiresAt] = struct{}{}
+}
+
+// ExpiresAtCleared returns if the "expires_at" field was cleared in this mutation.
+func (m *ModelApiKeyMutation) ExpiresAtCleared() bool {
+	_, ok := m.clearedFields[modelapikey.FieldExpiresAt]
+	return ok
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *ModelApiKeyMutation) ResetExpiresAt() {
+	m.expires_at = nil
+	delete(m.clearedFields, modelapikey.FieldExpiresAt)
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (m *ModelApiKeyMutation) SetRevokedAt(t time.Time) {
+	m.revoked_at = &t
+}
+
+// RevokedAt returns the value of the "revoked_at" field in the mutation.
+func (m *ModelApiKeyMutation) RevokedAt() (r time.Time, exists bool) {
+	v := m.revoked_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRevokedAt returns the old "revoked_at" field's value of the ModelApiKey entity.
+// If the ModelApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ModelApiKeyMutation) OldRevokedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRevokedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRevokedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRevokedAt: %w", err)
+	}
+	return oldValue.RevokedAt, nil
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (m *ModelApiKeyMutation) ClearRevokedAt() {
+	m.revoked_at = nil
+	m.clearedFields[modelapikey.FieldRevokedAt] = struct{}{}
+}
+
+// RevokedAtCleared returns if the "revoked_at" field was cleared in this mutation.
+func (m *ModelApiKeyMutation) RevokedAtCleared() bool {
+	_, ok := m.clearedFields[modelapikey.FieldRevokedAt]
+	return ok
+}
+
+// ResetRevokedAt resets all changes to the "revoked_at" field.
+func (m *ModelApiKeyMutation) ResetRevokedAt() {
+	m.revoked_at = nil
+	delete(m.clearedFields, modelapikey.FieldRevokedAt)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *ModelApiKeyMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -19552,7 +19702,7 @@ func (m *ModelApiKeyMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ModelApiKeyMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 9)
 	if m.deleted_at != nil {
 		fields = append(fields, modelapikey.FieldDeletedAt)
 	}
@@ -19567,6 +19717,15 @@ func (m *ModelApiKeyMutation) Fields() []string {
 	}
 	if m.api_key != nil {
 		fields = append(fields, modelapikey.FieldAPIKey)
+	}
+	if m.device_secret != nil {
+		fields = append(fields, modelapikey.FieldDeviceSecret)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, modelapikey.FieldExpiresAt)
+	}
+	if m.revoked_at != nil {
+		fields = append(fields, modelapikey.FieldRevokedAt)
 	}
 	if m.created_at != nil {
 		fields = append(fields, modelapikey.FieldCreatedAt)
@@ -19589,6 +19748,12 @@ func (m *ModelApiKeyMutation) Field(name string) (ent.Value, bool) {
 		return m.VirtualmachineID()
 	case modelapikey.FieldAPIKey:
 		return m.APIKey()
+	case modelapikey.FieldDeviceSecret:
+		return m.DeviceSecret()
+	case modelapikey.FieldExpiresAt:
+		return m.ExpiresAt()
+	case modelapikey.FieldRevokedAt:
+		return m.RevokedAt()
 	case modelapikey.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -19610,6 +19775,12 @@ func (m *ModelApiKeyMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldVirtualmachineID(ctx)
 	case modelapikey.FieldAPIKey:
 		return m.OldAPIKey(ctx)
+	case modelapikey.FieldDeviceSecret:
+		return m.OldDeviceSecret(ctx)
+	case modelapikey.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	case modelapikey.FieldRevokedAt:
+		return m.OldRevokedAt(ctx)
 	case modelapikey.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -19656,6 +19827,27 @@ func (m *ModelApiKeyMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAPIKey(v)
 		return nil
+	case modelapikey.FieldDeviceSecret:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeviceSecret(v)
+		return nil
+	case modelapikey.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	case modelapikey.FieldRevokedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRevokedAt(v)
+		return nil
 	case modelapikey.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -19699,6 +19891,15 @@ func (m *ModelApiKeyMutation) ClearedFields() []string {
 	if m.FieldCleared(modelapikey.FieldVirtualmachineID) {
 		fields = append(fields, modelapikey.FieldVirtualmachineID)
 	}
+	if m.FieldCleared(modelapikey.FieldDeviceSecret) {
+		fields = append(fields, modelapikey.FieldDeviceSecret)
+	}
+	if m.FieldCleared(modelapikey.FieldExpiresAt) {
+		fields = append(fields, modelapikey.FieldExpiresAt)
+	}
+	if m.FieldCleared(modelapikey.FieldRevokedAt) {
+		fields = append(fields, modelapikey.FieldRevokedAt)
+	}
 	return fields
 }
 
@@ -19718,6 +19919,15 @@ func (m *ModelApiKeyMutation) ClearField(name string) error {
 		return nil
 	case modelapikey.FieldVirtualmachineID:
 		m.ClearVirtualmachineID()
+		return nil
+	case modelapikey.FieldDeviceSecret:
+		m.ClearDeviceSecret()
+		return nil
+	case modelapikey.FieldExpiresAt:
+		m.ClearExpiresAt()
+		return nil
+	case modelapikey.FieldRevokedAt:
+		m.ClearRevokedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown ModelApiKey nullable field %s", name)
@@ -19741,6 +19951,15 @@ func (m *ModelApiKeyMutation) ResetField(name string) error {
 		return nil
 	case modelapikey.FieldAPIKey:
 		m.ResetAPIKey()
+		return nil
+	case modelapikey.FieldDeviceSecret:
+		m.ResetDeviceSecret()
+		return nil
+	case modelapikey.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	case modelapikey.FieldRevokedAt:
+		m.ResetRevokedAt()
 		return nil
 	case modelapikey.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -24316,40 +24535,46 @@ func (m *PaymentOrderMutation) ResetEdge(name string) error {
 // PlanMutation represents an operation that mutates the Plan nodes in the graph.
 type PlanMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	name                 *string
-	display_name         *string
-	price_month          *int64
-	addprice_month       *int64
-	price_year           *int64
-	addprice_year        *int64
-	basic_token_quota    *int64
-	addbasic_token_quota *int64
-	pro_token_quota      *int64
-	addpro_token_quota   *int64
-	ultra_token_quota    *int64
-	addultra_token_quota *int64
-	monthly_credits      *int64
-	addmonthly_credits   *int64
-	max_concurrency      *int
-	addmax_concurrency   *int
-	features             *[]string
-	appendfeatures       []string
-	is_default           *bool
-	is_active            *bool
-	sort_order           *int
-	addsort_order        *int
-	created_at           *time.Time
-	updated_at           *time.Time
-	clearedFields        map[string]struct{}
-	subscriptions        map[uuid.UUID]struct{}
-	removedsubscriptions map[uuid.UUID]struct{}
-	clearedsubscriptions bool
-	done                 bool
-	oldValue             func(context.Context) (*Plan, error)
-	predicates           []predicate.Plan
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	name                   *string
+	display_name           *string
+	price_month            *int64
+	addprice_month         *int64
+	price_year             *int64
+	addprice_year          *int64
+	daily_token_quota      *int64
+	adddaily_token_quota   *int64
+	weekly_token_quota     *int64
+	addweekly_token_quota  *int64
+	monthly_token_quota    *int64
+	addmonthly_token_quota *int64
+	monthly_credits        *int64
+	addmonthly_credits     *int64
+	basic_token_quota      *int64
+	addbasic_token_quota   *int64
+	pro_token_quota        *int64
+	addpro_token_quota     *int64
+	ultra_token_quota      *int64
+	addultra_token_quota   *int64
+	max_concurrency        *int
+	addmax_concurrency     *int
+	features               *[]string
+	appendfeatures         []string
+	is_default             *bool
+	is_active              *bool
+	sort_order             *int
+	addsort_order          *int
+	created_at             *time.Time
+	updated_at             *time.Time
+	clearedFields          map[string]struct{}
+	subscriptions          map[uuid.UUID]struct{}
+	removedsubscriptions   map[uuid.UUID]struct{}
+	clearedsubscriptions   bool
+	done                   bool
+	oldValue               func(context.Context) (*Plan, error)
+	predicates             []predicate.Plan
 }
 
 var _ ent.Mutation = (*PlanMutation)(nil)
@@ -24653,6 +24878,230 @@ func (m *PlanMutation) ResetPriceYear() {
 	m.addprice_year = nil
 }
 
+// SetDailyTokenQuota sets the "daily_token_quota" field.
+func (m *PlanMutation) SetDailyTokenQuota(i int64) {
+	m.daily_token_quota = &i
+	m.adddaily_token_quota = nil
+}
+
+// DailyTokenQuota returns the value of the "daily_token_quota" field in the mutation.
+func (m *PlanMutation) DailyTokenQuota() (r int64, exists bool) {
+	v := m.daily_token_quota
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDailyTokenQuota returns the old "daily_token_quota" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldDailyTokenQuota(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDailyTokenQuota is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDailyTokenQuota requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDailyTokenQuota: %w", err)
+	}
+	return oldValue.DailyTokenQuota, nil
+}
+
+// AddDailyTokenQuota adds i to the "daily_token_quota" field.
+func (m *PlanMutation) AddDailyTokenQuota(i int64) {
+	if m.adddaily_token_quota != nil {
+		*m.adddaily_token_quota += i
+	} else {
+		m.adddaily_token_quota = &i
+	}
+}
+
+// AddedDailyTokenQuota returns the value that was added to the "daily_token_quota" field in this mutation.
+func (m *PlanMutation) AddedDailyTokenQuota() (r int64, exists bool) {
+	v := m.adddaily_token_quota
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDailyTokenQuota resets all changes to the "daily_token_quota" field.
+func (m *PlanMutation) ResetDailyTokenQuota() {
+	m.daily_token_quota = nil
+	m.adddaily_token_quota = nil
+}
+
+// SetWeeklyTokenQuota sets the "weekly_token_quota" field.
+func (m *PlanMutation) SetWeeklyTokenQuota(i int64) {
+	m.weekly_token_quota = &i
+	m.addweekly_token_quota = nil
+}
+
+// WeeklyTokenQuota returns the value of the "weekly_token_quota" field in the mutation.
+func (m *PlanMutation) WeeklyTokenQuota() (r int64, exists bool) {
+	v := m.weekly_token_quota
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeeklyTokenQuota returns the old "weekly_token_quota" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldWeeklyTokenQuota(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeeklyTokenQuota is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeeklyTokenQuota requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeeklyTokenQuota: %w", err)
+	}
+	return oldValue.WeeklyTokenQuota, nil
+}
+
+// AddWeeklyTokenQuota adds i to the "weekly_token_quota" field.
+func (m *PlanMutation) AddWeeklyTokenQuota(i int64) {
+	if m.addweekly_token_quota != nil {
+		*m.addweekly_token_quota += i
+	} else {
+		m.addweekly_token_quota = &i
+	}
+}
+
+// AddedWeeklyTokenQuota returns the value that was added to the "weekly_token_quota" field in this mutation.
+func (m *PlanMutation) AddedWeeklyTokenQuota() (r int64, exists bool) {
+	v := m.addweekly_token_quota
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWeeklyTokenQuota resets all changes to the "weekly_token_quota" field.
+func (m *PlanMutation) ResetWeeklyTokenQuota() {
+	m.weekly_token_quota = nil
+	m.addweekly_token_quota = nil
+}
+
+// SetMonthlyTokenQuota sets the "monthly_token_quota" field.
+func (m *PlanMutation) SetMonthlyTokenQuota(i int64) {
+	m.monthly_token_quota = &i
+	m.addmonthly_token_quota = nil
+}
+
+// MonthlyTokenQuota returns the value of the "monthly_token_quota" field in the mutation.
+func (m *PlanMutation) MonthlyTokenQuota() (r int64, exists bool) {
+	v := m.monthly_token_quota
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMonthlyTokenQuota returns the old "monthly_token_quota" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldMonthlyTokenQuota(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMonthlyTokenQuota is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMonthlyTokenQuota requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMonthlyTokenQuota: %w", err)
+	}
+	return oldValue.MonthlyTokenQuota, nil
+}
+
+// AddMonthlyTokenQuota adds i to the "monthly_token_quota" field.
+func (m *PlanMutation) AddMonthlyTokenQuota(i int64) {
+	if m.addmonthly_token_quota != nil {
+		*m.addmonthly_token_quota += i
+	} else {
+		m.addmonthly_token_quota = &i
+	}
+}
+
+// AddedMonthlyTokenQuota returns the value that was added to the "monthly_token_quota" field in this mutation.
+func (m *PlanMutation) AddedMonthlyTokenQuota() (r int64, exists bool) {
+	v := m.addmonthly_token_quota
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMonthlyTokenQuota resets all changes to the "monthly_token_quota" field.
+func (m *PlanMutation) ResetMonthlyTokenQuota() {
+	m.monthly_token_quota = nil
+	m.addmonthly_token_quota = nil
+}
+
+// SetMonthlyCredits sets the "monthly_credits" field.
+func (m *PlanMutation) SetMonthlyCredits(i int64) {
+	m.monthly_credits = &i
+	m.addmonthly_credits = nil
+}
+
+// MonthlyCredits returns the value of the "monthly_credits" field in the mutation.
+func (m *PlanMutation) MonthlyCredits() (r int64, exists bool) {
+	v := m.monthly_credits
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMonthlyCredits returns the old "monthly_credits" field's value of the Plan entity.
+// If the Plan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanMutation) OldMonthlyCredits(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMonthlyCredits is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMonthlyCredits requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMonthlyCredits: %w", err)
+	}
+	return oldValue.MonthlyCredits, nil
+}
+
+// AddMonthlyCredits adds i to the "monthly_credits" field.
+func (m *PlanMutation) AddMonthlyCredits(i int64) {
+	if m.addmonthly_credits != nil {
+		*m.addmonthly_credits += i
+	} else {
+		m.addmonthly_credits = &i
+	}
+}
+
+// AddedMonthlyCredits returns the value that was added to the "monthly_credits" field in this mutation.
+func (m *PlanMutation) AddedMonthlyCredits() (r int64, exists bool) {
+	v := m.addmonthly_credits
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMonthlyCredits resets all changes to the "monthly_credits" field.
+func (m *PlanMutation) ResetMonthlyCredits() {
+	m.monthly_credits = nil
+	m.addmonthly_credits = nil
+}
+
 // SetBasicTokenQuota sets the "basic_token_quota" field.
 func (m *PlanMutation) SetBasicTokenQuota(i int64) {
 	m.basic_token_quota = &i
@@ -24819,62 +25268,6 @@ func (m *PlanMutation) AddedUltraTokenQuota() (r int64, exists bool) {
 func (m *PlanMutation) ResetUltraTokenQuota() {
 	m.ultra_token_quota = nil
 	m.addultra_token_quota = nil
-}
-
-// SetMonthlyCredits sets the "monthly_credits" field.
-func (m *PlanMutation) SetMonthlyCredits(i int64) {
-	m.monthly_credits = &i
-	m.addmonthly_credits = nil
-}
-
-// MonthlyCredits returns the value of the "monthly_credits" field in the mutation.
-func (m *PlanMutation) MonthlyCredits() (r int64, exists bool) {
-	v := m.monthly_credits
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMonthlyCredits returns the old "monthly_credits" field's value of the Plan entity.
-// If the Plan object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanMutation) OldMonthlyCredits(ctx context.Context) (v int64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMonthlyCredits is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMonthlyCredits requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMonthlyCredits: %w", err)
-	}
-	return oldValue.MonthlyCredits, nil
-}
-
-// AddMonthlyCredits adds i to the "monthly_credits" field.
-func (m *PlanMutation) AddMonthlyCredits(i int64) {
-	if m.addmonthly_credits != nil {
-		*m.addmonthly_credits += i
-	} else {
-		m.addmonthly_credits = &i
-	}
-}
-
-// AddedMonthlyCredits returns the value that was added to the "monthly_credits" field in this mutation.
-func (m *PlanMutation) AddedMonthlyCredits() (r int64, exists bool) {
-	v := m.addmonthly_credits
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetMonthlyCredits resets all changes to the "monthly_credits" field.
-func (m *PlanMutation) ResetMonthlyCredits() {
-	m.monthly_credits = nil
-	m.addmonthly_credits = nil
 }
 
 // SetMaxConcurrency sets the "max_concurrency" field.
@@ -25286,7 +25679,7 @@ func (m *PlanMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PlanMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 18)
 	if m.name != nil {
 		fields = append(fields, plan.FieldName)
 	}
@@ -25299,6 +25692,18 @@ func (m *PlanMutation) Fields() []string {
 	if m.price_year != nil {
 		fields = append(fields, plan.FieldPriceYear)
 	}
+	if m.daily_token_quota != nil {
+		fields = append(fields, plan.FieldDailyTokenQuota)
+	}
+	if m.weekly_token_quota != nil {
+		fields = append(fields, plan.FieldWeeklyTokenQuota)
+	}
+	if m.monthly_token_quota != nil {
+		fields = append(fields, plan.FieldMonthlyTokenQuota)
+	}
+	if m.monthly_credits != nil {
+		fields = append(fields, plan.FieldMonthlyCredits)
+	}
 	if m.basic_token_quota != nil {
 		fields = append(fields, plan.FieldBasicTokenQuota)
 	}
@@ -25307,9 +25712,6 @@ func (m *PlanMutation) Fields() []string {
 	}
 	if m.ultra_token_quota != nil {
 		fields = append(fields, plan.FieldUltraTokenQuota)
-	}
-	if m.monthly_credits != nil {
-		fields = append(fields, plan.FieldMonthlyCredits)
 	}
 	if m.max_concurrency != nil {
 		fields = append(fields, plan.FieldMaxConcurrency)
@@ -25348,14 +25750,20 @@ func (m *PlanMutation) Field(name string) (ent.Value, bool) {
 		return m.PriceMonth()
 	case plan.FieldPriceYear:
 		return m.PriceYear()
+	case plan.FieldDailyTokenQuota:
+		return m.DailyTokenQuota()
+	case plan.FieldWeeklyTokenQuota:
+		return m.WeeklyTokenQuota()
+	case plan.FieldMonthlyTokenQuota:
+		return m.MonthlyTokenQuota()
+	case plan.FieldMonthlyCredits:
+		return m.MonthlyCredits()
 	case plan.FieldBasicTokenQuota:
 		return m.BasicTokenQuota()
 	case plan.FieldProTokenQuota:
 		return m.ProTokenQuota()
 	case plan.FieldUltraTokenQuota:
 		return m.UltraTokenQuota()
-	case plan.FieldMonthlyCredits:
-		return m.MonthlyCredits()
 	case plan.FieldMaxConcurrency:
 		return m.MaxConcurrency()
 	case plan.FieldFeatures:
@@ -25387,14 +25795,20 @@ func (m *PlanMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPriceMonth(ctx)
 	case plan.FieldPriceYear:
 		return m.OldPriceYear(ctx)
+	case plan.FieldDailyTokenQuota:
+		return m.OldDailyTokenQuota(ctx)
+	case plan.FieldWeeklyTokenQuota:
+		return m.OldWeeklyTokenQuota(ctx)
+	case plan.FieldMonthlyTokenQuota:
+		return m.OldMonthlyTokenQuota(ctx)
+	case plan.FieldMonthlyCredits:
+		return m.OldMonthlyCredits(ctx)
 	case plan.FieldBasicTokenQuota:
 		return m.OldBasicTokenQuota(ctx)
 	case plan.FieldProTokenQuota:
 		return m.OldProTokenQuota(ctx)
 	case plan.FieldUltraTokenQuota:
 		return m.OldUltraTokenQuota(ctx)
-	case plan.FieldMonthlyCredits:
-		return m.OldMonthlyCredits(ctx)
 	case plan.FieldMaxConcurrency:
 		return m.OldMaxConcurrency(ctx)
 	case plan.FieldFeatures:
@@ -25446,6 +25860,34 @@ func (m *PlanMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPriceYear(v)
 		return nil
+	case plan.FieldDailyTokenQuota:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDailyTokenQuota(v)
+		return nil
+	case plan.FieldWeeklyTokenQuota:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeeklyTokenQuota(v)
+		return nil
+	case plan.FieldMonthlyTokenQuota:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMonthlyTokenQuota(v)
+		return nil
+	case plan.FieldMonthlyCredits:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMonthlyCredits(v)
+		return nil
 	case plan.FieldBasicTokenQuota:
 		v, ok := value.(int64)
 		if !ok {
@@ -25466,13 +25908,6 @@ func (m *PlanMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUltraTokenQuota(v)
-		return nil
-	case plan.FieldMonthlyCredits:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMonthlyCredits(v)
 		return nil
 	case plan.FieldMaxConcurrency:
 		v, ok := value.(int)
@@ -25537,6 +25972,18 @@ func (m *PlanMutation) AddedFields() []string {
 	if m.addprice_year != nil {
 		fields = append(fields, plan.FieldPriceYear)
 	}
+	if m.adddaily_token_quota != nil {
+		fields = append(fields, plan.FieldDailyTokenQuota)
+	}
+	if m.addweekly_token_quota != nil {
+		fields = append(fields, plan.FieldWeeklyTokenQuota)
+	}
+	if m.addmonthly_token_quota != nil {
+		fields = append(fields, plan.FieldMonthlyTokenQuota)
+	}
+	if m.addmonthly_credits != nil {
+		fields = append(fields, plan.FieldMonthlyCredits)
+	}
 	if m.addbasic_token_quota != nil {
 		fields = append(fields, plan.FieldBasicTokenQuota)
 	}
@@ -25545,9 +25992,6 @@ func (m *PlanMutation) AddedFields() []string {
 	}
 	if m.addultra_token_quota != nil {
 		fields = append(fields, plan.FieldUltraTokenQuota)
-	}
-	if m.addmonthly_credits != nil {
-		fields = append(fields, plan.FieldMonthlyCredits)
 	}
 	if m.addmax_concurrency != nil {
 		fields = append(fields, plan.FieldMaxConcurrency)
@@ -25567,14 +26011,20 @@ func (m *PlanMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedPriceMonth()
 	case plan.FieldPriceYear:
 		return m.AddedPriceYear()
+	case plan.FieldDailyTokenQuota:
+		return m.AddedDailyTokenQuota()
+	case plan.FieldWeeklyTokenQuota:
+		return m.AddedWeeklyTokenQuota()
+	case plan.FieldMonthlyTokenQuota:
+		return m.AddedMonthlyTokenQuota()
+	case plan.FieldMonthlyCredits:
+		return m.AddedMonthlyCredits()
 	case plan.FieldBasicTokenQuota:
 		return m.AddedBasicTokenQuota()
 	case plan.FieldProTokenQuota:
 		return m.AddedProTokenQuota()
 	case plan.FieldUltraTokenQuota:
 		return m.AddedUltraTokenQuota()
-	case plan.FieldMonthlyCredits:
-		return m.AddedMonthlyCredits()
 	case plan.FieldMaxConcurrency:
 		return m.AddedMaxConcurrency()
 	case plan.FieldSortOrder:
@@ -25602,6 +26052,34 @@ func (m *PlanMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddPriceYear(v)
 		return nil
+	case plan.FieldDailyTokenQuota:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDailyTokenQuota(v)
+		return nil
+	case plan.FieldWeeklyTokenQuota:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWeeklyTokenQuota(v)
+		return nil
+	case plan.FieldMonthlyTokenQuota:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMonthlyTokenQuota(v)
+		return nil
+	case plan.FieldMonthlyCredits:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMonthlyCredits(v)
+		return nil
 	case plan.FieldBasicTokenQuota:
 		v, ok := value.(int64)
 		if !ok {
@@ -25622,13 +26100,6 @@ func (m *PlanMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddUltraTokenQuota(v)
-		return nil
-	case plan.FieldMonthlyCredits:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddMonthlyCredits(v)
 		return nil
 	case plan.FieldMaxConcurrency:
 		v, ok := value.(int)
@@ -25698,6 +26169,18 @@ func (m *PlanMutation) ResetField(name string) error {
 	case plan.FieldPriceYear:
 		m.ResetPriceYear()
 		return nil
+	case plan.FieldDailyTokenQuota:
+		m.ResetDailyTokenQuota()
+		return nil
+	case plan.FieldWeeklyTokenQuota:
+		m.ResetWeeklyTokenQuota()
+		return nil
+	case plan.FieldMonthlyTokenQuota:
+		m.ResetMonthlyTokenQuota()
+		return nil
+	case plan.FieldMonthlyCredits:
+		m.ResetMonthlyCredits()
+		return nil
 	case plan.FieldBasicTokenQuota:
 		m.ResetBasicTokenQuota()
 		return nil
@@ -25706,9 +26189,6 @@ func (m *PlanMutation) ResetField(name string) error {
 		return nil
 	case plan.FieldUltraTokenQuota:
 		m.ResetUltraTokenQuota()
-		return nil
-	case plan.FieldMonthlyCredits:
-		m.ResetMonthlyCredits()
 		return nil
 	case plan.FieldMaxConcurrency:
 		m.ResetMaxConcurrency()
@@ -56317,13 +56797,21 @@ type WalletMutation struct {
 	addtotal_consumed            *int64
 	total_granted                *int64
 	addtotal_granted             *int64
+	daily_token_balance          *int64
+	adddaily_token_balance       *int64
+	weekly_token_balance         *int64
+	addweekly_token_balance      *int64
+	monthly_token_balance        *int64
+	addmonthly_token_balance     *int64
+	daily_reset_at               *time.Time
+	weekly_reset_at              *time.Time
+	monthly_reset_at             *time.Time
 	daily_basic_token_balance    *int64
 	adddaily_basic_token_balance *int64
 	daily_pro_token_balance      *int64
 	adddaily_pro_token_balance   *int64
 	daily_ultra_token_balance    *int64
 	adddaily_ultra_token_balance *int64
-	daily_reset_at               *time.Time
 	enable_credit_consumption    *bool
 	created_at                   *time.Time
 	updated_at                   *time.Time
@@ -56697,6 +57185,321 @@ func (m *WalletMutation) ResetTotalGranted() {
 	m.addtotal_granted = nil
 }
 
+// SetDailyTokenBalance sets the "daily_token_balance" field.
+func (m *WalletMutation) SetDailyTokenBalance(i int64) {
+	m.daily_token_balance = &i
+	m.adddaily_token_balance = nil
+}
+
+// DailyTokenBalance returns the value of the "daily_token_balance" field in the mutation.
+func (m *WalletMutation) DailyTokenBalance() (r int64, exists bool) {
+	v := m.daily_token_balance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDailyTokenBalance returns the old "daily_token_balance" field's value of the Wallet entity.
+// If the Wallet object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WalletMutation) OldDailyTokenBalance(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDailyTokenBalance is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDailyTokenBalance requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDailyTokenBalance: %w", err)
+	}
+	return oldValue.DailyTokenBalance, nil
+}
+
+// AddDailyTokenBalance adds i to the "daily_token_balance" field.
+func (m *WalletMutation) AddDailyTokenBalance(i int64) {
+	if m.adddaily_token_balance != nil {
+		*m.adddaily_token_balance += i
+	} else {
+		m.adddaily_token_balance = &i
+	}
+}
+
+// AddedDailyTokenBalance returns the value that was added to the "daily_token_balance" field in this mutation.
+func (m *WalletMutation) AddedDailyTokenBalance() (r int64, exists bool) {
+	v := m.adddaily_token_balance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDailyTokenBalance resets all changes to the "daily_token_balance" field.
+func (m *WalletMutation) ResetDailyTokenBalance() {
+	m.daily_token_balance = nil
+	m.adddaily_token_balance = nil
+}
+
+// SetWeeklyTokenBalance sets the "weekly_token_balance" field.
+func (m *WalletMutation) SetWeeklyTokenBalance(i int64) {
+	m.weekly_token_balance = &i
+	m.addweekly_token_balance = nil
+}
+
+// WeeklyTokenBalance returns the value of the "weekly_token_balance" field in the mutation.
+func (m *WalletMutation) WeeklyTokenBalance() (r int64, exists bool) {
+	v := m.weekly_token_balance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeeklyTokenBalance returns the old "weekly_token_balance" field's value of the Wallet entity.
+// If the Wallet object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WalletMutation) OldWeeklyTokenBalance(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeeklyTokenBalance is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeeklyTokenBalance requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeeklyTokenBalance: %w", err)
+	}
+	return oldValue.WeeklyTokenBalance, nil
+}
+
+// AddWeeklyTokenBalance adds i to the "weekly_token_balance" field.
+func (m *WalletMutation) AddWeeklyTokenBalance(i int64) {
+	if m.addweekly_token_balance != nil {
+		*m.addweekly_token_balance += i
+	} else {
+		m.addweekly_token_balance = &i
+	}
+}
+
+// AddedWeeklyTokenBalance returns the value that was added to the "weekly_token_balance" field in this mutation.
+func (m *WalletMutation) AddedWeeklyTokenBalance() (r int64, exists bool) {
+	v := m.addweekly_token_balance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWeeklyTokenBalance resets all changes to the "weekly_token_balance" field.
+func (m *WalletMutation) ResetWeeklyTokenBalance() {
+	m.weekly_token_balance = nil
+	m.addweekly_token_balance = nil
+}
+
+// SetMonthlyTokenBalance sets the "monthly_token_balance" field.
+func (m *WalletMutation) SetMonthlyTokenBalance(i int64) {
+	m.monthly_token_balance = &i
+	m.addmonthly_token_balance = nil
+}
+
+// MonthlyTokenBalance returns the value of the "monthly_token_balance" field in the mutation.
+func (m *WalletMutation) MonthlyTokenBalance() (r int64, exists bool) {
+	v := m.monthly_token_balance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMonthlyTokenBalance returns the old "monthly_token_balance" field's value of the Wallet entity.
+// If the Wallet object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WalletMutation) OldMonthlyTokenBalance(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMonthlyTokenBalance is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMonthlyTokenBalance requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMonthlyTokenBalance: %w", err)
+	}
+	return oldValue.MonthlyTokenBalance, nil
+}
+
+// AddMonthlyTokenBalance adds i to the "monthly_token_balance" field.
+func (m *WalletMutation) AddMonthlyTokenBalance(i int64) {
+	if m.addmonthly_token_balance != nil {
+		*m.addmonthly_token_balance += i
+	} else {
+		m.addmonthly_token_balance = &i
+	}
+}
+
+// AddedMonthlyTokenBalance returns the value that was added to the "monthly_token_balance" field in this mutation.
+func (m *WalletMutation) AddedMonthlyTokenBalance() (r int64, exists bool) {
+	v := m.addmonthly_token_balance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMonthlyTokenBalance resets all changes to the "monthly_token_balance" field.
+func (m *WalletMutation) ResetMonthlyTokenBalance() {
+	m.monthly_token_balance = nil
+	m.addmonthly_token_balance = nil
+}
+
+// SetDailyResetAt sets the "daily_reset_at" field.
+func (m *WalletMutation) SetDailyResetAt(t time.Time) {
+	m.daily_reset_at = &t
+}
+
+// DailyResetAt returns the value of the "daily_reset_at" field in the mutation.
+func (m *WalletMutation) DailyResetAt() (r time.Time, exists bool) {
+	v := m.daily_reset_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDailyResetAt returns the old "daily_reset_at" field's value of the Wallet entity.
+// If the Wallet object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WalletMutation) OldDailyResetAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDailyResetAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDailyResetAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDailyResetAt: %w", err)
+	}
+	return oldValue.DailyResetAt, nil
+}
+
+// ClearDailyResetAt clears the value of the "daily_reset_at" field.
+func (m *WalletMutation) ClearDailyResetAt() {
+	m.daily_reset_at = nil
+	m.clearedFields[wallet.FieldDailyResetAt] = struct{}{}
+}
+
+// DailyResetAtCleared returns if the "daily_reset_at" field was cleared in this mutation.
+func (m *WalletMutation) DailyResetAtCleared() bool {
+	_, ok := m.clearedFields[wallet.FieldDailyResetAt]
+	return ok
+}
+
+// ResetDailyResetAt resets all changes to the "daily_reset_at" field.
+func (m *WalletMutation) ResetDailyResetAt() {
+	m.daily_reset_at = nil
+	delete(m.clearedFields, wallet.FieldDailyResetAt)
+}
+
+// SetWeeklyResetAt sets the "weekly_reset_at" field.
+func (m *WalletMutation) SetWeeklyResetAt(t time.Time) {
+	m.weekly_reset_at = &t
+}
+
+// WeeklyResetAt returns the value of the "weekly_reset_at" field in the mutation.
+func (m *WalletMutation) WeeklyResetAt() (r time.Time, exists bool) {
+	v := m.weekly_reset_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeeklyResetAt returns the old "weekly_reset_at" field's value of the Wallet entity.
+// If the Wallet object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WalletMutation) OldWeeklyResetAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeeklyResetAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeeklyResetAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeeklyResetAt: %w", err)
+	}
+	return oldValue.WeeklyResetAt, nil
+}
+
+// ClearWeeklyResetAt clears the value of the "weekly_reset_at" field.
+func (m *WalletMutation) ClearWeeklyResetAt() {
+	m.weekly_reset_at = nil
+	m.clearedFields[wallet.FieldWeeklyResetAt] = struct{}{}
+}
+
+// WeeklyResetAtCleared returns if the "weekly_reset_at" field was cleared in this mutation.
+func (m *WalletMutation) WeeklyResetAtCleared() bool {
+	_, ok := m.clearedFields[wallet.FieldWeeklyResetAt]
+	return ok
+}
+
+// ResetWeeklyResetAt resets all changes to the "weekly_reset_at" field.
+func (m *WalletMutation) ResetWeeklyResetAt() {
+	m.weekly_reset_at = nil
+	delete(m.clearedFields, wallet.FieldWeeklyResetAt)
+}
+
+// SetMonthlyResetAt sets the "monthly_reset_at" field.
+func (m *WalletMutation) SetMonthlyResetAt(t time.Time) {
+	m.monthly_reset_at = &t
+}
+
+// MonthlyResetAt returns the value of the "monthly_reset_at" field in the mutation.
+func (m *WalletMutation) MonthlyResetAt() (r time.Time, exists bool) {
+	v := m.monthly_reset_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMonthlyResetAt returns the old "monthly_reset_at" field's value of the Wallet entity.
+// If the Wallet object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WalletMutation) OldMonthlyResetAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMonthlyResetAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMonthlyResetAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMonthlyResetAt: %w", err)
+	}
+	return oldValue.MonthlyResetAt, nil
+}
+
+// ClearMonthlyResetAt clears the value of the "monthly_reset_at" field.
+func (m *WalletMutation) ClearMonthlyResetAt() {
+	m.monthly_reset_at = nil
+	m.clearedFields[wallet.FieldMonthlyResetAt] = struct{}{}
+}
+
+// MonthlyResetAtCleared returns if the "monthly_reset_at" field was cleared in this mutation.
+func (m *WalletMutation) MonthlyResetAtCleared() bool {
+	_, ok := m.clearedFields[wallet.FieldMonthlyResetAt]
+	return ok
+}
+
+// ResetMonthlyResetAt resets all changes to the "monthly_reset_at" field.
+func (m *WalletMutation) ResetMonthlyResetAt() {
+	m.monthly_reset_at = nil
+	delete(m.clearedFields, wallet.FieldMonthlyResetAt)
+}
+
 // SetDailyBasicTokenBalance sets the "daily_basic_token_balance" field.
 func (m *WalletMutation) SetDailyBasicTokenBalance(i int64) {
 	m.daily_basic_token_balance = &i
@@ -56865,55 +57668,6 @@ func (m *WalletMutation) ResetDailyUltraTokenBalance() {
 	m.adddaily_ultra_token_balance = nil
 }
 
-// SetDailyResetAt sets the "daily_reset_at" field.
-func (m *WalletMutation) SetDailyResetAt(t time.Time) {
-	m.daily_reset_at = &t
-}
-
-// DailyResetAt returns the value of the "daily_reset_at" field in the mutation.
-func (m *WalletMutation) DailyResetAt() (r time.Time, exists bool) {
-	v := m.daily_reset_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDailyResetAt returns the old "daily_reset_at" field's value of the Wallet entity.
-// If the Wallet object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WalletMutation) OldDailyResetAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDailyResetAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDailyResetAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDailyResetAt: %w", err)
-	}
-	return oldValue.DailyResetAt, nil
-}
-
-// ClearDailyResetAt clears the value of the "daily_reset_at" field.
-func (m *WalletMutation) ClearDailyResetAt() {
-	m.daily_reset_at = nil
-	m.clearedFields[wallet.FieldDailyResetAt] = struct{}{}
-}
-
-// DailyResetAtCleared returns if the "daily_reset_at" field was cleared in this mutation.
-func (m *WalletMutation) DailyResetAtCleared() bool {
-	_, ok := m.clearedFields[wallet.FieldDailyResetAt]
-	return ok
-}
-
-// ResetDailyResetAt resets all changes to the "daily_reset_at" field.
-func (m *WalletMutation) ResetDailyResetAt() {
-	m.daily_reset_at = nil
-	delete(m.clearedFields, wallet.FieldDailyResetAt)
-}
-
 // SetEnableCreditConsumption sets the "enable_credit_consumption" field.
 func (m *WalletMutation) SetEnableCreditConsumption(b bool) {
 	m.enable_credit_consumption = &b
@@ -57056,7 +57810,7 @@ func (m *WalletMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WalletMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 17)
 	if m.user_id != nil {
 		fields = append(fields, wallet.FieldUserID)
 	}
@@ -57072,6 +57826,24 @@ func (m *WalletMutation) Fields() []string {
 	if m.total_granted != nil {
 		fields = append(fields, wallet.FieldTotalGranted)
 	}
+	if m.daily_token_balance != nil {
+		fields = append(fields, wallet.FieldDailyTokenBalance)
+	}
+	if m.weekly_token_balance != nil {
+		fields = append(fields, wallet.FieldWeeklyTokenBalance)
+	}
+	if m.monthly_token_balance != nil {
+		fields = append(fields, wallet.FieldMonthlyTokenBalance)
+	}
+	if m.daily_reset_at != nil {
+		fields = append(fields, wallet.FieldDailyResetAt)
+	}
+	if m.weekly_reset_at != nil {
+		fields = append(fields, wallet.FieldWeeklyResetAt)
+	}
+	if m.monthly_reset_at != nil {
+		fields = append(fields, wallet.FieldMonthlyResetAt)
+	}
 	if m.daily_basic_token_balance != nil {
 		fields = append(fields, wallet.FieldDailyBasicTokenBalance)
 	}
@@ -57080,9 +57852,6 @@ func (m *WalletMutation) Fields() []string {
 	}
 	if m.daily_ultra_token_balance != nil {
 		fields = append(fields, wallet.FieldDailyUltraTokenBalance)
-	}
-	if m.daily_reset_at != nil {
-		fields = append(fields, wallet.FieldDailyResetAt)
 	}
 	if m.enable_credit_consumption != nil {
 		fields = append(fields, wallet.FieldEnableCreditConsumption)
@@ -57111,14 +57880,24 @@ func (m *WalletMutation) Field(name string) (ent.Value, bool) {
 		return m.TotalConsumed()
 	case wallet.FieldTotalGranted:
 		return m.TotalGranted()
+	case wallet.FieldDailyTokenBalance:
+		return m.DailyTokenBalance()
+	case wallet.FieldWeeklyTokenBalance:
+		return m.WeeklyTokenBalance()
+	case wallet.FieldMonthlyTokenBalance:
+		return m.MonthlyTokenBalance()
+	case wallet.FieldDailyResetAt:
+		return m.DailyResetAt()
+	case wallet.FieldWeeklyResetAt:
+		return m.WeeklyResetAt()
+	case wallet.FieldMonthlyResetAt:
+		return m.MonthlyResetAt()
 	case wallet.FieldDailyBasicTokenBalance:
 		return m.DailyBasicTokenBalance()
 	case wallet.FieldDailyProTokenBalance:
 		return m.DailyProTokenBalance()
 	case wallet.FieldDailyUltraTokenBalance:
 		return m.DailyUltraTokenBalance()
-	case wallet.FieldDailyResetAt:
-		return m.DailyResetAt()
 	case wallet.FieldEnableCreditConsumption:
 		return m.EnableCreditConsumption()
 	case wallet.FieldCreatedAt:
@@ -57144,14 +57923,24 @@ func (m *WalletMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldTotalConsumed(ctx)
 	case wallet.FieldTotalGranted:
 		return m.OldTotalGranted(ctx)
+	case wallet.FieldDailyTokenBalance:
+		return m.OldDailyTokenBalance(ctx)
+	case wallet.FieldWeeklyTokenBalance:
+		return m.OldWeeklyTokenBalance(ctx)
+	case wallet.FieldMonthlyTokenBalance:
+		return m.OldMonthlyTokenBalance(ctx)
+	case wallet.FieldDailyResetAt:
+		return m.OldDailyResetAt(ctx)
+	case wallet.FieldWeeklyResetAt:
+		return m.OldWeeklyResetAt(ctx)
+	case wallet.FieldMonthlyResetAt:
+		return m.OldMonthlyResetAt(ctx)
 	case wallet.FieldDailyBasicTokenBalance:
 		return m.OldDailyBasicTokenBalance(ctx)
 	case wallet.FieldDailyProTokenBalance:
 		return m.OldDailyProTokenBalance(ctx)
 	case wallet.FieldDailyUltraTokenBalance:
 		return m.OldDailyUltraTokenBalance(ctx)
-	case wallet.FieldDailyResetAt:
-		return m.OldDailyResetAt(ctx)
 	case wallet.FieldEnableCreditConsumption:
 		return m.OldEnableCreditConsumption(ctx)
 	case wallet.FieldCreatedAt:
@@ -57202,6 +57991,48 @@ func (m *WalletMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTotalGranted(v)
 		return nil
+	case wallet.FieldDailyTokenBalance:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDailyTokenBalance(v)
+		return nil
+	case wallet.FieldWeeklyTokenBalance:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeeklyTokenBalance(v)
+		return nil
+	case wallet.FieldMonthlyTokenBalance:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMonthlyTokenBalance(v)
+		return nil
+	case wallet.FieldDailyResetAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDailyResetAt(v)
+		return nil
+	case wallet.FieldWeeklyResetAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeeklyResetAt(v)
+		return nil
+	case wallet.FieldMonthlyResetAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMonthlyResetAt(v)
+		return nil
 	case wallet.FieldDailyBasicTokenBalance:
 		v, ok := value.(int64)
 		if !ok {
@@ -57222,13 +58053,6 @@ func (m *WalletMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDailyUltraTokenBalance(v)
-		return nil
-	case wallet.FieldDailyResetAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDailyResetAt(v)
 		return nil
 	case wallet.FieldEnableCreditConsumption:
 		v, ok := value.(bool)
@@ -57271,6 +58095,15 @@ func (m *WalletMutation) AddedFields() []string {
 	if m.addtotal_granted != nil {
 		fields = append(fields, wallet.FieldTotalGranted)
 	}
+	if m.adddaily_token_balance != nil {
+		fields = append(fields, wallet.FieldDailyTokenBalance)
+	}
+	if m.addweekly_token_balance != nil {
+		fields = append(fields, wallet.FieldWeeklyTokenBalance)
+	}
+	if m.addmonthly_token_balance != nil {
+		fields = append(fields, wallet.FieldMonthlyTokenBalance)
+	}
 	if m.adddaily_basic_token_balance != nil {
 		fields = append(fields, wallet.FieldDailyBasicTokenBalance)
 	}
@@ -57296,6 +58129,12 @@ func (m *WalletMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedTotalConsumed()
 	case wallet.FieldTotalGranted:
 		return m.AddedTotalGranted()
+	case wallet.FieldDailyTokenBalance:
+		return m.AddedDailyTokenBalance()
+	case wallet.FieldWeeklyTokenBalance:
+		return m.AddedWeeklyTokenBalance()
+	case wallet.FieldMonthlyTokenBalance:
+		return m.AddedMonthlyTokenBalance()
 	case wallet.FieldDailyBasicTokenBalance:
 		return m.AddedDailyBasicTokenBalance()
 	case wallet.FieldDailyProTokenBalance:
@@ -57339,6 +58178,27 @@ func (m *WalletMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddTotalGranted(v)
 		return nil
+	case wallet.FieldDailyTokenBalance:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDailyTokenBalance(v)
+		return nil
+	case wallet.FieldWeeklyTokenBalance:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWeeklyTokenBalance(v)
+		return nil
+	case wallet.FieldMonthlyTokenBalance:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMonthlyTokenBalance(v)
+		return nil
 	case wallet.FieldDailyBasicTokenBalance:
 		v, ok := value.(int64)
 		if !ok {
@@ -57371,6 +58231,12 @@ func (m *WalletMutation) ClearedFields() []string {
 	if m.FieldCleared(wallet.FieldDailyResetAt) {
 		fields = append(fields, wallet.FieldDailyResetAt)
 	}
+	if m.FieldCleared(wallet.FieldWeeklyResetAt) {
+		fields = append(fields, wallet.FieldWeeklyResetAt)
+	}
+	if m.FieldCleared(wallet.FieldMonthlyResetAt) {
+		fields = append(fields, wallet.FieldMonthlyResetAt)
+	}
 	return fields
 }
 
@@ -57387,6 +58253,12 @@ func (m *WalletMutation) ClearField(name string) error {
 	switch name {
 	case wallet.FieldDailyResetAt:
 		m.ClearDailyResetAt()
+		return nil
+	case wallet.FieldWeeklyResetAt:
+		m.ClearWeeklyResetAt()
+		return nil
+	case wallet.FieldMonthlyResetAt:
+		m.ClearMonthlyResetAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Wallet nullable field %s", name)
@@ -57411,6 +58283,24 @@ func (m *WalletMutation) ResetField(name string) error {
 	case wallet.FieldTotalGranted:
 		m.ResetTotalGranted()
 		return nil
+	case wallet.FieldDailyTokenBalance:
+		m.ResetDailyTokenBalance()
+		return nil
+	case wallet.FieldWeeklyTokenBalance:
+		m.ResetWeeklyTokenBalance()
+		return nil
+	case wallet.FieldMonthlyTokenBalance:
+		m.ResetMonthlyTokenBalance()
+		return nil
+	case wallet.FieldDailyResetAt:
+		m.ResetDailyResetAt()
+		return nil
+	case wallet.FieldWeeklyResetAt:
+		m.ResetWeeklyResetAt()
+		return nil
+	case wallet.FieldMonthlyResetAt:
+		m.ResetMonthlyResetAt()
+		return nil
 	case wallet.FieldDailyBasicTokenBalance:
 		m.ResetDailyBasicTokenBalance()
 		return nil
@@ -57419,9 +58309,6 @@ func (m *WalletMutation) ResetField(name string) error {
 		return nil
 	case wallet.FieldDailyUltraTokenBalance:
 		m.ResetDailyUltraTokenBalance()
-		return nil
-	case wallet.FieldDailyResetAt:
-		m.ResetDailyResetAt()
 		return nil
 	case wallet.FieldEnableCreditConsumption:
 		m.ResetEnableCreditConsumption()

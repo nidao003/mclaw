@@ -71,6 +71,48 @@ func (_c *ModelApiKeyCreate) SetAPIKey(v string) *ModelApiKeyCreate {
 	return _c
 }
 
+// SetDeviceSecret sets the "device_secret" field.
+func (_c *ModelApiKeyCreate) SetDeviceSecret(v string) *ModelApiKeyCreate {
+	_c.mutation.SetDeviceSecret(v)
+	return _c
+}
+
+// SetNillableDeviceSecret sets the "device_secret" field if the given value is not nil.
+func (_c *ModelApiKeyCreate) SetNillableDeviceSecret(v *string) *ModelApiKeyCreate {
+	if v != nil {
+		_c.SetDeviceSecret(*v)
+	}
+	return _c
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_c *ModelApiKeyCreate) SetExpiresAt(v time.Time) *ModelApiKeyCreate {
+	_c.mutation.SetExpiresAt(v)
+	return _c
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_c *ModelApiKeyCreate) SetNillableExpiresAt(v *time.Time) *ModelApiKeyCreate {
+	if v != nil {
+		_c.SetExpiresAt(*v)
+	}
+	return _c
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (_c *ModelApiKeyCreate) SetRevokedAt(v time.Time) *ModelApiKeyCreate {
+	_c.mutation.SetRevokedAt(v)
+	return _c
+}
+
+// SetNillableRevokedAt sets the "revoked_at" field if the given value is not nil.
+func (_c *ModelApiKeyCreate) SetNillableRevokedAt(v *time.Time) *ModelApiKeyCreate {
+	if v != nil {
+		_c.SetRevokedAt(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ModelApiKeyCreate) SetCreatedAt(v time.Time) *ModelApiKeyCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -217,6 +259,18 @@ func (_c *ModelApiKeyCreate) createSpec() (*ModelApiKey, *sqlgraph.CreateSpec) {
 		_spec.SetField(modelapikey.FieldAPIKey, field.TypeString, value)
 		_node.APIKey = value
 	}
+	if value, ok := _c.mutation.DeviceSecret(); ok {
+		_spec.SetField(modelapikey.FieldDeviceSecret, field.TypeString, value)
+		_node.DeviceSecret = value
+	}
+	if value, ok := _c.mutation.ExpiresAt(); ok {
+		_spec.SetField(modelapikey.FieldExpiresAt, field.TypeTime, value)
+		_node.ExpiresAt = value
+	}
+	if value, ok := _c.mutation.RevokedAt(); ok {
+		_spec.SetField(modelapikey.FieldRevokedAt, field.TypeTime, value)
+		_node.RevokedAt = value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(modelapikey.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -362,6 +416,60 @@ func (u *ModelApiKeyUpsert) UpdateAPIKey() *ModelApiKeyUpsert {
 	return u
 }
 
+// SetDeviceSecret sets the "device_secret" field.
+func (u *ModelApiKeyUpsert) SetDeviceSecret(v string) *ModelApiKeyUpsert {
+	u.Set(modelapikey.FieldDeviceSecret, v)
+	return u
+}
+
+// UpdateDeviceSecret sets the "device_secret" field to the value that was provided on create.
+func (u *ModelApiKeyUpsert) UpdateDeviceSecret() *ModelApiKeyUpsert {
+	u.SetExcluded(modelapikey.FieldDeviceSecret)
+	return u
+}
+
+// ClearDeviceSecret clears the value of the "device_secret" field.
+func (u *ModelApiKeyUpsert) ClearDeviceSecret() *ModelApiKeyUpsert {
+	u.SetNull(modelapikey.FieldDeviceSecret)
+	return u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *ModelApiKeyUpsert) SetExpiresAt(v time.Time) *ModelApiKeyUpsert {
+	u.Set(modelapikey.FieldExpiresAt, v)
+	return u
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *ModelApiKeyUpsert) UpdateExpiresAt() *ModelApiKeyUpsert {
+	u.SetExcluded(modelapikey.FieldExpiresAt)
+	return u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *ModelApiKeyUpsert) ClearExpiresAt() *ModelApiKeyUpsert {
+	u.SetNull(modelapikey.FieldExpiresAt)
+	return u
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (u *ModelApiKeyUpsert) SetRevokedAt(v time.Time) *ModelApiKeyUpsert {
+	u.Set(modelapikey.FieldRevokedAt, v)
+	return u
+}
+
+// UpdateRevokedAt sets the "revoked_at" field to the value that was provided on create.
+func (u *ModelApiKeyUpsert) UpdateRevokedAt() *ModelApiKeyUpsert {
+	u.SetExcluded(modelapikey.FieldRevokedAt)
+	return u
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (u *ModelApiKeyUpsert) ClearRevokedAt() *ModelApiKeyUpsert {
+	u.SetNull(modelapikey.FieldRevokedAt)
+	return u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (u *ModelApiKeyUpsert) SetCreatedAt(v time.Time) *ModelApiKeyUpsert {
 	u.Set(modelapikey.FieldCreatedAt, v)
@@ -503,6 +611,69 @@ func (u *ModelApiKeyUpsertOne) SetAPIKey(v string) *ModelApiKeyUpsertOne {
 func (u *ModelApiKeyUpsertOne) UpdateAPIKey() *ModelApiKeyUpsertOne {
 	return u.Update(func(s *ModelApiKeyUpsert) {
 		s.UpdateAPIKey()
+	})
+}
+
+// SetDeviceSecret sets the "device_secret" field.
+func (u *ModelApiKeyUpsertOne) SetDeviceSecret(v string) *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.SetDeviceSecret(v)
+	})
+}
+
+// UpdateDeviceSecret sets the "device_secret" field to the value that was provided on create.
+func (u *ModelApiKeyUpsertOne) UpdateDeviceSecret() *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.UpdateDeviceSecret()
+	})
+}
+
+// ClearDeviceSecret clears the value of the "device_secret" field.
+func (u *ModelApiKeyUpsertOne) ClearDeviceSecret() *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.ClearDeviceSecret()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *ModelApiKeyUpsertOne) SetExpiresAt(v time.Time) *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *ModelApiKeyUpsertOne) UpdateExpiresAt() *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *ModelApiKeyUpsertOne) ClearExpiresAt() *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.ClearExpiresAt()
+	})
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (u *ModelApiKeyUpsertOne) SetRevokedAt(v time.Time) *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.SetRevokedAt(v)
+	})
+}
+
+// UpdateRevokedAt sets the "revoked_at" field to the value that was provided on create.
+func (u *ModelApiKeyUpsertOne) UpdateRevokedAt() *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.UpdateRevokedAt()
+	})
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (u *ModelApiKeyUpsertOne) ClearRevokedAt() *ModelApiKeyUpsertOne {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.ClearRevokedAt()
 	})
 }
 
@@ -816,6 +987,69 @@ func (u *ModelApiKeyUpsertBulk) SetAPIKey(v string) *ModelApiKeyUpsertBulk {
 func (u *ModelApiKeyUpsertBulk) UpdateAPIKey() *ModelApiKeyUpsertBulk {
 	return u.Update(func(s *ModelApiKeyUpsert) {
 		s.UpdateAPIKey()
+	})
+}
+
+// SetDeviceSecret sets the "device_secret" field.
+func (u *ModelApiKeyUpsertBulk) SetDeviceSecret(v string) *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.SetDeviceSecret(v)
+	})
+}
+
+// UpdateDeviceSecret sets the "device_secret" field to the value that was provided on create.
+func (u *ModelApiKeyUpsertBulk) UpdateDeviceSecret() *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.UpdateDeviceSecret()
+	})
+}
+
+// ClearDeviceSecret clears the value of the "device_secret" field.
+func (u *ModelApiKeyUpsertBulk) ClearDeviceSecret() *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.ClearDeviceSecret()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *ModelApiKeyUpsertBulk) SetExpiresAt(v time.Time) *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *ModelApiKeyUpsertBulk) UpdateExpiresAt() *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *ModelApiKeyUpsertBulk) ClearExpiresAt() *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.ClearExpiresAt()
+	})
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (u *ModelApiKeyUpsertBulk) SetRevokedAt(v time.Time) *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.SetRevokedAt(v)
+	})
+}
+
+// UpdateRevokedAt sets the "revoked_at" field to the value that was provided on create.
+func (u *ModelApiKeyUpsertBulk) UpdateRevokedAt() *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.UpdateRevokedAt()
+	})
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (u *ModelApiKeyUpsertBulk) ClearRevokedAt() *ModelApiKeyUpsertBulk {
+	return u.Update(func(s *ModelApiKeyUpsert) {
+		s.ClearRevokedAt()
 	})
 }
 

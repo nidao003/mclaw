@@ -95,7 +95,7 @@ func TestModelRepoCreateRuntimeAPIKeyScopesUserModelAndVM(t *testing.T) {
 	}
 
 	repo := &modelRepo{db: client}
-	key, err := repo.CreateRuntimeAPIKey(ctx, userID, modelID, vmID)
+	key, err := repo.CreateRuntimeAPIKey(ctx, userID, modelID, vmID, "", nil)
 	if err != nil {
 		t.Fatalf("CreateRuntimeAPIKey() error = %v", err)
 	}
@@ -171,7 +171,7 @@ func TestModelRepoCreateRuntimeAPIKeyAllowsAdminBuiltinModel(t *testing.T) {
 	}
 
 	repo := &modelRepo{db: client}
-	key, err := repo.CreateRuntimeAPIKey(ctx, userID, modelID, vmID)
+	key, err := repo.CreateRuntimeAPIKey(ctx, userID, modelID, vmID, "", nil)
 	if err != nil {
 		t.Fatalf("CreateRuntimeAPIKey() error = %v", err)
 	}
@@ -234,7 +234,7 @@ func TestModelRepoCreateRuntimeAPIKeyReusesVMRuntimeKey(t *testing.T) {
 	}
 
 	repo := &modelRepo{db: client}
-	key, err := repo.CreateRuntimeAPIKey(ctx, userID, targetModelID, vmID)
+	key, err := repo.CreateRuntimeAPIKey(ctx, userID, targetModelID, vmID, "", nil)
 	if err != nil {
 		t.Fatalf("CreateRuntimeAPIKey() error = %v", err)
 	}

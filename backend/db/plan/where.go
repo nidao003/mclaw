@@ -76,6 +76,26 @@ func PriceYear(v int64) predicate.Plan {
 	return predicate.Plan(sql.FieldEQ(FieldPriceYear, v))
 }
 
+// DailyTokenQuota applies equality check predicate on the "daily_token_quota" field. It's identical to DailyTokenQuotaEQ.
+func DailyTokenQuota(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldEQ(FieldDailyTokenQuota, v))
+}
+
+// WeeklyTokenQuota applies equality check predicate on the "weekly_token_quota" field. It's identical to WeeklyTokenQuotaEQ.
+func WeeklyTokenQuota(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldEQ(FieldWeeklyTokenQuota, v))
+}
+
+// MonthlyTokenQuota applies equality check predicate on the "monthly_token_quota" field. It's identical to MonthlyTokenQuotaEQ.
+func MonthlyTokenQuota(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldEQ(FieldMonthlyTokenQuota, v))
+}
+
+// MonthlyCredits applies equality check predicate on the "monthly_credits" field. It's identical to MonthlyCreditsEQ.
+func MonthlyCredits(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldEQ(FieldMonthlyCredits, v))
+}
+
 // BasicTokenQuota applies equality check predicate on the "basic_token_quota" field. It's identical to BasicTokenQuotaEQ.
 func BasicTokenQuota(v int64) predicate.Plan {
 	return predicate.Plan(sql.FieldEQ(FieldBasicTokenQuota, v))
@@ -89,11 +109,6 @@ func ProTokenQuota(v int64) predicate.Plan {
 // UltraTokenQuota applies equality check predicate on the "ultra_token_quota" field. It's identical to UltraTokenQuotaEQ.
 func UltraTokenQuota(v int64) predicate.Plan {
 	return predicate.Plan(sql.FieldEQ(FieldUltraTokenQuota, v))
-}
-
-// MonthlyCredits applies equality check predicate on the "monthly_credits" field. It's identical to MonthlyCreditsEQ.
-func MonthlyCredits(v int64) predicate.Plan {
-	return predicate.Plan(sql.FieldEQ(FieldMonthlyCredits, v))
 }
 
 // MaxConcurrency applies equality check predicate on the "max_concurrency" field. It's identical to MaxConcurrencyEQ.
@@ -346,6 +361,166 @@ func PriceYearLTE(v int64) predicate.Plan {
 	return predicate.Plan(sql.FieldLTE(FieldPriceYear, v))
 }
 
+// DailyTokenQuotaEQ applies the EQ predicate on the "daily_token_quota" field.
+func DailyTokenQuotaEQ(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldEQ(FieldDailyTokenQuota, v))
+}
+
+// DailyTokenQuotaNEQ applies the NEQ predicate on the "daily_token_quota" field.
+func DailyTokenQuotaNEQ(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldNEQ(FieldDailyTokenQuota, v))
+}
+
+// DailyTokenQuotaIn applies the In predicate on the "daily_token_quota" field.
+func DailyTokenQuotaIn(vs ...int64) predicate.Plan {
+	return predicate.Plan(sql.FieldIn(FieldDailyTokenQuota, vs...))
+}
+
+// DailyTokenQuotaNotIn applies the NotIn predicate on the "daily_token_quota" field.
+func DailyTokenQuotaNotIn(vs ...int64) predicate.Plan {
+	return predicate.Plan(sql.FieldNotIn(FieldDailyTokenQuota, vs...))
+}
+
+// DailyTokenQuotaGT applies the GT predicate on the "daily_token_quota" field.
+func DailyTokenQuotaGT(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldGT(FieldDailyTokenQuota, v))
+}
+
+// DailyTokenQuotaGTE applies the GTE predicate on the "daily_token_quota" field.
+func DailyTokenQuotaGTE(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldGTE(FieldDailyTokenQuota, v))
+}
+
+// DailyTokenQuotaLT applies the LT predicate on the "daily_token_quota" field.
+func DailyTokenQuotaLT(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldLT(FieldDailyTokenQuota, v))
+}
+
+// DailyTokenQuotaLTE applies the LTE predicate on the "daily_token_quota" field.
+func DailyTokenQuotaLTE(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldLTE(FieldDailyTokenQuota, v))
+}
+
+// WeeklyTokenQuotaEQ applies the EQ predicate on the "weekly_token_quota" field.
+func WeeklyTokenQuotaEQ(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldEQ(FieldWeeklyTokenQuota, v))
+}
+
+// WeeklyTokenQuotaNEQ applies the NEQ predicate on the "weekly_token_quota" field.
+func WeeklyTokenQuotaNEQ(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldNEQ(FieldWeeklyTokenQuota, v))
+}
+
+// WeeklyTokenQuotaIn applies the In predicate on the "weekly_token_quota" field.
+func WeeklyTokenQuotaIn(vs ...int64) predicate.Plan {
+	return predicate.Plan(sql.FieldIn(FieldWeeklyTokenQuota, vs...))
+}
+
+// WeeklyTokenQuotaNotIn applies the NotIn predicate on the "weekly_token_quota" field.
+func WeeklyTokenQuotaNotIn(vs ...int64) predicate.Plan {
+	return predicate.Plan(sql.FieldNotIn(FieldWeeklyTokenQuota, vs...))
+}
+
+// WeeklyTokenQuotaGT applies the GT predicate on the "weekly_token_quota" field.
+func WeeklyTokenQuotaGT(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldGT(FieldWeeklyTokenQuota, v))
+}
+
+// WeeklyTokenQuotaGTE applies the GTE predicate on the "weekly_token_quota" field.
+func WeeklyTokenQuotaGTE(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldGTE(FieldWeeklyTokenQuota, v))
+}
+
+// WeeklyTokenQuotaLT applies the LT predicate on the "weekly_token_quota" field.
+func WeeklyTokenQuotaLT(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldLT(FieldWeeklyTokenQuota, v))
+}
+
+// WeeklyTokenQuotaLTE applies the LTE predicate on the "weekly_token_quota" field.
+func WeeklyTokenQuotaLTE(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldLTE(FieldWeeklyTokenQuota, v))
+}
+
+// MonthlyTokenQuotaEQ applies the EQ predicate on the "monthly_token_quota" field.
+func MonthlyTokenQuotaEQ(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldEQ(FieldMonthlyTokenQuota, v))
+}
+
+// MonthlyTokenQuotaNEQ applies the NEQ predicate on the "monthly_token_quota" field.
+func MonthlyTokenQuotaNEQ(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldNEQ(FieldMonthlyTokenQuota, v))
+}
+
+// MonthlyTokenQuotaIn applies the In predicate on the "monthly_token_quota" field.
+func MonthlyTokenQuotaIn(vs ...int64) predicate.Plan {
+	return predicate.Plan(sql.FieldIn(FieldMonthlyTokenQuota, vs...))
+}
+
+// MonthlyTokenQuotaNotIn applies the NotIn predicate on the "monthly_token_quota" field.
+func MonthlyTokenQuotaNotIn(vs ...int64) predicate.Plan {
+	return predicate.Plan(sql.FieldNotIn(FieldMonthlyTokenQuota, vs...))
+}
+
+// MonthlyTokenQuotaGT applies the GT predicate on the "monthly_token_quota" field.
+func MonthlyTokenQuotaGT(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldGT(FieldMonthlyTokenQuota, v))
+}
+
+// MonthlyTokenQuotaGTE applies the GTE predicate on the "monthly_token_quota" field.
+func MonthlyTokenQuotaGTE(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldGTE(FieldMonthlyTokenQuota, v))
+}
+
+// MonthlyTokenQuotaLT applies the LT predicate on the "monthly_token_quota" field.
+func MonthlyTokenQuotaLT(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldLT(FieldMonthlyTokenQuota, v))
+}
+
+// MonthlyTokenQuotaLTE applies the LTE predicate on the "monthly_token_quota" field.
+func MonthlyTokenQuotaLTE(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldLTE(FieldMonthlyTokenQuota, v))
+}
+
+// MonthlyCreditsEQ applies the EQ predicate on the "monthly_credits" field.
+func MonthlyCreditsEQ(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldEQ(FieldMonthlyCredits, v))
+}
+
+// MonthlyCreditsNEQ applies the NEQ predicate on the "monthly_credits" field.
+func MonthlyCreditsNEQ(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldNEQ(FieldMonthlyCredits, v))
+}
+
+// MonthlyCreditsIn applies the In predicate on the "monthly_credits" field.
+func MonthlyCreditsIn(vs ...int64) predicate.Plan {
+	return predicate.Plan(sql.FieldIn(FieldMonthlyCredits, vs...))
+}
+
+// MonthlyCreditsNotIn applies the NotIn predicate on the "monthly_credits" field.
+func MonthlyCreditsNotIn(vs ...int64) predicate.Plan {
+	return predicate.Plan(sql.FieldNotIn(FieldMonthlyCredits, vs...))
+}
+
+// MonthlyCreditsGT applies the GT predicate on the "monthly_credits" field.
+func MonthlyCreditsGT(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldGT(FieldMonthlyCredits, v))
+}
+
+// MonthlyCreditsGTE applies the GTE predicate on the "monthly_credits" field.
+func MonthlyCreditsGTE(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldGTE(FieldMonthlyCredits, v))
+}
+
+// MonthlyCreditsLT applies the LT predicate on the "monthly_credits" field.
+func MonthlyCreditsLT(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldLT(FieldMonthlyCredits, v))
+}
+
+// MonthlyCreditsLTE applies the LTE predicate on the "monthly_credits" field.
+func MonthlyCreditsLTE(v int64) predicate.Plan {
+	return predicate.Plan(sql.FieldLTE(FieldMonthlyCredits, v))
+}
+
 // BasicTokenQuotaEQ applies the EQ predicate on the "basic_token_quota" field.
 func BasicTokenQuotaEQ(v int64) predicate.Plan {
 	return predicate.Plan(sql.FieldEQ(FieldBasicTokenQuota, v))
@@ -464,46 +639,6 @@ func UltraTokenQuotaLT(v int64) predicate.Plan {
 // UltraTokenQuotaLTE applies the LTE predicate on the "ultra_token_quota" field.
 func UltraTokenQuotaLTE(v int64) predicate.Plan {
 	return predicate.Plan(sql.FieldLTE(FieldUltraTokenQuota, v))
-}
-
-// MonthlyCreditsEQ applies the EQ predicate on the "monthly_credits" field.
-func MonthlyCreditsEQ(v int64) predicate.Plan {
-	return predicate.Plan(sql.FieldEQ(FieldMonthlyCredits, v))
-}
-
-// MonthlyCreditsNEQ applies the NEQ predicate on the "monthly_credits" field.
-func MonthlyCreditsNEQ(v int64) predicate.Plan {
-	return predicate.Plan(sql.FieldNEQ(FieldMonthlyCredits, v))
-}
-
-// MonthlyCreditsIn applies the In predicate on the "monthly_credits" field.
-func MonthlyCreditsIn(vs ...int64) predicate.Plan {
-	return predicate.Plan(sql.FieldIn(FieldMonthlyCredits, vs...))
-}
-
-// MonthlyCreditsNotIn applies the NotIn predicate on the "monthly_credits" field.
-func MonthlyCreditsNotIn(vs ...int64) predicate.Plan {
-	return predicate.Plan(sql.FieldNotIn(FieldMonthlyCredits, vs...))
-}
-
-// MonthlyCreditsGT applies the GT predicate on the "monthly_credits" field.
-func MonthlyCreditsGT(v int64) predicate.Plan {
-	return predicate.Plan(sql.FieldGT(FieldMonthlyCredits, v))
-}
-
-// MonthlyCreditsGTE applies the GTE predicate on the "monthly_credits" field.
-func MonthlyCreditsGTE(v int64) predicate.Plan {
-	return predicate.Plan(sql.FieldGTE(FieldMonthlyCredits, v))
-}
-
-// MonthlyCreditsLT applies the LT predicate on the "monthly_credits" field.
-func MonthlyCreditsLT(v int64) predicate.Plan {
-	return predicate.Plan(sql.FieldLT(FieldMonthlyCredits, v))
-}
-
-// MonthlyCreditsLTE applies the LTE predicate on the "monthly_credits" field.
-func MonthlyCreditsLTE(v int64) predicate.Plan {
-	return predicate.Plan(sql.FieldLTE(FieldMonthlyCredits, v))
 }
 
 // MaxConcurrencyEQ applies the EQ predicate on the "max_concurrency" field.

@@ -170,6 +170,15 @@ const electronAPI = {
 
 const mclawAPI = {
   hostInvoke: (request: HostRequest) => ipcRenderer.invoke('host:invoke', request),
+  // 客户端 HMAC 签名密钥（绑 mclaw 客户端），供渲染进程提交给后端 IssueRuntimeKey 绑定 runtime key。
+  // 明文仅短暂存在于渲染进程内存，不持久化。
+  getDeviceSecret: (): Promise<string> => ipcRenderer.invoke('device-secret:get'),
+  // 数据 API key（通用 X-API-Key，不绑客户端）。渲染进程用此三接口做 ensureDataApiKey 严谨流程。
+  dataApiKey: {
+    get: (): Promise<string | null> => ipcRenderer.invoke('data-api-key:get'),
+    save: (key: string): Promise<void> => ipcRenderer.invoke('data-api-key:save', key),
+    clear: (): Promise<void> => ipcRenderer.invoke('data-api-key:clear'),
+  },
 };
 
 // Expose the API to the renderer process

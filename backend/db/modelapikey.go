@@ -29,6 +29,12 @@ type ModelApiKey struct {
 	VirtualmachineID string `json:"virtualmachine_id,omitempty"`
 	// APIKey holds the value of the "api_key" field.
 	APIKey string `json:"api_key,omitempty"`
+	// DeviceSecret holds the value of the "device_secret" field.
+	DeviceSecret string `json:"-"`
+	// ExpiresAt holds the value of the "expires_at" field.
+	ExpiresAt time.Time `json:"expires_at,omitempty"`
+	// RevokedAt holds the value of the "revoked_at" field.
+	RevokedAt time.Time `json:"revoked_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -62,9 +68,9 @@ func (*ModelApiKey) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case modelapikey.FieldVirtualmachineID, modelapikey.FieldAPIKey:
+		case modelapikey.FieldVirtualmachineID, modelapikey.FieldAPIKey, modelapikey.FieldDeviceSecret:
 			values[i] = new(sql.NullString)
-		case modelapikey.FieldDeletedAt, modelapikey.FieldCreatedAt:
+		case modelapikey.FieldDeletedAt, modelapikey.FieldExpiresAt, modelapikey.FieldRevokedAt, modelapikey.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case modelapikey.FieldID, modelapikey.FieldModelID, modelapikey.FieldUserID:
 			values[i] = new(uuid.UUID)
@@ -118,6 +124,24 @@ func (_m *ModelApiKey) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field api_key", values[i])
 			} else if value.Valid {
 				_m.APIKey = value.String
+			}
+		case modelapikey.FieldDeviceSecret:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field device_secret", values[i])
+			} else if value.Valid {
+				_m.DeviceSecret = value.String
+			}
+		case modelapikey.FieldExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
+			} else if value.Valid {
+				_m.ExpiresAt = value.Time
+			}
+		case modelapikey.FieldRevokedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field revoked_at", values[i])
+			} else if value.Valid {
+				_m.RevokedAt = value.Time
 			}
 		case modelapikey.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -180,6 +204,14 @@ func (_m *ModelApiKey) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("api_key=")
 	builder.WriteString(_m.APIKey)
+	builder.WriteString(", ")
+	builder.WriteString("device_secret=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("expires_at=")
+	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("revoked_at=")
+	builder.WriteString(_m.RevokedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

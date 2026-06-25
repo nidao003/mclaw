@@ -43,6 +43,18 @@ func (r *subscriptionRepo) GetActiveSubscription(ctx context.Context, userID uui
 		Only(ctx)
 }
 
+// ListActiveSubscriptions returns all active, non-expired subscriptions with their plan loaded.
+// Used by the monthly credit grant cron job.
+func (r *subscriptionRepo) ListActiveSubscriptions(ctx context.Context) ([]*db.UserSubscription, error) {
+	return r.db.UserSubscription.Query().
+		Where(
+			usersubscription.StatusEQ(consts.SubscriptionActive),
+			usersubscription.ExpiresAtGTE(time.Now()),
+		).
+		WithPlan().
+		All(ctx)
+}
+
 func (r *subscriptionRepo) Create(ctx context.Context, sub *db.UserSubscription) (*db.UserSubscription, error) {
 	builder := r.db.UserSubscription.Create().
 		SetUserID(sub.UserID).

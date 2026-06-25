@@ -37,65 +37,45 @@ func (uc *billingUsecase) CheckModelAccess(ctx context.Context, userID uuid.UUID
 }
 
 // RecordUsageAndDeduct records token usage and deducts from the user's quota/wallet.
-// Deduction priority: daily token quota → credit balance → insufficient error.
+// Deduction priority: free token quota (day/week/month,取三者最小) → credit balance → insufficient error.
+// 修复点：旧版只算局部变量不写回 DB 导致日额度形同虚设；本版通过 DeductTokensFromQuota 原子写回。
 func (uc *billingUsecase) RecordUsageAndDeduct(ctx context.Context, userID uuid.UUID, modelName string, inputTokens, outputTokens uint64) error {
 	totalTokens := int64(inputTokens + outputTokens)
 	if totalTokens <= 0 {
 		return nil
 	}
 
-	// Ensure daily token quota is reset
-	if err := uc.walletUsecase.DailyTokenReset(ctx, userID); err != nil {
-		uc.log.Warn("failed to reset daily token quota", zap.Error(err), zap.String("user_id", userID.String()))
+	// 懒触发日/周/月额度重置
+	if err := uc.walletUsecase.ResetTokenQuotas(ctx, userID); err != nil {
+		uc.log.Warn("failed to reset token quotas", zap.Error(err), zap.String("user_id", userID.String()))
 	}
 
-	// Get current wallet state
+	// 从免费额度扣（日/周/月三周期取最小值作为可用免费额度）
+	_, remaining, err := uc.walletUsecase.DeductTokensFromQuota(ctx, userID, totalTokens)
+	if err != nil {
+		return fmt.Errorf("failed to deduct token quota: %w", err)
+	}
+	if remaining <= 0 {
+		return nil
+	}
+
+	// 免费额度不足，读钱包判断是否允许扣积分
 	wallet, err := uc.walletUsecase.Get(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to get wallet: %w", err)
 	}
-
-	// Try to deduct from daily token quotas first
-	// Determine which tier this model belongs to and deduct accordingly
-	// For simplicity: deduct from the highest available quota first
-	remaining := totalTokens
-
-	// Deduct from ultra token quota
-	if remaining > 0 && wallet.DailyUltraTokenBalance > 0 {
-		deduct := min(remaining, wallet.DailyUltraTokenBalance)
-		remaining -= deduct
+	if !wallet.EnableCreditConsumption {
+		return errcode.ErrInsufficientTokenQuota
 	}
 
-	// Deduct from pro token quota
-	if remaining > 0 && wallet.DailyProTokenBalance > 0 {
-		deduct := min(remaining, wallet.DailyProTokenBalance)
-		remaining -= deduct
+	// 超额部分按 1 积分 = CreditsPerToken token 扣积分
+	creditsNeeded := (remaining + consts.CreditsPerToken - 1) / consts.CreditsPerToken // 向上取整
+	if wallet.Balance < creditsNeeded {
+		return errcode.ErrInsufficientTokenQuota
 	}
-
-	// Deduct from basic token quota
-	if remaining > 0 && wallet.DailyBasicTokenBalance > 0 {
-		deduct := min(remaining, wallet.DailyBasicTokenBalance)
-		remaining -= deduct
-	}
-
-	// If still remaining, deduct from credit balance
-	// Conversion: 1 credit = 1000 tokens (adjustable via config)
-	if remaining > 0 {
-		creditsNeeded := (remaining + 999) / 1000 // ceiling division
-		if wallet.Balance < creditsNeeded {
-			return errcode.ErrInsufficientTokenQuota
-		}
-		if err := uc.walletUsecase.Deduct(ctx, userID, consts.TransactionModelConsumption, creditsNeeded, fmt.Sprintf("模型调用: %s", modelName), ""); err != nil {
-			return fmt.Errorf("failed to deduct credits: %w", err)
-		}
+	if err := uc.walletUsecase.Deduct(ctx, userID, consts.TransactionModelConsumption, creditsNeeded, fmt.Sprintf("模型调用: %s", modelName), ""); err != nil {
+		return fmt.Errorf("failed to deduct credits: %w", err)
 	}
 
 	return nil
-}
-
-func min(a, b int64) int64 {
-	if a < b {
-		return a
-	}
-	return b
 }

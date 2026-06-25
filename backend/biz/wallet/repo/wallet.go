@@ -40,9 +40,6 @@ func (r *walletRepo) Create(ctx context.Context, w *db.Wallet) (*db.Wallet, erro
 		SetTotalRecharged(w.TotalRecharged).
 		SetTotalConsumed(w.TotalConsumed).
 		SetTotalGranted(w.TotalGranted).
-		SetDailyBasicTokenBalance(w.DailyBasicTokenBalance).
-		SetDailyProTokenBalance(w.DailyProTokenBalance).
-		SetDailyUltraTokenBalance(w.DailyUltraTokenBalance).
 		SetEnableCreditConsumption(w.EnableCreditConsumption).
 		Save(ctx)
 	if err != nil {
@@ -80,6 +77,35 @@ func (r *walletRepo) UpdateTokenBalances(ctx context.Context, id uuid.UUID, basi
 	_, err := builder.Save(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to update token balances: %w", err)
+	}
+	return nil
+}
+
+// SetTokenQuotas sets day/week/month token balances with their reset timestamps.
+func (r *walletRepo) SetTokenQuotas(ctx context.Context, id uuid.UUID, daily, weekly, monthly int64, dailyResetAt, weeklyResetAt, monthlyResetAt time.Time) error {
+	_, err := r.db.Wallet.UpdateOneID(id).
+		SetDailyTokenBalance(daily).
+		SetWeeklyTokenBalance(weekly).
+		SetMonthlyTokenBalance(monthly).
+		SetDailyResetAt(dailyResetAt).
+		SetWeeklyResetAt(weeklyResetAt).
+		SetMonthlyResetAt(monthlyResetAt).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to set token quotas: %w", err)
+	}
+	return nil
+}
+
+// AddTokenBalances atomically adds delta (negative to deduct) to day/week/month token balances.
+func (r *walletRepo) AddTokenBalances(ctx context.Context, id uuid.UUID, dailyDelta, weeklyDelta, monthlyDelta int64) error {
+	_, err := r.db.Wallet.UpdateOneID(id).
+		AddDailyTokenBalance(dailyDelta).
+		AddWeeklyTokenBalance(weeklyDelta).
+		AddMonthlyTokenBalance(monthlyDelta).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to adjust token balances: %w", err)
 	}
 	return nil
 }

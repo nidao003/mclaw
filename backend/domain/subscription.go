@@ -33,6 +33,7 @@ type SubscriptionUsecase interface {
 type SubscriptionRepo interface {
 	GetByUserID(ctx context.Context, userID uuid.UUID) (*db.UserSubscription, error)
 	GetActiveSubscription(ctx context.Context, userID uuid.UUID) (*db.UserSubscription, error)
+	ListActiveSubscriptions(ctx context.Context) ([]*db.UserSubscription, error)
 	Create(ctx context.Context, sub *db.UserSubscription) (*db.UserSubscription, error)
 	Update(ctx context.Context, id uuid.UUID, updates map[string]any) error
 	// ExpireActiveSubs marks all active subscriptions past their expiry as expired.
@@ -60,20 +61,21 @@ type PlanRepo interface {
 
 // Plan represents a subscription plan definition.
 type Plan struct {
-	ID               uuid.UUID `json:"id"`
-	Name             string    `json:"name"`
-	DisplayName      string    `json:"display_name"`
-	PriceMonth       int64     `json:"price_month"`
-	PriceYear        int64     `json:"price_year"`
-	BasicTokenQuota  int64     `json:"basic_token_quota"`
-	ProTokenQuota    int64     `json:"pro_token_quota"`
-	UltraTokenQuota  int64     `json:"ultra_token_quota"`
-	MonthlyCredits   int64     `json:"monthly_credits"`
-	MaxConcurrency   int       `json:"max_concurrency"`
-	Features         []string  `json:"features"`
-	IsDefault        bool      `json:"is_default"`
-	IsActive         bool      `json:"is_active"`
-	SortOrder        int       `json:"sort_order"`
+	ID                uuid.UUID `json:"id"`
+	Name              string    `json:"name"`
+	DisplayName       string    `json:"display_name"`
+	PriceMonth        int64     `json:"price_month"`
+	PriceYear         int64     `json:"price_year"`
+	// 统一 token 池配额（日/周/月三周期）
+	DailyTokenQuota   int64     `json:"daily_token_quota"`
+	WeeklyTokenQuota  int64     `json:"weekly_token_quota"`
+	MonthlyTokenQuota int64     `json:"monthly_token_quota"`
+	MonthlyCredits    int64     `json:"monthly_credits"`
+	MaxConcurrency    int       `json:"max_concurrency"`
+	Features          []string  `json:"features"`
+	IsDefault         bool      `json:"is_default"`
+	IsActive          bool      `json:"is_active"`
+	SortOrder         int       `json:"sort_order"`
 }
 
 func (p *Plan) From(src *db.Plan) *Plan {
@@ -85,9 +87,9 @@ func (p *Plan) From(src *db.Plan) *Plan {
 	p.DisplayName = src.DisplayName
 	p.PriceMonth = src.PriceMonth
 	p.PriceYear = src.PriceYear
-	p.BasicTokenQuota = src.BasicTokenQuota
-	p.ProTokenQuota = src.ProTokenQuota
-	p.UltraTokenQuota = src.UltraTokenQuota
+	p.DailyTokenQuota = src.DailyTokenQuota
+	p.WeeklyTokenQuota = src.WeeklyTokenQuota
+	p.MonthlyTokenQuota = src.MonthlyTokenQuota
 	p.MonthlyCredits = src.MonthlyCredits
 	p.MaxConcurrency = src.MaxConcurrency
 	p.Features = src.Features
@@ -140,14 +142,11 @@ func (s *UserSubscription) From(src *db.UserSubscription) *UserSubscription {
 	return s
 }
 
-// TokenQuota represents the daily token quota for a user.
+// TokenQuota represents the token quota for a user across day/week/month cycles.
 type TokenQuota struct {
-	BasicTokenBalance int64 `json:"daily_basic_token_balance"`
-	ProTokenBalance   int64 `json:"daily_pro_token_balance"`
-	UltraTokenBalance int64 `json:"daily_ultra_token_balance"`
-	BasicTokenQuota   int64 `json:"basic_token_quota"`
-	ProTokenQuota     int64 `json:"pro_token_quota"`
-	UltraTokenQuota   int64 `json:"ultra_token_quota"`
+	DailyTokenQuota   int64 `json:"daily_token_quota"`
+	WeeklyTokenQuota  int64 `json:"weekly_token_quota"`
+	MonthlyTokenQuota int64 `json:"monthly_token_quota"`
 }
 
 // --- Request Types ---
@@ -173,34 +172,34 @@ type CreditConsumptionReq struct {
 
 // AdminCreatePlanReq is the request for admins to create a plan.
 type AdminCreatePlanReq struct {
-	Name            string   `json:"name" validate:"required"`
-	DisplayName     string   `json:"display_name"`
-	PriceMonth      int64    `json:"price_month"`
-	PriceYear       int64    `json:"price_year"`
-	BasicTokenQuota int64    `json:"basic_token_quota"`
-	ProTokenQuota   int64    `json:"pro_token_quota"`
-	UltraTokenQuota int64    `json:"ultra_token_quota"`
-	MonthlyCredits  int64    `json:"monthly_credits"`
-	MaxConcurrency  int      `json:"max_concurrency"`
-	Features        []string `json:"features"`
-	IsDefault       bool     `json:"is_default"`
-	SortOrder       int      `json:"sort_order"`
+	Name              string   `json:"name" validate:"required"`
+	DisplayName       string   `json:"display_name"`
+	PriceMonth        int64    `json:"price_month"`
+	PriceYear         int64    `json:"price_year"`
+	DailyTokenQuota   int64    `json:"daily_token_quota"`
+	WeeklyTokenQuota  int64    `json:"weekly_token_quota"`
+	MonthlyTokenQuota int64    `json:"monthly_token_quota"`
+	MonthlyCredits    int64    `json:"monthly_credits"`
+	MaxConcurrency    int      `json:"max_concurrency"`
+	Features          []string `json:"features"`
+	IsDefault         bool     `json:"is_default"`
+	SortOrder         int      `json:"sort_order"`
 }
 
 // AdminUpdatePlanReq is the request for admins to update a plan.
 type AdminUpdatePlanReq struct {
-	DisplayName     *string  `json:"display_name,omitempty"`
-	PriceMonth      *int64   `json:"price_month,omitempty"`
-	PriceYear       *int64   `json:"price_year,omitempty"`
-	BasicTokenQuota *int64   `json:"basic_token_quota,omitempty"`
-	ProTokenQuota   *int64   `json:"pro_token_quota,omitempty"`
-	UltraTokenQuota *int64   `json:"ultra_token_quota,omitempty"`
-	MonthlyCredits  *int64   `json:"monthly_credits,omitempty"`
-	MaxConcurrency  *int     `json:"max_concurrency,omitempty"`
-	Features        []string `json:"features,omitempty"`
-	IsActive        *bool    `json:"is_active,omitempty"`
-	IsDefault       *bool    `json:"is_default,omitempty"`
-	SortOrder       *int     `json:"sort_order,omitempty"`
+	DisplayName       *string  `json:"display_name,omitempty"`
+	PriceMonth        *int64   `json:"price_month,omitempty"`
+	PriceYear         *int64   `json:"price_year,omitempty"`
+	DailyTokenQuota   *int64   `json:"daily_token_quota,omitempty"`
+	WeeklyTokenQuota  *int64   `json:"weekly_token_quota,omitempty"`
+	MonthlyTokenQuota *int64   `json:"monthly_token_quota,omitempty"`
+	MonthlyCredits    *int64   `json:"monthly_credits,omitempty"`
+	MaxConcurrency    *int     `json:"max_concurrency,omitempty"`
+	Features          []string `json:"features,omitempty"`
+	IsActive          *bool    `json:"is_active,omitempty"`
+	IsDefault         *bool    `json:"is_default,omitempty"`
+	SortOrder         *int     `json:"sort_order,omitempty"`
 }
 
 // AdminGrantSubscriptionReq is for admins to grant a subscription to a user.

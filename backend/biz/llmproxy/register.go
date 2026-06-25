@@ -36,6 +36,8 @@ func NewHandler(i *do.Injector) (*Handler, error) {
 	if billing, err := do.Invoke[domain.BillingUsecase](i); err == nil {
 		opts = append(opts, WithBillingService(billing))
 	}
+	// Inject auto-router for model="auto" requests (mclaw addition)
+	opts = append(opts, WithAutoRouter(NewAutoRouter(client, logger)))
 
 	h := &Handler{proxy: NewProxy(client, logger, opts...)}
 	g := w.Group("/v1")

@@ -27,14 +27,20 @@ type Plan struct {
 	PriceMonth int64 `json:"price_month,omitempty"`
 	// PriceYear holds the value of the "price_year" field.
 	PriceYear int64 `json:"price_year,omitempty"`
+	// DailyTokenQuota holds the value of the "daily_token_quota" field.
+	DailyTokenQuota int64 `json:"daily_token_quota,omitempty"`
+	// WeeklyTokenQuota holds the value of the "weekly_token_quota" field.
+	WeeklyTokenQuota int64 `json:"weekly_token_quota,omitempty"`
+	// MonthlyTokenQuota holds the value of the "monthly_token_quota" field.
+	MonthlyTokenQuota int64 `json:"monthly_token_quota,omitempty"`
+	// MonthlyCredits holds the value of the "monthly_credits" field.
+	MonthlyCredits int64 `json:"monthly_credits,omitempty"`
 	// BasicTokenQuota holds the value of the "basic_token_quota" field.
 	BasicTokenQuota int64 `json:"basic_token_quota,omitempty"`
 	// ProTokenQuota holds the value of the "pro_token_quota" field.
 	ProTokenQuota int64 `json:"pro_token_quota,omitempty"`
 	// UltraTokenQuota holds the value of the "ultra_token_quota" field.
 	UltraTokenQuota int64 `json:"ultra_token_quota,omitempty"`
-	// MonthlyCredits holds the value of the "monthly_credits" field.
-	MonthlyCredits int64 `json:"monthly_credits,omitempty"`
 	// MaxConcurrency holds the value of the "max_concurrency" field.
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
 	// Features holds the value of the "features" field.
@@ -82,7 +88,7 @@ func (*Plan) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case plan.FieldIsDefault, plan.FieldIsActive:
 			values[i] = new(sql.NullBool)
-		case plan.FieldPriceMonth, plan.FieldPriceYear, plan.FieldBasicTokenQuota, plan.FieldProTokenQuota, plan.FieldUltraTokenQuota, plan.FieldMonthlyCredits, plan.FieldMaxConcurrency, plan.FieldSortOrder:
+		case plan.FieldPriceMonth, plan.FieldPriceYear, plan.FieldDailyTokenQuota, plan.FieldWeeklyTokenQuota, plan.FieldMonthlyTokenQuota, plan.FieldMonthlyCredits, plan.FieldBasicTokenQuota, plan.FieldProTokenQuota, plan.FieldUltraTokenQuota, plan.FieldMaxConcurrency, plan.FieldSortOrder:
 			values[i] = new(sql.NullInt64)
 		case plan.FieldName, plan.FieldDisplayName:
 			values[i] = new(sql.NullString)
@@ -135,6 +141,30 @@ func (_m *Plan) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.PriceYear = value.Int64
 			}
+		case plan.FieldDailyTokenQuota:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field daily_token_quota", values[i])
+			} else if value.Valid {
+				_m.DailyTokenQuota = value.Int64
+			}
+		case plan.FieldWeeklyTokenQuota:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field weekly_token_quota", values[i])
+			} else if value.Valid {
+				_m.WeeklyTokenQuota = value.Int64
+			}
+		case plan.FieldMonthlyTokenQuota:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field monthly_token_quota", values[i])
+			} else if value.Valid {
+				_m.MonthlyTokenQuota = value.Int64
+			}
+		case plan.FieldMonthlyCredits:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field monthly_credits", values[i])
+			} else if value.Valid {
+				_m.MonthlyCredits = value.Int64
+			}
 		case plan.FieldBasicTokenQuota:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field basic_token_quota", values[i])
@@ -152,12 +182,6 @@ func (_m *Plan) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field ultra_token_quota", values[i])
 			} else if value.Valid {
 				_m.UltraTokenQuota = value.Int64
-			}
-		case plan.FieldMonthlyCredits:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field monthly_credits", values[i])
-			} else if value.Valid {
-				_m.MonthlyCredits = value.Int64
 			}
 		case plan.FieldMaxConcurrency:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -256,6 +280,18 @@ func (_m *Plan) String() string {
 	builder.WriteString("price_year=")
 	builder.WriteString(fmt.Sprintf("%v", _m.PriceYear))
 	builder.WriteString(", ")
+	builder.WriteString("daily_token_quota=")
+	builder.WriteString(fmt.Sprintf("%v", _m.DailyTokenQuota))
+	builder.WriteString(", ")
+	builder.WriteString("weekly_token_quota=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WeeklyTokenQuota))
+	builder.WriteString(", ")
+	builder.WriteString("monthly_token_quota=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MonthlyTokenQuota))
+	builder.WriteString(", ")
+	builder.WriteString("monthly_credits=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MonthlyCredits))
+	builder.WriteString(", ")
 	builder.WriteString("basic_token_quota=")
 	builder.WriteString(fmt.Sprintf("%v", _m.BasicTokenQuota))
 	builder.WriteString(", ")
@@ -264,9 +300,6 @@ func (_m *Plan) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("ultra_token_quota=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UltraTokenQuota))
-	builder.WriteString(", ")
-	builder.WriteString("monthly_credits=")
-	builder.WriteString(fmt.Sprintf("%v", _m.MonthlyCredits))
 	builder.WriteString(", ")
 	builder.WriteString("max_concurrency=")
 	builder.WriteString(fmt.Sprintf("%v", _m.MaxConcurrency))

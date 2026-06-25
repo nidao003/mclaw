@@ -25,6 +25,12 @@ const (
 	FieldVirtualmachineID = "virtualmachine_id"
 	// FieldAPIKey holds the string denoting the api_key field in the database.
 	FieldAPIKey = "api_key"
+	// FieldDeviceSecret holds the string denoting the device_secret field in the database.
+	FieldDeviceSecret = "device_secret"
+	// FieldExpiresAt holds the string denoting the expires_at field in the database.
+	FieldExpiresAt = "expires_at"
+	// FieldRevokedAt holds the string denoting the revoked_at field in the database.
+	FieldRevokedAt = "revoked_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeModel holds the string denoting the model edge name in mutations.
@@ -48,6 +54,9 @@ var Columns = []string{
 	FieldUserID,
 	FieldVirtualmachineID,
 	FieldAPIKey,
+	FieldDeviceSecret,
+	FieldExpiresAt,
+	FieldRevokedAt,
 	FieldCreatedAt,
 }
 
@@ -106,6 +115,21 @@ func ByVirtualmachineID(opts ...sql.OrderTermOption) OrderOption {
 // ByAPIKey orders the results by the api_key field.
 func ByAPIKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAPIKey, opts...).ToFunc()
+}
+
+// ByDeviceSecret orders the results by the device_secret field.
+func ByDeviceSecret(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeviceSecret, opts...).ToFunc()
+}
+
+// ByExpiresAt orders the results by the expires_at field.
+func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
+}
+
+// ByRevokedAt orders the results by the revoked_at field.
+func ByRevokedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRevokedAt, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

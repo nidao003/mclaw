@@ -29,6 +29,14 @@ declare global {
     electron: ElectronAPI;
     mclaw?: {
       hostInvoke: <T = unknown>(request: HostInvokeRequest) => Promise<HostInvokeResponse<T>>;
+      // 客户端 HMAC 签名密钥（绑 mclaw 客户端），提交给后端 IssueRuntimeKey 绑定 runtime key
+      getDeviceSecret?: () => Promise<string>;
+      // 数据 API key（通用 X-API-Key，不绑客户端），ensureDataApiKey 严谨流程用
+      dataApiKey?: {
+        get: () => Promise<string | null>;
+        save: (key: string) => Promise<void>;
+        clear: () => Promise<void>;
+      };
     };
   }
 }

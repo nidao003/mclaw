@@ -108,6 +108,90 @@ func (_u *PlanUpdate) AddPriceYear(v int64) *PlanUpdate {
 	return _u
 }
 
+// SetDailyTokenQuota sets the "daily_token_quota" field.
+func (_u *PlanUpdate) SetDailyTokenQuota(v int64) *PlanUpdate {
+	_u.mutation.ResetDailyTokenQuota()
+	_u.mutation.SetDailyTokenQuota(v)
+	return _u
+}
+
+// SetNillableDailyTokenQuota sets the "daily_token_quota" field if the given value is not nil.
+func (_u *PlanUpdate) SetNillableDailyTokenQuota(v *int64) *PlanUpdate {
+	if v != nil {
+		_u.SetDailyTokenQuota(*v)
+	}
+	return _u
+}
+
+// AddDailyTokenQuota adds value to the "daily_token_quota" field.
+func (_u *PlanUpdate) AddDailyTokenQuota(v int64) *PlanUpdate {
+	_u.mutation.AddDailyTokenQuota(v)
+	return _u
+}
+
+// SetWeeklyTokenQuota sets the "weekly_token_quota" field.
+func (_u *PlanUpdate) SetWeeklyTokenQuota(v int64) *PlanUpdate {
+	_u.mutation.ResetWeeklyTokenQuota()
+	_u.mutation.SetWeeklyTokenQuota(v)
+	return _u
+}
+
+// SetNillableWeeklyTokenQuota sets the "weekly_token_quota" field if the given value is not nil.
+func (_u *PlanUpdate) SetNillableWeeklyTokenQuota(v *int64) *PlanUpdate {
+	if v != nil {
+		_u.SetWeeklyTokenQuota(*v)
+	}
+	return _u
+}
+
+// AddWeeklyTokenQuota adds value to the "weekly_token_quota" field.
+func (_u *PlanUpdate) AddWeeklyTokenQuota(v int64) *PlanUpdate {
+	_u.mutation.AddWeeklyTokenQuota(v)
+	return _u
+}
+
+// SetMonthlyTokenQuota sets the "monthly_token_quota" field.
+func (_u *PlanUpdate) SetMonthlyTokenQuota(v int64) *PlanUpdate {
+	_u.mutation.ResetMonthlyTokenQuota()
+	_u.mutation.SetMonthlyTokenQuota(v)
+	return _u
+}
+
+// SetNillableMonthlyTokenQuota sets the "monthly_token_quota" field if the given value is not nil.
+func (_u *PlanUpdate) SetNillableMonthlyTokenQuota(v *int64) *PlanUpdate {
+	if v != nil {
+		_u.SetMonthlyTokenQuota(*v)
+	}
+	return _u
+}
+
+// AddMonthlyTokenQuota adds value to the "monthly_token_quota" field.
+func (_u *PlanUpdate) AddMonthlyTokenQuota(v int64) *PlanUpdate {
+	_u.mutation.AddMonthlyTokenQuota(v)
+	return _u
+}
+
+// SetMonthlyCredits sets the "monthly_credits" field.
+func (_u *PlanUpdate) SetMonthlyCredits(v int64) *PlanUpdate {
+	_u.mutation.ResetMonthlyCredits()
+	_u.mutation.SetMonthlyCredits(v)
+	return _u
+}
+
+// SetNillableMonthlyCredits sets the "monthly_credits" field if the given value is not nil.
+func (_u *PlanUpdate) SetNillableMonthlyCredits(v *int64) *PlanUpdate {
+	if v != nil {
+		_u.SetMonthlyCredits(*v)
+	}
+	return _u
+}
+
+// AddMonthlyCredits adds value to the "monthly_credits" field.
+func (_u *PlanUpdate) AddMonthlyCredits(v int64) *PlanUpdate {
+	_u.mutation.AddMonthlyCredits(v)
+	return _u
+}
+
 // SetBasicTokenQuota sets the "basic_token_quota" field.
 func (_u *PlanUpdate) SetBasicTokenQuota(v int64) *PlanUpdate {
 	_u.mutation.ResetBasicTokenQuota()
@@ -168,27 +252,6 @@ func (_u *PlanUpdate) SetNillableUltraTokenQuota(v *int64) *PlanUpdate {
 // AddUltraTokenQuota adds value to the "ultra_token_quota" field.
 func (_u *PlanUpdate) AddUltraTokenQuota(v int64) *PlanUpdate {
 	_u.mutation.AddUltraTokenQuota(v)
-	return _u
-}
-
-// SetMonthlyCredits sets the "monthly_credits" field.
-func (_u *PlanUpdate) SetMonthlyCredits(v int64) *PlanUpdate {
-	_u.mutation.ResetMonthlyCredits()
-	_u.mutation.SetMonthlyCredits(v)
-	return _u
-}
-
-// SetNillableMonthlyCredits sets the "monthly_credits" field if the given value is not nil.
-func (_u *PlanUpdate) SetNillableMonthlyCredits(v *int64) *PlanUpdate {
-	if v != nil {
-		_u.SetMonthlyCredits(*v)
-	}
-	return _u
-}
-
-// AddMonthlyCredits adds value to the "monthly_credits" field.
-func (_u *PlanUpdate) AddMonthlyCredits(v int64) *PlanUpdate {
-	_u.mutation.AddMonthlyCredits(v)
 	return _u
 }
 
@@ -426,6 +489,30 @@ func (_u *PlanUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedPriceYear(); ok {
 		_spec.AddField(plan.FieldPriceYear, field.TypeInt64, value)
 	}
+	if value, ok := _u.mutation.DailyTokenQuota(); ok {
+		_spec.SetField(plan.FieldDailyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedDailyTokenQuota(); ok {
+		_spec.AddField(plan.FieldDailyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.WeeklyTokenQuota(); ok {
+		_spec.SetField(plan.FieldWeeklyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedWeeklyTokenQuota(); ok {
+		_spec.AddField(plan.FieldWeeklyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.MonthlyTokenQuota(); ok {
+		_spec.SetField(plan.FieldMonthlyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedMonthlyTokenQuota(); ok {
+		_spec.AddField(plan.FieldMonthlyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.MonthlyCredits(); ok {
+		_spec.SetField(plan.FieldMonthlyCredits, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedMonthlyCredits(); ok {
+		_spec.AddField(plan.FieldMonthlyCredits, field.TypeInt64, value)
+	}
 	if value, ok := _u.mutation.BasicTokenQuota(); ok {
 		_spec.SetField(plan.FieldBasicTokenQuota, field.TypeInt64, value)
 	}
@@ -443,12 +530,6 @@ func (_u *PlanUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedUltraTokenQuota(); ok {
 		_spec.AddField(plan.FieldUltraTokenQuota, field.TypeInt64, value)
-	}
-	if value, ok := _u.mutation.MonthlyCredits(); ok {
-		_spec.SetField(plan.FieldMonthlyCredits, field.TypeInt64, value)
-	}
-	if value, ok := _u.mutation.AddedMonthlyCredits(); ok {
-		_spec.AddField(plan.FieldMonthlyCredits, field.TypeInt64, value)
 	}
 	if value, ok := _u.mutation.MaxConcurrency(); ok {
 		_spec.SetField(plan.FieldMaxConcurrency, field.TypeInt, value)
@@ -628,6 +709,90 @@ func (_u *PlanUpdateOne) AddPriceYear(v int64) *PlanUpdateOne {
 	return _u
 }
 
+// SetDailyTokenQuota sets the "daily_token_quota" field.
+func (_u *PlanUpdateOne) SetDailyTokenQuota(v int64) *PlanUpdateOne {
+	_u.mutation.ResetDailyTokenQuota()
+	_u.mutation.SetDailyTokenQuota(v)
+	return _u
+}
+
+// SetNillableDailyTokenQuota sets the "daily_token_quota" field if the given value is not nil.
+func (_u *PlanUpdateOne) SetNillableDailyTokenQuota(v *int64) *PlanUpdateOne {
+	if v != nil {
+		_u.SetDailyTokenQuota(*v)
+	}
+	return _u
+}
+
+// AddDailyTokenQuota adds value to the "daily_token_quota" field.
+func (_u *PlanUpdateOne) AddDailyTokenQuota(v int64) *PlanUpdateOne {
+	_u.mutation.AddDailyTokenQuota(v)
+	return _u
+}
+
+// SetWeeklyTokenQuota sets the "weekly_token_quota" field.
+func (_u *PlanUpdateOne) SetWeeklyTokenQuota(v int64) *PlanUpdateOne {
+	_u.mutation.ResetWeeklyTokenQuota()
+	_u.mutation.SetWeeklyTokenQuota(v)
+	return _u
+}
+
+// SetNillableWeeklyTokenQuota sets the "weekly_token_quota" field if the given value is not nil.
+func (_u *PlanUpdateOne) SetNillableWeeklyTokenQuota(v *int64) *PlanUpdateOne {
+	if v != nil {
+		_u.SetWeeklyTokenQuota(*v)
+	}
+	return _u
+}
+
+// AddWeeklyTokenQuota adds value to the "weekly_token_quota" field.
+func (_u *PlanUpdateOne) AddWeeklyTokenQuota(v int64) *PlanUpdateOne {
+	_u.mutation.AddWeeklyTokenQuota(v)
+	return _u
+}
+
+// SetMonthlyTokenQuota sets the "monthly_token_quota" field.
+func (_u *PlanUpdateOne) SetMonthlyTokenQuota(v int64) *PlanUpdateOne {
+	_u.mutation.ResetMonthlyTokenQuota()
+	_u.mutation.SetMonthlyTokenQuota(v)
+	return _u
+}
+
+// SetNillableMonthlyTokenQuota sets the "monthly_token_quota" field if the given value is not nil.
+func (_u *PlanUpdateOne) SetNillableMonthlyTokenQuota(v *int64) *PlanUpdateOne {
+	if v != nil {
+		_u.SetMonthlyTokenQuota(*v)
+	}
+	return _u
+}
+
+// AddMonthlyTokenQuota adds value to the "monthly_token_quota" field.
+func (_u *PlanUpdateOne) AddMonthlyTokenQuota(v int64) *PlanUpdateOne {
+	_u.mutation.AddMonthlyTokenQuota(v)
+	return _u
+}
+
+// SetMonthlyCredits sets the "monthly_credits" field.
+func (_u *PlanUpdateOne) SetMonthlyCredits(v int64) *PlanUpdateOne {
+	_u.mutation.ResetMonthlyCredits()
+	_u.mutation.SetMonthlyCredits(v)
+	return _u
+}
+
+// SetNillableMonthlyCredits sets the "monthly_credits" field if the given value is not nil.
+func (_u *PlanUpdateOne) SetNillableMonthlyCredits(v *int64) *PlanUpdateOne {
+	if v != nil {
+		_u.SetMonthlyCredits(*v)
+	}
+	return _u
+}
+
+// AddMonthlyCredits adds value to the "monthly_credits" field.
+func (_u *PlanUpdateOne) AddMonthlyCredits(v int64) *PlanUpdateOne {
+	_u.mutation.AddMonthlyCredits(v)
+	return _u
+}
+
 // SetBasicTokenQuota sets the "basic_token_quota" field.
 func (_u *PlanUpdateOne) SetBasicTokenQuota(v int64) *PlanUpdateOne {
 	_u.mutation.ResetBasicTokenQuota()
@@ -688,27 +853,6 @@ func (_u *PlanUpdateOne) SetNillableUltraTokenQuota(v *int64) *PlanUpdateOne {
 // AddUltraTokenQuota adds value to the "ultra_token_quota" field.
 func (_u *PlanUpdateOne) AddUltraTokenQuota(v int64) *PlanUpdateOne {
 	_u.mutation.AddUltraTokenQuota(v)
-	return _u
-}
-
-// SetMonthlyCredits sets the "monthly_credits" field.
-func (_u *PlanUpdateOne) SetMonthlyCredits(v int64) *PlanUpdateOne {
-	_u.mutation.ResetMonthlyCredits()
-	_u.mutation.SetMonthlyCredits(v)
-	return _u
-}
-
-// SetNillableMonthlyCredits sets the "monthly_credits" field if the given value is not nil.
-func (_u *PlanUpdateOne) SetNillableMonthlyCredits(v *int64) *PlanUpdateOne {
-	if v != nil {
-		_u.SetMonthlyCredits(*v)
-	}
-	return _u
-}
-
-// AddMonthlyCredits adds value to the "monthly_credits" field.
-func (_u *PlanUpdateOne) AddMonthlyCredits(v int64) *PlanUpdateOne {
-	_u.mutation.AddMonthlyCredits(v)
 	return _u
 }
 
@@ -976,6 +1120,30 @@ func (_u *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) {
 	if value, ok := _u.mutation.AddedPriceYear(); ok {
 		_spec.AddField(plan.FieldPriceYear, field.TypeInt64, value)
 	}
+	if value, ok := _u.mutation.DailyTokenQuota(); ok {
+		_spec.SetField(plan.FieldDailyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedDailyTokenQuota(); ok {
+		_spec.AddField(plan.FieldDailyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.WeeklyTokenQuota(); ok {
+		_spec.SetField(plan.FieldWeeklyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedWeeklyTokenQuota(); ok {
+		_spec.AddField(plan.FieldWeeklyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.MonthlyTokenQuota(); ok {
+		_spec.SetField(plan.FieldMonthlyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedMonthlyTokenQuota(); ok {
+		_spec.AddField(plan.FieldMonthlyTokenQuota, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.MonthlyCredits(); ok {
+		_spec.SetField(plan.FieldMonthlyCredits, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedMonthlyCredits(); ok {
+		_spec.AddField(plan.FieldMonthlyCredits, field.TypeInt64, value)
+	}
 	if value, ok := _u.mutation.BasicTokenQuota(); ok {
 		_spec.SetField(plan.FieldBasicTokenQuota, field.TypeInt64, value)
 	}
@@ -993,12 +1161,6 @@ func (_u *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) {
 	}
 	if value, ok := _u.mutation.AddedUltraTokenQuota(); ok {
 		_spec.AddField(plan.FieldUltraTokenQuota, field.TypeInt64, value)
-	}
-	if value, ok := _u.mutation.MonthlyCredits(); ok {
-		_spec.SetField(plan.FieldMonthlyCredits, field.TypeInt64, value)
-	}
-	if value, ok := _u.mutation.AddedMonthlyCredits(); ok {
-		_spec.AddField(plan.FieldMonthlyCredits, field.TypeInt64, value)
 	}
 	if value, ok := _u.mutation.MaxConcurrency(); ok {
 		_spec.SetField(plan.FieldMaxConcurrency, field.TypeInt, value)

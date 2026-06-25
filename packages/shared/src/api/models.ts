@@ -75,12 +75,15 @@ export const modelsApi = {
    * 签发（或复用）访问指定模型的 runtime key (POST /api/v1/users/models/:id/runtime-key)
    * 桌面端用此 key 作为 OpenClaw custom provider 的 api_key，请求经 Go 后端 llmproxy
    * 转发到真实大模型，由后端统一持有模型凭证 + 计费扣费。
+   *
+   * deviceSecret 为客户端 HMAC 签名密钥（绑 mclaw 客户端），后端存该 key 记录用于验签。
+   * 返回 runtime key 及其过期时间（桌面端凭此判断续签）。
    */
-  issueRuntimeKey(id: string): Promise<string> {
-    return apiRequest<{ key: string }>(
+  issueRuntimeKey(id: string, deviceSecret: string): Promise<{ key: string; expiresAt: string }> {
+    return apiRequest<{ key: string; expires_at: string }>(
       `/api/v1/users/models/${encodeURIComponent(id)}/runtime-key`,
-      { method: 'POST' },
-    ).then((resp) => resp.key);
+      { method: 'POST', body: JSON.stringify({ device_secret: deviceSecret }) },
+    ).then((resp) => ({ key: resp.key, expiresAt: resp.expires_at }));
   },
 
   /**

@@ -34,6 +34,7 @@ import { UpdateNotifier } from './components/update/UpdateNotifier';
 import { useNewChatAction } from './components/layout/use-new-chat-action';
 import { hostEvents } from './lib/host-events';
 import { useCloudModelSyncOnLogin } from './hooks/useCloudModelSyncOnLogin';
+import { useDataApiKeyOnLogin } from './hooks/useDataApiKeyOnLogin';
 
 
 /**
@@ -119,6 +120,7 @@ function SettingsDialog() {
 
 function App() {
   useCloudModelSyncOnLogin();
+  useDataApiKeyOnLogin();
 
   const navigate = useNavigate();
   const location = useLocation();

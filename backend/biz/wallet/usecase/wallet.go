@@ -61,9 +61,6 @@ func (uc *walletUsecase) Get(ctx context.Context, userID uuid.UUID) (*domain.Wal
 		newWallet := &db.Wallet{
 			UserID:                  userID,
 			Balance:                 0,
-			DailyBasicTokenBalance:  0,
-			DailyProTokenBalance:    0,
-			DailyUltraTokenBalance:  0,
 			EnableCreditConsumption: true,
 		}
 		created, createErr := uc.walletRepo.Create(ctx, newWallet)
@@ -283,16 +280,17 @@ func (uc *walletUsecase) Grant(ctx context.Context, userID uuid.UUID, kind const
 	return nil
 }
 
-// DailyTokenReset resets daily token quotas based on subscription plan.
+// DailyTokenReset resets daily token quotas based on subscription plan (legacy compat).
 func (uc *walletUsecase) DailyTokenReset(ctx context.Context, userID uuid.UUID) error {
+	return uc.ResetTokenQuotas(ctx, userID)
+}
+
+// ResetTokenQuotas lazily resets day/week/month token quotas based on subscription plan.
+// Each cycle is reset independently when its period has rolled over.
+func (uc *walletUsecase) ResetTokenQuotas(ctx context.Context, userID uuid.UUID) error {
 	w, err := uc.walletRepo.GetByUserID(ctx, userID)
 	if err != nil {
 		return errcode.ErrWalletNotFound
-	}
-
-	now := time.Now()
-	if !w.DailyResetAt.IsZero() && isSameDay(w.DailyResetAt, now) {
-		return nil // already reset today
 	}
 
 	quota, err := uc.subUsecase.GetTokenQuota(ctx, userID)
@@ -300,17 +298,94 @@ func (uc *walletUsecase) DailyTokenReset(ctx context.Context, userID uuid.UUID) 
 		return fmt.Errorf("failed to get token quota: %w", err)
 	}
 
-	return uc.walletRepo.UpdateTokenBalances(ctx, w.ID,
-		quota.BasicTokenQuota,
-		quota.ProTokenQuota,
-		quota.UltraTokenQuota,
-		now,
-	)
+	now := time.Now()
+	daily := w.DailyTokenBalance
+	weekly := w.WeeklyTokenBalance
+	monthly := w.MonthlyTokenBalance
+	dailyResetAt := w.DailyResetAt
+	weeklyResetAt := w.WeeklyResetAt
+	monthlyResetAt := w.MonthlyResetAt
+	needReset := false
+
+	// 日周期：日历日重置
+	if dailyResetAt.IsZero() || !isSameDay(dailyResetAt, now) {
+		daily = quota.DailyTokenQuota
+		dailyResetAt = now
+		needReset = true
+	}
+	// 周周期：自然周（周一为起始）重置
+	if weeklyResetAt.IsZero() || !isSameWeek(weeklyResetAt, now) {
+		weekly = quota.WeeklyTokenQuota
+		weeklyResetAt = now
+		needReset = true
+	}
+	// 月周期：自然月重置
+	if monthlyResetAt.IsZero() || !isSameMonth(monthlyResetAt, now) {
+		monthly = quota.MonthlyTokenQuota
+		monthlyResetAt = now
+		needReset = true
+	}
+
+	if !needReset {
+		return nil
+	}
+
+	return uc.walletRepo.SetTokenQuotas(ctx, w.ID, daily, weekly, monthly, dailyResetAt, weeklyResetAt, monthlyResetAt)
+}
+
+// DeductTokensFromQuota deducts amount from the free token quota (day/week/month cycles).
+// The three cycles are independent upper bounds: a request must be covered by all three,
+// so the usable free quota = min(daily, weekly, monthly). Returns tokens deducted from
+// free quota and tokens remaining (which the caller should cover with credits).
+func (uc *walletUsecase) DeductTokensFromQuota(ctx context.Context, userID uuid.UUID, amount int64) (int64, int64, error) {
+	if amount <= 0 {
+		return 0, 0, nil
+	}
+	w, err := uc.walletRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return 0, amount, errcode.ErrWalletNotFound
+	}
+
+	freeQuota := w.DailyTokenBalance
+	if w.WeeklyTokenBalance < freeQuota {
+		freeQuota = w.WeeklyTokenBalance
+	}
+	if w.MonthlyTokenBalance < freeQuota {
+		freeQuota = w.MonthlyTokenBalance
+	}
+	if freeQuota < 0 {
+		freeQuota = 0
+	}
+
+	deducted := freeQuota
+	if amount < deducted {
+		deducted = amount
+	}
+	if deducted <= 0 {
+		return 0, amount, nil
+	}
+
+	if err := uc.walletRepo.AddTokenBalances(ctx, w.ID, -deducted, -deducted, -deducted); err != nil {
+		return 0, amount, err
+	}
+	return deducted, amount - deducted, nil
 }
 
 // isSameDay checks if two timestamps are on the same calendar day.
 func isSameDay(a, b time.Time) bool {
 	return a.Year() == b.Year() && a.Month() == b.Month() && a.Day() == b.Day()
+}
+
+// isSameWeek checks if two timestamps fall in the same ISO week (Monday-start).
+func isSameWeek(a, b time.Time) bool {
+	ay, aw := a.ISOWeek()
+	by, bw := b.ISOWeek()
+	return ay == by && aw == bw
+}
+
+// isSameMonth checks if two timestamps fall in the same calendar month.
+func isSameMonth(a, b time.Time) bool {
+	return a.Year() == b.Year() && a.Month() == b.Month()
 }
 
 // creditsToAmount converts credit amount to payment amount in cents.

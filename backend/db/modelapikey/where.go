@@ -81,6 +81,21 @@ func APIKey(v string) predicate.ModelApiKey {
 	return predicate.ModelApiKey(sql.FieldEQ(FieldAPIKey, v))
 }
 
+// DeviceSecret applies equality check predicate on the "device_secret" field. It's identical to DeviceSecretEQ.
+func DeviceSecret(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldEQ(FieldDeviceSecret, v))
+}
+
+// ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
+func ExpiresAt(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldEQ(FieldExpiresAt, v))
+}
+
+// RevokedAt applies equality check predicate on the "revoked_at" field. It's identical to RevokedAtEQ.
+func RevokedAt(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldEQ(FieldRevokedAt, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.ModelApiKey {
 	return predicate.ModelApiKey(sql.FieldEQ(FieldCreatedAt, v))
@@ -334,6 +349,181 @@ func APIKeyEqualFold(v string) predicate.ModelApiKey {
 // APIKeyContainsFold applies the ContainsFold predicate on the "api_key" field.
 func APIKeyContainsFold(v string) predicate.ModelApiKey {
 	return predicate.ModelApiKey(sql.FieldContainsFold(FieldAPIKey, v))
+}
+
+// DeviceSecretEQ applies the EQ predicate on the "device_secret" field.
+func DeviceSecretEQ(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldEQ(FieldDeviceSecret, v))
+}
+
+// DeviceSecretNEQ applies the NEQ predicate on the "device_secret" field.
+func DeviceSecretNEQ(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNEQ(FieldDeviceSecret, v))
+}
+
+// DeviceSecretIn applies the In predicate on the "device_secret" field.
+func DeviceSecretIn(vs ...string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldIn(FieldDeviceSecret, vs...))
+}
+
+// DeviceSecretNotIn applies the NotIn predicate on the "device_secret" field.
+func DeviceSecretNotIn(vs ...string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNotIn(FieldDeviceSecret, vs...))
+}
+
+// DeviceSecretGT applies the GT predicate on the "device_secret" field.
+func DeviceSecretGT(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldGT(FieldDeviceSecret, v))
+}
+
+// DeviceSecretGTE applies the GTE predicate on the "device_secret" field.
+func DeviceSecretGTE(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldGTE(FieldDeviceSecret, v))
+}
+
+// DeviceSecretLT applies the LT predicate on the "device_secret" field.
+func DeviceSecretLT(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldLT(FieldDeviceSecret, v))
+}
+
+// DeviceSecretLTE applies the LTE predicate on the "device_secret" field.
+func DeviceSecretLTE(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldLTE(FieldDeviceSecret, v))
+}
+
+// DeviceSecretContains applies the Contains predicate on the "device_secret" field.
+func DeviceSecretContains(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldContains(FieldDeviceSecret, v))
+}
+
+// DeviceSecretHasPrefix applies the HasPrefix predicate on the "device_secret" field.
+func DeviceSecretHasPrefix(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldHasPrefix(FieldDeviceSecret, v))
+}
+
+// DeviceSecretHasSuffix applies the HasSuffix predicate on the "device_secret" field.
+func DeviceSecretHasSuffix(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldHasSuffix(FieldDeviceSecret, v))
+}
+
+// DeviceSecretIsNil applies the IsNil predicate on the "device_secret" field.
+func DeviceSecretIsNil() predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldIsNull(FieldDeviceSecret))
+}
+
+// DeviceSecretNotNil applies the NotNil predicate on the "device_secret" field.
+func DeviceSecretNotNil() predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNotNull(FieldDeviceSecret))
+}
+
+// DeviceSecretEqualFold applies the EqualFold predicate on the "device_secret" field.
+func DeviceSecretEqualFold(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldEqualFold(FieldDeviceSecret, v))
+}
+
+// DeviceSecretContainsFold applies the ContainsFold predicate on the "device_secret" field.
+func DeviceSecretContainsFold(v string) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldContainsFold(FieldDeviceSecret, v))
+}
+
+// ExpiresAtEQ applies the EQ predicate on the "expires_at" field.
+func ExpiresAtEQ(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtNEQ applies the NEQ predicate on the "expires_at" field.
+func ExpiresAtNEQ(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtIn applies the In predicate on the "expires_at" field.
+func ExpiresAtIn(vs ...time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtNotIn applies the NotIn predicate on the "expires_at" field.
+func ExpiresAtNotIn(vs ...time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNotIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtGT applies the GT predicate on the "expires_at" field.
+func ExpiresAtGT(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldGT(FieldExpiresAt, v))
+}
+
+// ExpiresAtGTE applies the GTE predicate on the "expires_at" field.
+func ExpiresAtGTE(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldGTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtLT applies the LT predicate on the "expires_at" field.
+func ExpiresAtLT(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldLT(FieldExpiresAt, v))
+}
+
+// ExpiresAtLTE applies the LTE predicate on the "expires_at" field.
+func ExpiresAtLTE(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldLTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtIsNil applies the IsNil predicate on the "expires_at" field.
+func ExpiresAtIsNil() predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldIsNull(FieldExpiresAt))
+}
+
+// ExpiresAtNotNil applies the NotNil predicate on the "expires_at" field.
+func ExpiresAtNotNil() predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNotNull(FieldExpiresAt))
+}
+
+// RevokedAtEQ applies the EQ predicate on the "revoked_at" field.
+func RevokedAtEQ(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldEQ(FieldRevokedAt, v))
+}
+
+// RevokedAtNEQ applies the NEQ predicate on the "revoked_at" field.
+func RevokedAtNEQ(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNEQ(FieldRevokedAt, v))
+}
+
+// RevokedAtIn applies the In predicate on the "revoked_at" field.
+func RevokedAtIn(vs ...time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldIn(FieldRevokedAt, vs...))
+}
+
+// RevokedAtNotIn applies the NotIn predicate on the "revoked_at" field.
+func RevokedAtNotIn(vs ...time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNotIn(FieldRevokedAt, vs...))
+}
+
+// RevokedAtGT applies the GT predicate on the "revoked_at" field.
+func RevokedAtGT(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldGT(FieldRevokedAt, v))
+}
+
+// RevokedAtGTE applies the GTE predicate on the "revoked_at" field.
+func RevokedAtGTE(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldGTE(FieldRevokedAt, v))
+}
+
+// RevokedAtLT applies the LT predicate on the "revoked_at" field.
+func RevokedAtLT(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldLT(FieldRevokedAt, v))
+}
+
+// RevokedAtLTE applies the LTE predicate on the "revoked_at" field.
+func RevokedAtLTE(v time.Time) predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldLTE(FieldRevokedAt, v))
+}
+
+// RevokedAtIsNil applies the IsNil predicate on the "revoked_at" field.
+func RevokedAtIsNil() predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldIsNull(FieldRevokedAt))
+}
+
+// RevokedAtNotNil applies the NotNil predicate on the "revoked_at" field.
+func RevokedAtNotNil() predicate.ModelApiKey {
+	return predicate.ModelApiKey(sql.FieldNotNull(FieldRevokedAt))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

@@ -375,11 +375,20 @@ func (r *switchModelModelRepo) Update(context.Context, uuid.UUID, uuid.UUID, *do
 func (r *switchModelModelRepo) UpdateCheckResult(context.Context, uuid.UUID, bool, string) error {
 	return errors.New("unused")
 }
-func (r *switchModelModelRepo) CreateRuntimeAPIKey(_ context.Context, uid, modelID uuid.UUID, vmID string) (string, error) {
+func (r *switchModelModelRepo) GetByUserAndModelName(context.Context, uuid.UUID, string) (*db.Model, error) {
+	return nil, errors.New("unused")
+}
+func (r *switchModelModelRepo) GetRuntimeAPIKeyByUserModel(context.Context, uuid.UUID, uuid.UUID) (*db.ModelApiKey, error) {
+	return nil, errors.New("unused")
+}
+func (r *switchModelModelRepo) CreateRuntimeAPIKey(_ context.Context, uid, modelID uuid.UUID, vmID string, _ string, _ *time.Time) (string, error) {
 	r.runtimeUserID = uid
 	r.runtimeModelID = modelID
 	r.runtimeVMID = vmID
 	return r.runtimeKey, nil
+}
+func (r *switchModelModelRepo) RefreshRuntimeAPIKey(context.Context, uuid.UUID, string, time.Time) error {
+	return nil
 }
 
 type switchModelTaskflow struct {

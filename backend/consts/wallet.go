@@ -1,5 +1,9 @@
 package consts
 
+// CreditsPerToken defines the token-to-credit conversion rate: 1 credit = 10000 tokens.
+// 会员档位配额（日/周/月 token）与积分同构，均按此换算。
+const CreditsPerToken int64 = 10000
+
 // TransactionKind defines the type of wallet transaction.
 type TransactionKind string
 

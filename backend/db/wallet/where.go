@@ -80,6 +80,36 @@ func TotalGranted(v int64) predicate.Wallet {
 	return predicate.Wallet(sql.FieldEQ(FieldTotalGranted, v))
 }
 
+// DailyTokenBalance applies equality check predicate on the "daily_token_balance" field. It's identical to DailyTokenBalanceEQ.
+func DailyTokenBalance(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldDailyTokenBalance, v))
+}
+
+// WeeklyTokenBalance applies equality check predicate on the "weekly_token_balance" field. It's identical to WeeklyTokenBalanceEQ.
+func WeeklyTokenBalance(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldWeeklyTokenBalance, v))
+}
+
+// MonthlyTokenBalance applies equality check predicate on the "monthly_token_balance" field. It's identical to MonthlyTokenBalanceEQ.
+func MonthlyTokenBalance(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldMonthlyTokenBalance, v))
+}
+
+// DailyResetAt applies equality check predicate on the "daily_reset_at" field. It's identical to DailyResetAtEQ.
+func DailyResetAt(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldDailyResetAt, v))
+}
+
+// WeeklyResetAt applies equality check predicate on the "weekly_reset_at" field. It's identical to WeeklyResetAtEQ.
+func WeeklyResetAt(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldWeeklyResetAt, v))
+}
+
+// MonthlyResetAt applies equality check predicate on the "monthly_reset_at" field. It's identical to MonthlyResetAtEQ.
+func MonthlyResetAt(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldMonthlyResetAt, v))
+}
+
 // DailyBasicTokenBalance applies equality check predicate on the "daily_basic_token_balance" field. It's identical to DailyBasicTokenBalanceEQ.
 func DailyBasicTokenBalance(v int64) predicate.Wallet {
 	return predicate.Wallet(sql.FieldEQ(FieldDailyBasicTokenBalance, v))
@@ -93,11 +123,6 @@ func DailyProTokenBalance(v int64) predicate.Wallet {
 // DailyUltraTokenBalance applies equality check predicate on the "daily_ultra_token_balance" field. It's identical to DailyUltraTokenBalanceEQ.
 func DailyUltraTokenBalance(v int64) predicate.Wallet {
 	return predicate.Wallet(sql.FieldEQ(FieldDailyUltraTokenBalance, v))
-}
-
-// DailyResetAt applies equality check predicate on the "daily_reset_at" field. It's identical to DailyResetAtEQ.
-func DailyResetAt(v time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldEQ(FieldDailyResetAt, v))
 }
 
 // EnableCreditConsumption applies equality check predicate on the "enable_credit_consumption" field. It's identical to EnableCreditConsumptionEQ.
@@ -315,6 +340,276 @@ func TotalGrantedLTE(v int64) predicate.Wallet {
 	return predicate.Wallet(sql.FieldLTE(FieldTotalGranted, v))
 }
 
+// DailyTokenBalanceEQ applies the EQ predicate on the "daily_token_balance" field.
+func DailyTokenBalanceEQ(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldDailyTokenBalance, v))
+}
+
+// DailyTokenBalanceNEQ applies the NEQ predicate on the "daily_token_balance" field.
+func DailyTokenBalanceNEQ(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNEQ(FieldDailyTokenBalance, v))
+}
+
+// DailyTokenBalanceIn applies the In predicate on the "daily_token_balance" field.
+func DailyTokenBalanceIn(vs ...int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldIn(FieldDailyTokenBalance, vs...))
+}
+
+// DailyTokenBalanceNotIn applies the NotIn predicate on the "daily_token_balance" field.
+func DailyTokenBalanceNotIn(vs ...int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotIn(FieldDailyTokenBalance, vs...))
+}
+
+// DailyTokenBalanceGT applies the GT predicate on the "daily_token_balance" field.
+func DailyTokenBalanceGT(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGT(FieldDailyTokenBalance, v))
+}
+
+// DailyTokenBalanceGTE applies the GTE predicate on the "daily_token_balance" field.
+func DailyTokenBalanceGTE(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGTE(FieldDailyTokenBalance, v))
+}
+
+// DailyTokenBalanceLT applies the LT predicate on the "daily_token_balance" field.
+func DailyTokenBalanceLT(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLT(FieldDailyTokenBalance, v))
+}
+
+// DailyTokenBalanceLTE applies the LTE predicate on the "daily_token_balance" field.
+func DailyTokenBalanceLTE(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLTE(FieldDailyTokenBalance, v))
+}
+
+// WeeklyTokenBalanceEQ applies the EQ predicate on the "weekly_token_balance" field.
+func WeeklyTokenBalanceEQ(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldWeeklyTokenBalance, v))
+}
+
+// WeeklyTokenBalanceNEQ applies the NEQ predicate on the "weekly_token_balance" field.
+func WeeklyTokenBalanceNEQ(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNEQ(FieldWeeklyTokenBalance, v))
+}
+
+// WeeklyTokenBalanceIn applies the In predicate on the "weekly_token_balance" field.
+func WeeklyTokenBalanceIn(vs ...int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldIn(FieldWeeklyTokenBalance, vs...))
+}
+
+// WeeklyTokenBalanceNotIn applies the NotIn predicate on the "weekly_token_balance" field.
+func WeeklyTokenBalanceNotIn(vs ...int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotIn(FieldWeeklyTokenBalance, vs...))
+}
+
+// WeeklyTokenBalanceGT applies the GT predicate on the "weekly_token_balance" field.
+func WeeklyTokenBalanceGT(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGT(FieldWeeklyTokenBalance, v))
+}
+
+// WeeklyTokenBalanceGTE applies the GTE predicate on the "weekly_token_balance" field.
+func WeeklyTokenBalanceGTE(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGTE(FieldWeeklyTokenBalance, v))
+}
+
+// WeeklyTokenBalanceLT applies the LT predicate on the "weekly_token_balance" field.
+func WeeklyTokenBalanceLT(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLT(FieldWeeklyTokenBalance, v))
+}
+
+// WeeklyTokenBalanceLTE applies the LTE predicate on the "weekly_token_balance" field.
+func WeeklyTokenBalanceLTE(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLTE(FieldWeeklyTokenBalance, v))
+}
+
+// MonthlyTokenBalanceEQ applies the EQ predicate on the "monthly_token_balance" field.
+func MonthlyTokenBalanceEQ(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldMonthlyTokenBalance, v))
+}
+
+// MonthlyTokenBalanceNEQ applies the NEQ predicate on the "monthly_token_balance" field.
+func MonthlyTokenBalanceNEQ(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNEQ(FieldMonthlyTokenBalance, v))
+}
+
+// MonthlyTokenBalanceIn applies the In predicate on the "monthly_token_balance" field.
+func MonthlyTokenBalanceIn(vs ...int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldIn(FieldMonthlyTokenBalance, vs...))
+}
+
+// MonthlyTokenBalanceNotIn applies the NotIn predicate on the "monthly_token_balance" field.
+func MonthlyTokenBalanceNotIn(vs ...int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotIn(FieldMonthlyTokenBalance, vs...))
+}
+
+// MonthlyTokenBalanceGT applies the GT predicate on the "monthly_token_balance" field.
+func MonthlyTokenBalanceGT(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGT(FieldMonthlyTokenBalance, v))
+}
+
+// MonthlyTokenBalanceGTE applies the GTE predicate on the "monthly_token_balance" field.
+func MonthlyTokenBalanceGTE(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGTE(FieldMonthlyTokenBalance, v))
+}
+
+// MonthlyTokenBalanceLT applies the LT predicate on the "monthly_token_balance" field.
+func MonthlyTokenBalanceLT(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLT(FieldMonthlyTokenBalance, v))
+}
+
+// MonthlyTokenBalanceLTE applies the LTE predicate on the "monthly_token_balance" field.
+func MonthlyTokenBalanceLTE(v int64) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLTE(FieldMonthlyTokenBalance, v))
+}
+
+// DailyResetAtEQ applies the EQ predicate on the "daily_reset_at" field.
+func DailyResetAtEQ(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldDailyResetAt, v))
+}
+
+// DailyResetAtNEQ applies the NEQ predicate on the "daily_reset_at" field.
+func DailyResetAtNEQ(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNEQ(FieldDailyResetAt, v))
+}
+
+// DailyResetAtIn applies the In predicate on the "daily_reset_at" field.
+func DailyResetAtIn(vs ...time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldIn(FieldDailyResetAt, vs...))
+}
+
+// DailyResetAtNotIn applies the NotIn predicate on the "daily_reset_at" field.
+func DailyResetAtNotIn(vs ...time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotIn(FieldDailyResetAt, vs...))
+}
+
+// DailyResetAtGT applies the GT predicate on the "daily_reset_at" field.
+func DailyResetAtGT(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGT(FieldDailyResetAt, v))
+}
+
+// DailyResetAtGTE applies the GTE predicate on the "daily_reset_at" field.
+func DailyResetAtGTE(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGTE(FieldDailyResetAt, v))
+}
+
+// DailyResetAtLT applies the LT predicate on the "daily_reset_at" field.
+func DailyResetAtLT(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLT(FieldDailyResetAt, v))
+}
+
+// DailyResetAtLTE applies the LTE predicate on the "daily_reset_at" field.
+func DailyResetAtLTE(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLTE(FieldDailyResetAt, v))
+}
+
+// DailyResetAtIsNil applies the IsNil predicate on the "daily_reset_at" field.
+func DailyResetAtIsNil() predicate.Wallet {
+	return predicate.Wallet(sql.FieldIsNull(FieldDailyResetAt))
+}
+
+// DailyResetAtNotNil applies the NotNil predicate on the "daily_reset_at" field.
+func DailyResetAtNotNil() predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotNull(FieldDailyResetAt))
+}
+
+// WeeklyResetAtEQ applies the EQ predicate on the "weekly_reset_at" field.
+func WeeklyResetAtEQ(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldWeeklyResetAt, v))
+}
+
+// WeeklyResetAtNEQ applies the NEQ predicate on the "weekly_reset_at" field.
+func WeeklyResetAtNEQ(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNEQ(FieldWeeklyResetAt, v))
+}
+
+// WeeklyResetAtIn applies the In predicate on the "weekly_reset_at" field.
+func WeeklyResetAtIn(vs ...time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldIn(FieldWeeklyResetAt, vs...))
+}
+
+// WeeklyResetAtNotIn applies the NotIn predicate on the "weekly_reset_at" field.
+func WeeklyResetAtNotIn(vs ...time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotIn(FieldWeeklyResetAt, vs...))
+}
+
+// WeeklyResetAtGT applies the GT predicate on the "weekly_reset_at" field.
+func WeeklyResetAtGT(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGT(FieldWeeklyResetAt, v))
+}
+
+// WeeklyResetAtGTE applies the GTE predicate on the "weekly_reset_at" field.
+func WeeklyResetAtGTE(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGTE(FieldWeeklyResetAt, v))
+}
+
+// WeeklyResetAtLT applies the LT predicate on the "weekly_reset_at" field.
+func WeeklyResetAtLT(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLT(FieldWeeklyResetAt, v))
+}
+
+// WeeklyResetAtLTE applies the LTE predicate on the "weekly_reset_at" field.
+func WeeklyResetAtLTE(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLTE(FieldWeeklyResetAt, v))
+}
+
+// WeeklyResetAtIsNil applies the IsNil predicate on the "weekly_reset_at" field.
+func WeeklyResetAtIsNil() predicate.Wallet {
+	return predicate.Wallet(sql.FieldIsNull(FieldWeeklyResetAt))
+}
+
+// WeeklyResetAtNotNil applies the NotNil predicate on the "weekly_reset_at" field.
+func WeeklyResetAtNotNil() predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotNull(FieldWeeklyResetAt))
+}
+
+// MonthlyResetAtEQ applies the EQ predicate on the "monthly_reset_at" field.
+func MonthlyResetAtEQ(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldEQ(FieldMonthlyResetAt, v))
+}
+
+// MonthlyResetAtNEQ applies the NEQ predicate on the "monthly_reset_at" field.
+func MonthlyResetAtNEQ(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNEQ(FieldMonthlyResetAt, v))
+}
+
+// MonthlyResetAtIn applies the In predicate on the "monthly_reset_at" field.
+func MonthlyResetAtIn(vs ...time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldIn(FieldMonthlyResetAt, vs...))
+}
+
+// MonthlyResetAtNotIn applies the NotIn predicate on the "monthly_reset_at" field.
+func MonthlyResetAtNotIn(vs ...time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotIn(FieldMonthlyResetAt, vs...))
+}
+
+// MonthlyResetAtGT applies the GT predicate on the "monthly_reset_at" field.
+func MonthlyResetAtGT(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGT(FieldMonthlyResetAt, v))
+}
+
+// MonthlyResetAtGTE applies the GTE predicate on the "monthly_reset_at" field.
+func MonthlyResetAtGTE(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldGTE(FieldMonthlyResetAt, v))
+}
+
+// MonthlyResetAtLT applies the LT predicate on the "monthly_reset_at" field.
+func MonthlyResetAtLT(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLT(FieldMonthlyResetAt, v))
+}
+
+// MonthlyResetAtLTE applies the LTE predicate on the "monthly_reset_at" field.
+func MonthlyResetAtLTE(v time.Time) predicate.Wallet {
+	return predicate.Wallet(sql.FieldLTE(FieldMonthlyResetAt, v))
+}
+
+// MonthlyResetAtIsNil applies the IsNil predicate on the "monthly_reset_at" field.
+func MonthlyResetAtIsNil() predicate.Wallet {
+	return predicate.Wallet(sql.FieldIsNull(FieldMonthlyResetAt))
+}
+
+// MonthlyResetAtNotNil applies the NotNil predicate on the "monthly_reset_at" field.
+func MonthlyResetAtNotNil() predicate.Wallet {
+	return predicate.Wallet(sql.FieldNotNull(FieldMonthlyResetAt))
+}
+
 // DailyBasicTokenBalanceEQ applies the EQ predicate on the "daily_basic_token_balance" field.
 func DailyBasicTokenBalanceEQ(v int64) predicate.Wallet {
 	return predicate.Wallet(sql.FieldEQ(FieldDailyBasicTokenBalance, v))
@@ -433,56 +728,6 @@ func DailyUltraTokenBalanceLT(v int64) predicate.Wallet {
 // DailyUltraTokenBalanceLTE applies the LTE predicate on the "daily_ultra_token_balance" field.
 func DailyUltraTokenBalanceLTE(v int64) predicate.Wallet {
 	return predicate.Wallet(sql.FieldLTE(FieldDailyUltraTokenBalance, v))
-}
-
-// DailyResetAtEQ applies the EQ predicate on the "daily_reset_at" field.
-func DailyResetAtEQ(v time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldEQ(FieldDailyResetAt, v))
-}
-
-// DailyResetAtNEQ applies the NEQ predicate on the "daily_reset_at" field.
-func DailyResetAtNEQ(v time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldNEQ(FieldDailyResetAt, v))
-}
-
-// DailyResetAtIn applies the In predicate on the "daily_reset_at" field.
-func DailyResetAtIn(vs ...time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldIn(FieldDailyResetAt, vs...))
-}
-
-// DailyResetAtNotIn applies the NotIn predicate on the "daily_reset_at" field.
-func DailyResetAtNotIn(vs ...time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldNotIn(FieldDailyResetAt, vs...))
-}
-
-// DailyResetAtGT applies the GT predicate on the "daily_reset_at" field.
-func DailyResetAtGT(v time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldGT(FieldDailyResetAt, v))
-}
-
-// DailyResetAtGTE applies the GTE predicate on the "daily_reset_at" field.
-func DailyResetAtGTE(v time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldGTE(FieldDailyResetAt, v))
-}
-
-// DailyResetAtLT applies the LT predicate on the "daily_reset_at" field.
-func DailyResetAtLT(v time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldLT(FieldDailyResetAt, v))
-}
-
-// DailyResetAtLTE applies the LTE predicate on the "daily_reset_at" field.
-func DailyResetAtLTE(v time.Time) predicate.Wallet {
-	return predicate.Wallet(sql.FieldLTE(FieldDailyResetAt, v))
-}
-
-// DailyResetAtIsNil applies the IsNil predicate on the "daily_reset_at" field.
-func DailyResetAtIsNil() predicate.Wallet {
-	return predicate.Wallet(sql.FieldIsNull(FieldDailyResetAt))
-}
-
-// DailyResetAtNotNil applies the NotNil predicate on the "daily_reset_at" field.
-func DailyResetAtNotNil() predicate.Wallet {
-	return predicate.Wallet(sql.FieldNotNull(FieldDailyResetAt))
 }
 
 // EnableCreditConsumptionEQ applies the EQ predicate on the "enable_credit_consumption" field.

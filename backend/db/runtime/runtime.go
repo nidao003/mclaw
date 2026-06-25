@@ -587,7 +587,7 @@ func init() {
 	// modelapikey.APIKeyValidator is a validator for the "api_key" field. It is called by the builders before save.
 	modelapikey.APIKeyValidator = modelapikeyDescAPIKey.Validators[0].(func(string) error)
 	// modelapikeyDescCreatedAt is the schema descriptor for created_at field.
-	modelapikeyDescCreatedAt := modelapikeyFields[5].Descriptor()
+	modelapikeyDescCreatedAt := modelapikeyFields[8].Descriptor()
 	// modelapikey.DefaultCreatedAt holds the default value on creation for the created_at field.
 	modelapikey.DefaultCreatedAt = modelapikeyDescCreatedAt.Default.(func() time.Time)
 	modelpricingFields := schema.ModelPricing{}.Fields()
@@ -734,44 +734,56 @@ func init() {
 	planDescPriceYear := planFields[4].Descriptor()
 	// plan.DefaultPriceYear holds the default value on creation for the price_year field.
 	plan.DefaultPriceYear = planDescPriceYear.Default.(int64)
-	// planDescBasicTokenQuota is the schema descriptor for basic_token_quota field.
-	planDescBasicTokenQuota := planFields[5].Descriptor()
-	// plan.DefaultBasicTokenQuota holds the default value on creation for the basic_token_quota field.
-	plan.DefaultBasicTokenQuota = planDescBasicTokenQuota.Default.(int64)
-	// planDescProTokenQuota is the schema descriptor for pro_token_quota field.
-	planDescProTokenQuota := planFields[6].Descriptor()
-	// plan.DefaultProTokenQuota holds the default value on creation for the pro_token_quota field.
-	plan.DefaultProTokenQuota = planDescProTokenQuota.Default.(int64)
-	// planDescUltraTokenQuota is the schema descriptor for ultra_token_quota field.
-	planDescUltraTokenQuota := planFields[7].Descriptor()
-	// plan.DefaultUltraTokenQuota holds the default value on creation for the ultra_token_quota field.
-	plan.DefaultUltraTokenQuota = planDescUltraTokenQuota.Default.(int64)
+	// planDescDailyTokenQuota is the schema descriptor for daily_token_quota field.
+	planDescDailyTokenQuota := planFields[5].Descriptor()
+	// plan.DefaultDailyTokenQuota holds the default value on creation for the daily_token_quota field.
+	plan.DefaultDailyTokenQuota = planDescDailyTokenQuota.Default.(int64)
+	// planDescWeeklyTokenQuota is the schema descriptor for weekly_token_quota field.
+	planDescWeeklyTokenQuota := planFields[6].Descriptor()
+	// plan.DefaultWeeklyTokenQuota holds the default value on creation for the weekly_token_quota field.
+	plan.DefaultWeeklyTokenQuota = planDescWeeklyTokenQuota.Default.(int64)
+	// planDescMonthlyTokenQuota is the schema descriptor for monthly_token_quota field.
+	planDescMonthlyTokenQuota := planFields[7].Descriptor()
+	// plan.DefaultMonthlyTokenQuota holds the default value on creation for the monthly_token_quota field.
+	plan.DefaultMonthlyTokenQuota = planDescMonthlyTokenQuota.Default.(int64)
 	// planDescMonthlyCredits is the schema descriptor for monthly_credits field.
 	planDescMonthlyCredits := planFields[8].Descriptor()
 	// plan.DefaultMonthlyCredits holds the default value on creation for the monthly_credits field.
 	plan.DefaultMonthlyCredits = planDescMonthlyCredits.Default.(int64)
+	// planDescBasicTokenQuota is the schema descriptor for basic_token_quota field.
+	planDescBasicTokenQuota := planFields[9].Descriptor()
+	// plan.DefaultBasicTokenQuota holds the default value on creation for the basic_token_quota field.
+	plan.DefaultBasicTokenQuota = planDescBasicTokenQuota.Default.(int64)
+	// planDescProTokenQuota is the schema descriptor for pro_token_quota field.
+	planDescProTokenQuota := planFields[10].Descriptor()
+	// plan.DefaultProTokenQuota holds the default value on creation for the pro_token_quota field.
+	plan.DefaultProTokenQuota = planDescProTokenQuota.Default.(int64)
+	// planDescUltraTokenQuota is the schema descriptor for ultra_token_quota field.
+	planDescUltraTokenQuota := planFields[11].Descriptor()
+	// plan.DefaultUltraTokenQuota holds the default value on creation for the ultra_token_quota field.
+	plan.DefaultUltraTokenQuota = planDescUltraTokenQuota.Default.(int64)
 	// planDescMaxConcurrency is the schema descriptor for max_concurrency field.
-	planDescMaxConcurrency := planFields[9].Descriptor()
+	planDescMaxConcurrency := planFields[12].Descriptor()
 	// plan.DefaultMaxConcurrency holds the default value on creation for the max_concurrency field.
 	plan.DefaultMaxConcurrency = planDescMaxConcurrency.Default.(int)
 	// planDescIsDefault is the schema descriptor for is_default field.
-	planDescIsDefault := planFields[11].Descriptor()
+	planDescIsDefault := planFields[14].Descriptor()
 	// plan.DefaultIsDefault holds the default value on creation for the is_default field.
 	plan.DefaultIsDefault = planDescIsDefault.Default.(bool)
 	// planDescIsActive is the schema descriptor for is_active field.
-	planDescIsActive := planFields[12].Descriptor()
+	planDescIsActive := planFields[15].Descriptor()
 	// plan.DefaultIsActive holds the default value on creation for the is_active field.
 	plan.DefaultIsActive = planDescIsActive.Default.(bool)
 	// planDescSortOrder is the schema descriptor for sort_order field.
-	planDescSortOrder := planFields[13].Descriptor()
+	planDescSortOrder := planFields[16].Descriptor()
 	// plan.DefaultSortOrder holds the default value on creation for the sort_order field.
 	plan.DefaultSortOrder = planDescSortOrder.Default.(int)
 	// planDescCreatedAt is the schema descriptor for created_at field.
-	planDescCreatedAt := planFields[14].Descriptor()
+	planDescCreatedAt := planFields[17].Descriptor()
 	// plan.DefaultCreatedAt holds the default value on creation for the created_at field.
 	plan.DefaultCreatedAt = planDescCreatedAt.Default.(func() time.Time)
 	// planDescUpdatedAt is the schema descriptor for updated_at field.
-	planDescUpdatedAt := planFields[15].Descriptor()
+	planDescUpdatedAt := planFields[18].Descriptor()
 	// plan.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	plan.DefaultUpdatedAt = planDescUpdatedAt.Default.(func() time.Time)
 	// plan.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -1326,28 +1338,40 @@ func init() {
 	walletDescTotalGranted := walletFields[5].Descriptor()
 	// wallet.DefaultTotalGranted holds the default value on creation for the total_granted field.
 	wallet.DefaultTotalGranted = walletDescTotalGranted.Default.(int64)
+	// walletDescDailyTokenBalance is the schema descriptor for daily_token_balance field.
+	walletDescDailyTokenBalance := walletFields[6].Descriptor()
+	// wallet.DefaultDailyTokenBalance holds the default value on creation for the daily_token_balance field.
+	wallet.DefaultDailyTokenBalance = walletDescDailyTokenBalance.Default.(int64)
+	// walletDescWeeklyTokenBalance is the schema descriptor for weekly_token_balance field.
+	walletDescWeeklyTokenBalance := walletFields[7].Descriptor()
+	// wallet.DefaultWeeklyTokenBalance holds the default value on creation for the weekly_token_balance field.
+	wallet.DefaultWeeklyTokenBalance = walletDescWeeklyTokenBalance.Default.(int64)
+	// walletDescMonthlyTokenBalance is the schema descriptor for monthly_token_balance field.
+	walletDescMonthlyTokenBalance := walletFields[8].Descriptor()
+	// wallet.DefaultMonthlyTokenBalance holds the default value on creation for the monthly_token_balance field.
+	wallet.DefaultMonthlyTokenBalance = walletDescMonthlyTokenBalance.Default.(int64)
 	// walletDescDailyBasicTokenBalance is the schema descriptor for daily_basic_token_balance field.
-	walletDescDailyBasicTokenBalance := walletFields[6].Descriptor()
+	walletDescDailyBasicTokenBalance := walletFields[12].Descriptor()
 	// wallet.DefaultDailyBasicTokenBalance holds the default value on creation for the daily_basic_token_balance field.
 	wallet.DefaultDailyBasicTokenBalance = walletDescDailyBasicTokenBalance.Default.(int64)
 	// walletDescDailyProTokenBalance is the schema descriptor for daily_pro_token_balance field.
-	walletDescDailyProTokenBalance := walletFields[7].Descriptor()
+	walletDescDailyProTokenBalance := walletFields[13].Descriptor()
 	// wallet.DefaultDailyProTokenBalance holds the default value on creation for the daily_pro_token_balance field.
 	wallet.DefaultDailyProTokenBalance = walletDescDailyProTokenBalance.Default.(int64)
 	// walletDescDailyUltraTokenBalance is the schema descriptor for daily_ultra_token_balance field.
-	walletDescDailyUltraTokenBalance := walletFields[8].Descriptor()
+	walletDescDailyUltraTokenBalance := walletFields[14].Descriptor()
 	// wallet.DefaultDailyUltraTokenBalance holds the default value on creation for the daily_ultra_token_balance field.
 	wallet.DefaultDailyUltraTokenBalance = walletDescDailyUltraTokenBalance.Default.(int64)
 	// walletDescEnableCreditConsumption is the schema descriptor for enable_credit_consumption field.
-	walletDescEnableCreditConsumption := walletFields[10].Descriptor()
+	walletDescEnableCreditConsumption := walletFields[15].Descriptor()
 	// wallet.DefaultEnableCreditConsumption holds the default value on creation for the enable_credit_consumption field.
 	wallet.DefaultEnableCreditConsumption = walletDescEnableCreditConsumption.Default.(bool)
 	// walletDescCreatedAt is the schema descriptor for created_at field.
-	walletDescCreatedAt := walletFields[11].Descriptor()
+	walletDescCreatedAt := walletFields[16].Descriptor()
 	// wallet.DefaultCreatedAt holds the default value on creation for the created_at field.
 	wallet.DefaultCreatedAt = walletDescCreatedAt.Default.(func() time.Time)
 	// walletDescUpdatedAt is the schema descriptor for updated_at field.
-	walletDescUpdatedAt := walletFields[12].Descriptor()
+	walletDescUpdatedAt := walletFields[17].Descriptor()
 	// wallet.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	wallet.DefaultUpdatedAt = walletDescUpdatedAt.Default.(func() time.Time)
 	// wallet.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

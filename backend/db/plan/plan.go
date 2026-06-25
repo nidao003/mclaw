@@ -22,14 +22,20 @@ const (
 	FieldPriceMonth = "price_month"
 	// FieldPriceYear holds the string denoting the price_year field in the database.
 	FieldPriceYear = "price_year"
+	// FieldDailyTokenQuota holds the string denoting the daily_token_quota field in the database.
+	FieldDailyTokenQuota = "daily_token_quota"
+	// FieldWeeklyTokenQuota holds the string denoting the weekly_token_quota field in the database.
+	FieldWeeklyTokenQuota = "weekly_token_quota"
+	// FieldMonthlyTokenQuota holds the string denoting the monthly_token_quota field in the database.
+	FieldMonthlyTokenQuota = "monthly_token_quota"
+	// FieldMonthlyCredits holds the string denoting the monthly_credits field in the database.
+	FieldMonthlyCredits = "monthly_credits"
 	// FieldBasicTokenQuota holds the string denoting the basic_token_quota field in the database.
 	FieldBasicTokenQuota = "basic_token_quota"
 	// FieldProTokenQuota holds the string denoting the pro_token_quota field in the database.
 	FieldProTokenQuota = "pro_token_quota"
 	// FieldUltraTokenQuota holds the string denoting the ultra_token_quota field in the database.
 	FieldUltraTokenQuota = "ultra_token_quota"
-	// FieldMonthlyCredits holds the string denoting the monthly_credits field in the database.
-	FieldMonthlyCredits = "monthly_credits"
 	// FieldMaxConcurrency holds the string denoting the max_concurrency field in the database.
 	FieldMaxConcurrency = "max_concurrency"
 	// FieldFeatures holds the string denoting the features field in the database.
@@ -64,10 +70,13 @@ var Columns = []string{
 	FieldDisplayName,
 	FieldPriceMonth,
 	FieldPriceYear,
+	FieldDailyTokenQuota,
+	FieldWeeklyTokenQuota,
+	FieldMonthlyTokenQuota,
+	FieldMonthlyCredits,
 	FieldBasicTokenQuota,
 	FieldProTokenQuota,
 	FieldUltraTokenQuota,
-	FieldMonthlyCredits,
 	FieldMaxConcurrency,
 	FieldFeatures,
 	FieldIsDefault,
@@ -94,14 +103,20 @@ var (
 	DefaultPriceMonth int64
 	// DefaultPriceYear holds the default value on creation for the "price_year" field.
 	DefaultPriceYear int64
+	// DefaultDailyTokenQuota holds the default value on creation for the "daily_token_quota" field.
+	DefaultDailyTokenQuota int64
+	// DefaultWeeklyTokenQuota holds the default value on creation for the "weekly_token_quota" field.
+	DefaultWeeklyTokenQuota int64
+	// DefaultMonthlyTokenQuota holds the default value on creation for the "monthly_token_quota" field.
+	DefaultMonthlyTokenQuota int64
+	// DefaultMonthlyCredits holds the default value on creation for the "monthly_credits" field.
+	DefaultMonthlyCredits int64
 	// DefaultBasicTokenQuota holds the default value on creation for the "basic_token_quota" field.
 	DefaultBasicTokenQuota int64
 	// DefaultProTokenQuota holds the default value on creation for the "pro_token_quota" field.
 	DefaultProTokenQuota int64
 	// DefaultUltraTokenQuota holds the default value on creation for the "ultra_token_quota" field.
 	DefaultUltraTokenQuota int64
-	// DefaultMonthlyCredits holds the default value on creation for the "monthly_credits" field.
-	DefaultMonthlyCredits int64
 	// DefaultMaxConcurrency holds the default value on creation for the "max_concurrency" field.
 	DefaultMaxConcurrency int
 	// DefaultIsDefault holds the default value on creation for the "is_default" field.
@@ -146,6 +161,26 @@ func ByPriceYear(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPriceYear, opts...).ToFunc()
 }
 
+// ByDailyTokenQuota orders the results by the daily_token_quota field.
+func ByDailyTokenQuota(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDailyTokenQuota, opts...).ToFunc()
+}
+
+// ByWeeklyTokenQuota orders the results by the weekly_token_quota field.
+func ByWeeklyTokenQuota(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeeklyTokenQuota, opts...).ToFunc()
+}
+
+// ByMonthlyTokenQuota orders the results by the monthly_token_quota field.
+func ByMonthlyTokenQuota(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMonthlyTokenQuota, opts...).ToFunc()
+}
+
+// ByMonthlyCredits orders the results by the monthly_credits field.
+func ByMonthlyCredits(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMonthlyCredits, opts...).ToFunc()
+}
+
 // ByBasicTokenQuota orders the results by the basic_token_quota field.
 func ByBasicTokenQuota(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBasicTokenQuota, opts...).ToFunc()
@@ -159,11 +194,6 @@ func ByProTokenQuota(opts ...sql.OrderTermOption) OrderOption {
 // ByUltraTokenQuota orders the results by the ultra_token_quota field.
 func ByUltraTokenQuota(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUltraTokenQuota, opts...).ToFunc()
-}
-
-// ByMonthlyCredits orders the results by the monthly_credits field.
-func ByMonthlyCredits(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMonthlyCredits, opts...).ToFunc()
 }
 
 // ByMaxConcurrency orders the results by the max_concurrency field.

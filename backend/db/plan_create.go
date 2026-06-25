@@ -73,6 +73,62 @@ func (_c *PlanCreate) SetNillablePriceYear(v *int64) *PlanCreate {
 	return _c
 }
 
+// SetDailyTokenQuota sets the "daily_token_quota" field.
+func (_c *PlanCreate) SetDailyTokenQuota(v int64) *PlanCreate {
+	_c.mutation.SetDailyTokenQuota(v)
+	return _c
+}
+
+// SetNillableDailyTokenQuota sets the "daily_token_quota" field if the given value is not nil.
+func (_c *PlanCreate) SetNillableDailyTokenQuota(v *int64) *PlanCreate {
+	if v != nil {
+		_c.SetDailyTokenQuota(*v)
+	}
+	return _c
+}
+
+// SetWeeklyTokenQuota sets the "weekly_token_quota" field.
+func (_c *PlanCreate) SetWeeklyTokenQuota(v int64) *PlanCreate {
+	_c.mutation.SetWeeklyTokenQuota(v)
+	return _c
+}
+
+// SetNillableWeeklyTokenQuota sets the "weekly_token_quota" field if the given value is not nil.
+func (_c *PlanCreate) SetNillableWeeklyTokenQuota(v *int64) *PlanCreate {
+	if v != nil {
+		_c.SetWeeklyTokenQuota(*v)
+	}
+	return _c
+}
+
+// SetMonthlyTokenQuota sets the "monthly_token_quota" field.
+func (_c *PlanCreate) SetMonthlyTokenQuota(v int64) *PlanCreate {
+	_c.mutation.SetMonthlyTokenQuota(v)
+	return _c
+}
+
+// SetNillableMonthlyTokenQuota sets the "monthly_token_quota" field if the given value is not nil.
+func (_c *PlanCreate) SetNillableMonthlyTokenQuota(v *int64) *PlanCreate {
+	if v != nil {
+		_c.SetMonthlyTokenQuota(*v)
+	}
+	return _c
+}
+
+// SetMonthlyCredits sets the "monthly_credits" field.
+func (_c *PlanCreate) SetMonthlyCredits(v int64) *PlanCreate {
+	_c.mutation.SetMonthlyCredits(v)
+	return _c
+}
+
+// SetNillableMonthlyCredits sets the "monthly_credits" field if the given value is not nil.
+func (_c *PlanCreate) SetNillableMonthlyCredits(v *int64) *PlanCreate {
+	if v != nil {
+		_c.SetMonthlyCredits(*v)
+	}
+	return _c
+}
+
 // SetBasicTokenQuota sets the "basic_token_quota" field.
 func (_c *PlanCreate) SetBasicTokenQuota(v int64) *PlanCreate {
 	_c.mutation.SetBasicTokenQuota(v)
@@ -111,20 +167,6 @@ func (_c *PlanCreate) SetUltraTokenQuota(v int64) *PlanCreate {
 func (_c *PlanCreate) SetNillableUltraTokenQuota(v *int64) *PlanCreate {
 	if v != nil {
 		_c.SetUltraTokenQuota(*v)
-	}
-	return _c
-}
-
-// SetMonthlyCredits sets the "monthly_credits" field.
-func (_c *PlanCreate) SetMonthlyCredits(v int64) *PlanCreate {
-	_c.mutation.SetMonthlyCredits(v)
-	return _c
-}
-
-// SetNillableMonthlyCredits sets the "monthly_credits" field if the given value is not nil.
-func (_c *PlanCreate) SetNillableMonthlyCredits(v *int64) *PlanCreate {
-	if v != nil {
-		_c.SetMonthlyCredits(*v)
 	}
 	return _c
 }
@@ -283,6 +325,22 @@ func (_c *PlanCreate) defaults() {
 		v := plan.DefaultPriceYear
 		_c.mutation.SetPriceYear(v)
 	}
+	if _, ok := _c.mutation.DailyTokenQuota(); !ok {
+		v := plan.DefaultDailyTokenQuota
+		_c.mutation.SetDailyTokenQuota(v)
+	}
+	if _, ok := _c.mutation.WeeklyTokenQuota(); !ok {
+		v := plan.DefaultWeeklyTokenQuota
+		_c.mutation.SetWeeklyTokenQuota(v)
+	}
+	if _, ok := _c.mutation.MonthlyTokenQuota(); !ok {
+		v := plan.DefaultMonthlyTokenQuota
+		_c.mutation.SetMonthlyTokenQuota(v)
+	}
+	if _, ok := _c.mutation.MonthlyCredits(); !ok {
+		v := plan.DefaultMonthlyCredits
+		_c.mutation.SetMonthlyCredits(v)
+	}
 	if _, ok := _c.mutation.BasicTokenQuota(); !ok {
 		v := plan.DefaultBasicTokenQuota
 		_c.mutation.SetBasicTokenQuota(v)
@@ -294,10 +352,6 @@ func (_c *PlanCreate) defaults() {
 	if _, ok := _c.mutation.UltraTokenQuota(); !ok {
 		v := plan.DefaultUltraTokenQuota
 		_c.mutation.SetUltraTokenQuota(v)
-	}
-	if _, ok := _c.mutation.MonthlyCredits(); !ok {
-		v := plan.DefaultMonthlyCredits
-		_c.mutation.SetMonthlyCredits(v)
 	}
 	if _, ok := _c.mutation.MaxConcurrency(); !ok {
 		v := plan.DefaultMaxConcurrency
@@ -341,6 +395,18 @@ func (_c *PlanCreate) check() error {
 	if _, ok := _c.mutation.PriceYear(); !ok {
 		return &ValidationError{Name: "price_year", err: errors.New(`db: missing required field "Plan.price_year"`)}
 	}
+	if _, ok := _c.mutation.DailyTokenQuota(); !ok {
+		return &ValidationError{Name: "daily_token_quota", err: errors.New(`db: missing required field "Plan.daily_token_quota"`)}
+	}
+	if _, ok := _c.mutation.WeeklyTokenQuota(); !ok {
+		return &ValidationError{Name: "weekly_token_quota", err: errors.New(`db: missing required field "Plan.weekly_token_quota"`)}
+	}
+	if _, ok := _c.mutation.MonthlyTokenQuota(); !ok {
+		return &ValidationError{Name: "monthly_token_quota", err: errors.New(`db: missing required field "Plan.monthly_token_quota"`)}
+	}
+	if _, ok := _c.mutation.MonthlyCredits(); !ok {
+		return &ValidationError{Name: "monthly_credits", err: errors.New(`db: missing required field "Plan.monthly_credits"`)}
+	}
 	if _, ok := _c.mutation.BasicTokenQuota(); !ok {
 		return &ValidationError{Name: "basic_token_quota", err: errors.New(`db: missing required field "Plan.basic_token_quota"`)}
 	}
@@ -349,9 +415,6 @@ func (_c *PlanCreate) check() error {
 	}
 	if _, ok := _c.mutation.UltraTokenQuota(); !ok {
 		return &ValidationError{Name: "ultra_token_quota", err: errors.New(`db: missing required field "Plan.ultra_token_quota"`)}
-	}
-	if _, ok := _c.mutation.MonthlyCredits(); !ok {
-		return &ValidationError{Name: "monthly_credits", err: errors.New(`db: missing required field "Plan.monthly_credits"`)}
 	}
 	if _, ok := _c.mutation.MaxConcurrency(); !ok {
 		return &ValidationError{Name: "max_concurrency", err: errors.New(`db: missing required field "Plan.max_concurrency"`)}
@@ -423,6 +486,22 @@ func (_c *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 		_spec.SetField(plan.FieldPriceYear, field.TypeInt64, value)
 		_node.PriceYear = value
 	}
+	if value, ok := _c.mutation.DailyTokenQuota(); ok {
+		_spec.SetField(plan.FieldDailyTokenQuota, field.TypeInt64, value)
+		_node.DailyTokenQuota = value
+	}
+	if value, ok := _c.mutation.WeeklyTokenQuota(); ok {
+		_spec.SetField(plan.FieldWeeklyTokenQuota, field.TypeInt64, value)
+		_node.WeeklyTokenQuota = value
+	}
+	if value, ok := _c.mutation.MonthlyTokenQuota(); ok {
+		_spec.SetField(plan.FieldMonthlyTokenQuota, field.TypeInt64, value)
+		_node.MonthlyTokenQuota = value
+	}
+	if value, ok := _c.mutation.MonthlyCredits(); ok {
+		_spec.SetField(plan.FieldMonthlyCredits, field.TypeInt64, value)
+		_node.MonthlyCredits = value
+	}
 	if value, ok := _c.mutation.BasicTokenQuota(); ok {
 		_spec.SetField(plan.FieldBasicTokenQuota, field.TypeInt64, value)
 		_node.BasicTokenQuota = value
@@ -434,10 +513,6 @@ func (_c *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UltraTokenQuota(); ok {
 		_spec.SetField(plan.FieldUltraTokenQuota, field.TypeInt64, value)
 		_node.UltraTokenQuota = value
-	}
-	if value, ok := _c.mutation.MonthlyCredits(); ok {
-		_spec.SetField(plan.FieldMonthlyCredits, field.TypeInt64, value)
-		_node.MonthlyCredits = value
 	}
 	if value, ok := _c.mutation.MaxConcurrency(); ok {
 		_spec.SetField(plan.FieldMaxConcurrency, field.TypeInt, value)
@@ -601,6 +676,78 @@ func (u *PlanUpsert) AddPriceYear(v int64) *PlanUpsert {
 	return u
 }
 
+// SetDailyTokenQuota sets the "daily_token_quota" field.
+func (u *PlanUpsert) SetDailyTokenQuota(v int64) *PlanUpsert {
+	u.Set(plan.FieldDailyTokenQuota, v)
+	return u
+}
+
+// UpdateDailyTokenQuota sets the "daily_token_quota" field to the value that was provided on create.
+func (u *PlanUpsert) UpdateDailyTokenQuota() *PlanUpsert {
+	u.SetExcluded(plan.FieldDailyTokenQuota)
+	return u
+}
+
+// AddDailyTokenQuota adds v to the "daily_token_quota" field.
+func (u *PlanUpsert) AddDailyTokenQuota(v int64) *PlanUpsert {
+	u.Add(plan.FieldDailyTokenQuota, v)
+	return u
+}
+
+// SetWeeklyTokenQuota sets the "weekly_token_quota" field.
+func (u *PlanUpsert) SetWeeklyTokenQuota(v int64) *PlanUpsert {
+	u.Set(plan.FieldWeeklyTokenQuota, v)
+	return u
+}
+
+// UpdateWeeklyTokenQuota sets the "weekly_token_quota" field to the value that was provided on create.
+func (u *PlanUpsert) UpdateWeeklyTokenQuota() *PlanUpsert {
+	u.SetExcluded(plan.FieldWeeklyTokenQuota)
+	return u
+}
+
+// AddWeeklyTokenQuota adds v to the "weekly_token_quota" field.
+func (u *PlanUpsert) AddWeeklyTokenQuota(v int64) *PlanUpsert {
+	u.Add(plan.FieldWeeklyTokenQuota, v)
+	return u
+}
+
+// SetMonthlyTokenQuota sets the "monthly_token_quota" field.
+func (u *PlanUpsert) SetMonthlyTokenQuota(v int64) *PlanUpsert {
+	u.Set(plan.FieldMonthlyTokenQuota, v)
+	return u
+}
+
+// UpdateMonthlyTokenQuota sets the "monthly_token_quota" field to the value that was provided on create.
+func (u *PlanUpsert) UpdateMonthlyTokenQuota() *PlanUpsert {
+	u.SetExcluded(plan.FieldMonthlyTokenQuota)
+	return u
+}
+
+// AddMonthlyTokenQuota adds v to the "monthly_token_quota" field.
+func (u *PlanUpsert) AddMonthlyTokenQuota(v int64) *PlanUpsert {
+	u.Add(plan.FieldMonthlyTokenQuota, v)
+	return u
+}
+
+// SetMonthlyCredits sets the "monthly_credits" field.
+func (u *PlanUpsert) SetMonthlyCredits(v int64) *PlanUpsert {
+	u.Set(plan.FieldMonthlyCredits, v)
+	return u
+}
+
+// UpdateMonthlyCredits sets the "monthly_credits" field to the value that was provided on create.
+func (u *PlanUpsert) UpdateMonthlyCredits() *PlanUpsert {
+	u.SetExcluded(plan.FieldMonthlyCredits)
+	return u
+}
+
+// AddMonthlyCredits adds v to the "monthly_credits" field.
+func (u *PlanUpsert) AddMonthlyCredits(v int64) *PlanUpsert {
+	u.Add(plan.FieldMonthlyCredits, v)
+	return u
+}
+
 // SetBasicTokenQuota sets the "basic_token_quota" field.
 func (u *PlanUpsert) SetBasicTokenQuota(v int64) *PlanUpsert {
 	u.Set(plan.FieldBasicTokenQuota, v)
@@ -652,24 +799,6 @@ func (u *PlanUpsert) UpdateUltraTokenQuota() *PlanUpsert {
 // AddUltraTokenQuota adds v to the "ultra_token_quota" field.
 func (u *PlanUpsert) AddUltraTokenQuota(v int64) *PlanUpsert {
 	u.Add(plan.FieldUltraTokenQuota, v)
-	return u
-}
-
-// SetMonthlyCredits sets the "monthly_credits" field.
-func (u *PlanUpsert) SetMonthlyCredits(v int64) *PlanUpsert {
-	u.Set(plan.FieldMonthlyCredits, v)
-	return u
-}
-
-// UpdateMonthlyCredits sets the "monthly_credits" field to the value that was provided on create.
-func (u *PlanUpsert) UpdateMonthlyCredits() *PlanUpsert {
-	u.SetExcluded(plan.FieldMonthlyCredits)
-	return u
-}
-
-// AddMonthlyCredits adds v to the "monthly_credits" field.
-func (u *PlanUpsert) AddMonthlyCredits(v int64) *PlanUpsert {
-	u.Add(plan.FieldMonthlyCredits, v)
 	return u
 }
 
@@ -900,6 +1029,90 @@ func (u *PlanUpsertOne) UpdatePriceYear() *PlanUpsertOne {
 	})
 }
 
+// SetDailyTokenQuota sets the "daily_token_quota" field.
+func (u *PlanUpsertOne) SetDailyTokenQuota(v int64) *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.SetDailyTokenQuota(v)
+	})
+}
+
+// AddDailyTokenQuota adds v to the "daily_token_quota" field.
+func (u *PlanUpsertOne) AddDailyTokenQuota(v int64) *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.AddDailyTokenQuota(v)
+	})
+}
+
+// UpdateDailyTokenQuota sets the "daily_token_quota" field to the value that was provided on create.
+func (u *PlanUpsertOne) UpdateDailyTokenQuota() *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.UpdateDailyTokenQuota()
+	})
+}
+
+// SetWeeklyTokenQuota sets the "weekly_token_quota" field.
+func (u *PlanUpsertOne) SetWeeklyTokenQuota(v int64) *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.SetWeeklyTokenQuota(v)
+	})
+}
+
+// AddWeeklyTokenQuota adds v to the "weekly_token_quota" field.
+func (u *PlanUpsertOne) AddWeeklyTokenQuota(v int64) *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.AddWeeklyTokenQuota(v)
+	})
+}
+
+// UpdateWeeklyTokenQuota sets the "weekly_token_quota" field to the value that was provided on create.
+func (u *PlanUpsertOne) UpdateWeeklyTokenQuota() *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.UpdateWeeklyTokenQuota()
+	})
+}
+
+// SetMonthlyTokenQuota sets the "monthly_token_quota" field.
+func (u *PlanUpsertOne) SetMonthlyTokenQuota(v int64) *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.SetMonthlyTokenQuota(v)
+	})
+}
+
+// AddMonthlyTokenQuota adds v to the "monthly_token_quota" field.
+func (u *PlanUpsertOne) AddMonthlyTokenQuota(v int64) *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.AddMonthlyTokenQuota(v)
+	})
+}
+
+// UpdateMonthlyTokenQuota sets the "monthly_token_quota" field to the value that was provided on create.
+func (u *PlanUpsertOne) UpdateMonthlyTokenQuota() *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.UpdateMonthlyTokenQuota()
+	})
+}
+
+// SetMonthlyCredits sets the "monthly_credits" field.
+func (u *PlanUpsertOne) SetMonthlyCredits(v int64) *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.SetMonthlyCredits(v)
+	})
+}
+
+// AddMonthlyCredits adds v to the "monthly_credits" field.
+func (u *PlanUpsertOne) AddMonthlyCredits(v int64) *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.AddMonthlyCredits(v)
+	})
+}
+
+// UpdateMonthlyCredits sets the "monthly_credits" field to the value that was provided on create.
+func (u *PlanUpsertOne) UpdateMonthlyCredits() *PlanUpsertOne {
+	return u.Update(func(s *PlanUpsert) {
+		s.UpdateMonthlyCredits()
+	})
+}
+
 // SetBasicTokenQuota sets the "basic_token_quota" field.
 func (u *PlanUpsertOne) SetBasicTokenQuota(v int64) *PlanUpsertOne {
 	return u.Update(func(s *PlanUpsert) {
@@ -960,27 +1173,6 @@ func (u *PlanUpsertOne) AddUltraTokenQuota(v int64) *PlanUpsertOne {
 func (u *PlanUpsertOne) UpdateUltraTokenQuota() *PlanUpsertOne {
 	return u.Update(func(s *PlanUpsert) {
 		s.UpdateUltraTokenQuota()
-	})
-}
-
-// SetMonthlyCredits sets the "monthly_credits" field.
-func (u *PlanUpsertOne) SetMonthlyCredits(v int64) *PlanUpsertOne {
-	return u.Update(func(s *PlanUpsert) {
-		s.SetMonthlyCredits(v)
-	})
-}
-
-// AddMonthlyCredits adds v to the "monthly_credits" field.
-func (u *PlanUpsertOne) AddMonthlyCredits(v int64) *PlanUpsertOne {
-	return u.Update(func(s *PlanUpsert) {
-		s.AddMonthlyCredits(v)
-	})
-}
-
-// UpdateMonthlyCredits sets the "monthly_credits" field to the value that was provided on create.
-func (u *PlanUpsertOne) UpdateMonthlyCredits() *PlanUpsertOne {
-	return u.Update(func(s *PlanUpsert) {
-		s.UpdateMonthlyCredits()
 	})
 }
 
@@ -1395,6 +1587,90 @@ func (u *PlanUpsertBulk) UpdatePriceYear() *PlanUpsertBulk {
 	})
 }
 
+// SetDailyTokenQuota sets the "daily_token_quota" field.
+func (u *PlanUpsertBulk) SetDailyTokenQuota(v int64) *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.SetDailyTokenQuota(v)
+	})
+}
+
+// AddDailyTokenQuota adds v to the "daily_token_quota" field.
+func (u *PlanUpsertBulk) AddDailyTokenQuota(v int64) *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.AddDailyTokenQuota(v)
+	})
+}
+
+// UpdateDailyTokenQuota sets the "daily_token_quota" field to the value that was provided on create.
+func (u *PlanUpsertBulk) UpdateDailyTokenQuota() *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.UpdateDailyTokenQuota()
+	})
+}
+
+// SetWeeklyTokenQuota sets the "weekly_token_quota" field.
+func (u *PlanUpsertBulk) SetWeeklyTokenQuota(v int64) *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.SetWeeklyTokenQuota(v)
+	})
+}
+
+// AddWeeklyTokenQuota adds v to the "weekly_token_quota" field.
+func (u *PlanUpsertBulk) AddWeeklyTokenQuota(v int64) *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.AddWeeklyTokenQuota(v)
+	})
+}
+
+// UpdateWeeklyTokenQuota sets the "weekly_token_quota" field to the value that was provided on create.
+func (u *PlanUpsertBulk) UpdateWeeklyTokenQuota() *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.UpdateWeeklyTokenQuota()
+	})
+}
+
+// SetMonthlyTokenQuota sets the "monthly_token_quota" field.
+func (u *PlanUpsertBulk) SetMonthlyTokenQuota(v int64) *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.SetMonthlyTokenQuota(v)
+	})
+}
+
+// AddMonthlyTokenQuota adds v to the "monthly_token_quota" field.
+func (u *PlanUpsertBulk) AddMonthlyTokenQuota(v int64) *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.AddMonthlyTokenQuota(v)
+	})
+}
+
+// UpdateMonthlyTokenQuota sets the "monthly_token_quota" field to the value that was provided on create.
+func (u *PlanUpsertBulk) UpdateMonthlyTokenQuota() *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.UpdateMonthlyTokenQuota()
+	})
+}
+
+// SetMonthlyCredits sets the "monthly_credits" field.
+func (u *PlanUpsertBulk) SetMonthlyCredits(v int64) *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.SetMonthlyCredits(v)
+	})
+}
+
+// AddMonthlyCredits adds v to the "monthly_credits" field.
+func (u *PlanUpsertBulk) AddMonthlyCredits(v int64) *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.AddMonthlyCredits(v)
+	})
+}
+
+// UpdateMonthlyCredits sets the "monthly_credits" field to the value that was provided on create.
+func (u *PlanUpsertBulk) UpdateMonthlyCredits() *PlanUpsertBulk {
+	return u.Update(func(s *PlanUpsert) {
+		s.UpdateMonthlyCredits()
+	})
+}
+
 // SetBasicTokenQuota sets the "basic_token_quota" field.
 func (u *PlanUpsertBulk) SetBasicTokenQuota(v int64) *PlanUpsertBulk {
 	return u.Update(func(s *PlanUpsert) {
@@ -1455,27 +1731,6 @@ func (u *PlanUpsertBulk) AddUltraTokenQuota(v int64) *PlanUpsertBulk {
 func (u *PlanUpsertBulk) UpdateUltraTokenQuota() *PlanUpsertBulk {
 	return u.Update(func(s *PlanUpsert) {
 		s.UpdateUltraTokenQuota()
-	})
-}
-
-// SetMonthlyCredits sets the "monthly_credits" field.
-func (u *PlanUpsertBulk) SetMonthlyCredits(v int64) *PlanUpsertBulk {
-	return u.Update(func(s *PlanUpsert) {
-		s.SetMonthlyCredits(v)
-	})
-}
-
-// AddMonthlyCredits adds v to the "monthly_credits" field.
-func (u *PlanUpsertBulk) AddMonthlyCredits(v int64) *PlanUpsertBulk {
-	return u.Update(func(s *PlanUpsert) {
-		s.AddMonthlyCredits(v)
-	})
-}
-
-// UpdateMonthlyCredits sets the "monthly_credits" field to the value that was provided on create.
-func (u *PlanUpsertBulk) UpdateMonthlyCredits() *PlanUpsertBulk {
-	return u.Update(func(s *PlanUpsert) {
-		s.UpdateMonthlyCredits()
 	})
 }
 

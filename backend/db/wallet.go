@@ -28,14 +28,24 @@ type Wallet struct {
 	TotalConsumed int64 `json:"total_consumed,omitempty"`
 	// TotalGranted holds the value of the "total_granted" field.
 	TotalGranted int64 `json:"total_granted,omitempty"`
+	// DailyTokenBalance holds the value of the "daily_token_balance" field.
+	DailyTokenBalance int64 `json:"daily_token_balance,omitempty"`
+	// WeeklyTokenBalance holds the value of the "weekly_token_balance" field.
+	WeeklyTokenBalance int64 `json:"weekly_token_balance,omitempty"`
+	// MonthlyTokenBalance holds the value of the "monthly_token_balance" field.
+	MonthlyTokenBalance int64 `json:"monthly_token_balance,omitempty"`
+	// DailyResetAt holds the value of the "daily_reset_at" field.
+	DailyResetAt time.Time `json:"daily_reset_at,omitempty"`
+	// WeeklyResetAt holds the value of the "weekly_reset_at" field.
+	WeeklyResetAt time.Time `json:"weekly_reset_at,omitempty"`
+	// MonthlyResetAt holds the value of the "monthly_reset_at" field.
+	MonthlyResetAt time.Time `json:"monthly_reset_at,omitempty"`
 	// DailyBasicTokenBalance holds the value of the "daily_basic_token_balance" field.
 	DailyBasicTokenBalance int64 `json:"daily_basic_token_balance,omitempty"`
 	// DailyProTokenBalance holds the value of the "daily_pro_token_balance" field.
 	DailyProTokenBalance int64 `json:"daily_pro_token_balance,omitempty"`
 	// DailyUltraTokenBalance holds the value of the "daily_ultra_token_balance" field.
 	DailyUltraTokenBalance int64 `json:"daily_ultra_token_balance,omitempty"`
-	// DailyResetAt holds the value of the "daily_reset_at" field.
-	DailyResetAt time.Time `json:"daily_reset_at,omitempty"`
 	// EnableCreditConsumption holds the value of the "enable_credit_consumption" field.
 	EnableCreditConsumption bool `json:"enable_credit_consumption,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -52,9 +62,9 @@ func (*Wallet) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case wallet.FieldEnableCreditConsumption:
 			values[i] = new(sql.NullBool)
-		case wallet.FieldBalance, wallet.FieldTotalRecharged, wallet.FieldTotalConsumed, wallet.FieldTotalGranted, wallet.FieldDailyBasicTokenBalance, wallet.FieldDailyProTokenBalance, wallet.FieldDailyUltraTokenBalance:
+		case wallet.FieldBalance, wallet.FieldTotalRecharged, wallet.FieldTotalConsumed, wallet.FieldTotalGranted, wallet.FieldDailyTokenBalance, wallet.FieldWeeklyTokenBalance, wallet.FieldMonthlyTokenBalance, wallet.FieldDailyBasicTokenBalance, wallet.FieldDailyProTokenBalance, wallet.FieldDailyUltraTokenBalance:
 			values[i] = new(sql.NullInt64)
-		case wallet.FieldDailyResetAt, wallet.FieldCreatedAt, wallet.FieldUpdatedAt:
+		case wallet.FieldDailyResetAt, wallet.FieldWeeklyResetAt, wallet.FieldMonthlyResetAt, wallet.FieldCreatedAt, wallet.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case wallet.FieldID, wallet.FieldUserID:
 			values[i] = new(uuid.UUID)
@@ -109,6 +119,42 @@ func (_m *Wallet) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TotalGranted = value.Int64
 			}
+		case wallet.FieldDailyTokenBalance:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field daily_token_balance", values[i])
+			} else if value.Valid {
+				_m.DailyTokenBalance = value.Int64
+			}
+		case wallet.FieldWeeklyTokenBalance:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field weekly_token_balance", values[i])
+			} else if value.Valid {
+				_m.WeeklyTokenBalance = value.Int64
+			}
+		case wallet.FieldMonthlyTokenBalance:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field monthly_token_balance", values[i])
+			} else if value.Valid {
+				_m.MonthlyTokenBalance = value.Int64
+			}
+		case wallet.FieldDailyResetAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field daily_reset_at", values[i])
+			} else if value.Valid {
+				_m.DailyResetAt = value.Time
+			}
+		case wallet.FieldWeeklyResetAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field weekly_reset_at", values[i])
+			} else if value.Valid {
+				_m.WeeklyResetAt = value.Time
+			}
+		case wallet.FieldMonthlyResetAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field monthly_reset_at", values[i])
+			} else if value.Valid {
+				_m.MonthlyResetAt = value.Time
+			}
 		case wallet.FieldDailyBasicTokenBalance:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field daily_basic_token_balance", values[i])
@@ -126,12 +172,6 @@ func (_m *Wallet) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field daily_ultra_token_balance", values[i])
 			} else if value.Valid {
 				_m.DailyUltraTokenBalance = value.Int64
-			}
-		case wallet.FieldDailyResetAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field daily_reset_at", values[i])
-			} else if value.Valid {
-				_m.DailyResetAt = value.Time
 			}
 		case wallet.FieldEnableCreditConsumption:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -202,6 +242,24 @@ func (_m *Wallet) String() string {
 	builder.WriteString("total_granted=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TotalGranted))
 	builder.WriteString(", ")
+	builder.WriteString("daily_token_balance=")
+	builder.WriteString(fmt.Sprintf("%v", _m.DailyTokenBalance))
+	builder.WriteString(", ")
+	builder.WriteString("weekly_token_balance=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WeeklyTokenBalance))
+	builder.WriteString(", ")
+	builder.WriteString("monthly_token_balance=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MonthlyTokenBalance))
+	builder.WriteString(", ")
+	builder.WriteString("daily_reset_at=")
+	builder.WriteString(_m.DailyResetAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("weekly_reset_at=")
+	builder.WriteString(_m.WeeklyResetAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("monthly_reset_at=")
+	builder.WriteString(_m.MonthlyResetAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("daily_basic_token_balance=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DailyBasicTokenBalance))
 	builder.WriteString(", ")
@@ -210,9 +268,6 @@ func (_m *Wallet) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("daily_ultra_token_balance=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DailyUltraTokenBalance))
-	builder.WriteString(", ")
-	builder.WriteString("daily_reset_at=")
-	builder.WriteString(_m.DailyResetAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("enable_credit_consumption=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EnableCreditConsumption))

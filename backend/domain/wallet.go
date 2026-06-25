@@ -28,8 +28,14 @@ type WalletUsecase interface {
 	Deduct(ctx context.Context, userID uuid.UUID, kind consts.TransactionKind, amount int64, remark string, sourceID string) error
 	// Grant adds credits to a user's wallet.
 	Grant(ctx context.Context, userID uuid.UUID, kind consts.TransactionKind, amount int64, remark string, sourceID string) error
-	// DailyTokenReset resets daily token quotas based on subscription plan.
+	// DailyTokenReset resets daily token quotas based on subscription plan (legacy, kept for compat).
 	DailyTokenReset(ctx context.Context, userID uuid.UUID) error
+	// ResetTokenQuotas lazily resets day/week/month token quotas based on subscription plan.
+	ResetTokenQuotas(ctx context.Context, userID uuid.UUID) error
+	// DeductTokensFromQuota deducts amount from the free token quota (day/week/month cycles).
+	// Returns: deductedFromQuota = actual tokens deducted from free quota;
+	// remaining = tokens that could not be covered by free quota (caller should deduct credits).
+	DeductTokensFromQuota(ctx context.Context, userID uuid.UUID, amount int64) (deductedFromQuota, remaining int64, err error)
 }
 
 // WalletRepo defines the data access for wallets.
@@ -38,6 +44,10 @@ type WalletRepo interface {
 	Create(ctx context.Context, wallet *db.Wallet) (*db.Wallet, error)
 	UpdateBalance(ctx context.Context, id uuid.UUID, balanceDelta, consumedDelta, grantedDelta int64) error
 	UpdateTokenBalances(ctx context.Context, id uuid.UUID, basic, pro, ultra int64, resetAt time.Time) error
+	// SetTokenQuotas sets day/week/month token balances with their reset timestamps.
+	SetTokenQuotas(ctx context.Context, id uuid.UUID, daily, weekly, monthly int64, dailyResetAt, weeklyResetAt, monthlyResetAt time.Time) error
+	// AddTokenBalances atomically adds delta (negative to deduct) to day/week/month token balances.
+	AddTokenBalances(ctx context.Context, id uuid.UUID, dailyDelta, weeklyDelta, monthlyDelta int64) error
 }
 
 // TransactionRepo defines the data access for transaction logs.
@@ -68,17 +78,20 @@ type ExchangeCodeRepo interface {
 
 // Wallet represents a user's credit wallet.
 type Wallet struct {
-	ID                      uuid.UUID `json:"id"`
-	UserID                  uuid.UUID `json:"user_id"`
-	Balance                 int64     `json:"balance"`
-	TotalRecharged          int64     `json:"total_recharged"`
-	TotalConsumed           int64     `json:"total_consumed"`
-	TotalGranted            int64     `json:"total_granted"`
-	DailyBasicTokenBalance  int64     `json:"daily_basic_token_balance"`
-	DailyProTokenBalance    int64     `json:"daily_pro_token_balance"`
-	DailyUltraTokenBalance  int64     `json:"daily_ultra_token_balance"`
+	ID                      uuid.UUID  `json:"id"`
+	UserID                  uuid.UUID  `json:"user_id"`
+	Balance                 int64      `json:"balance"`
+	TotalRecharged          int64      `json:"total_recharged"`
+	TotalConsumed           int64      `json:"total_consumed"`
+	TotalGranted            int64      `json:"total_granted"`
+	// 统一 token 池（日/周/月三周期）
+	DailyTokenBalance       int64      `json:"daily_token_balance"`
+	WeeklyTokenBalance      int64      `json:"weekly_token_balance"`
+	MonthlyTokenBalance     int64      `json:"monthly_token_balance"`
 	DailyResetAt            *time.Time `json:"daily_reset_at"`
-	EnableCreditConsumption bool      `json:"enable_credit_consumption"`
+	WeeklyResetAt           *time.Time `json:"weekly_reset_at"`
+	MonthlyResetAt          *time.Time `json:"monthly_reset_at"`
+	EnableCreditConsumption bool       `json:"enable_credit_consumption"`
 }
 
 func (w *Wallet) From(src *db.Wallet) *Wallet {
@@ -91,10 +104,12 @@ func (w *Wallet) From(src *db.Wallet) *Wallet {
 	w.TotalRecharged = src.TotalRecharged
 	w.TotalConsumed = src.TotalConsumed
 	w.TotalGranted = src.TotalGranted
-	w.DailyBasicTokenBalance = src.DailyBasicTokenBalance
-	w.DailyProTokenBalance = src.DailyProTokenBalance
-	w.DailyUltraTokenBalance = src.DailyUltraTokenBalance
+	w.DailyTokenBalance = src.DailyTokenBalance
+	w.WeeklyTokenBalance = src.WeeklyTokenBalance
+	w.MonthlyTokenBalance = src.MonthlyTokenBalance
 	w.DailyResetAt = &src.DailyResetAt
+	w.WeeklyResetAt = &src.WeeklyResetAt
+	w.MonthlyResetAt = &src.MonthlyResetAt
 	w.EnableCreditConsumption = src.EnableCreditConsumption
 	return w
 }

@@ -35,13 +35,16 @@ var allowPaths = map[string]string{
 type contextKey struct{}
 
 type modelContext struct {
-	modelID   uuid.UUID
-	userID    uuid.UUID
-	vmID      string
-	provider  string
-	modelName string
-	baseURL   string
-	apiKey    string
+	modelID      uuid.UUID
+	userID       uuid.UUID
+	vmID         string
+	provider     string
+	modelName    string
+	baseURL      string
+	apiKey       string
+	deviceSecret string    // 客户端 HMAC 签名密钥（绑 mclaw 客户端），空表示老 key 无绑定
+	expiresAt    *time.Time // runtime key 过期时间，nil 表示不过期（兼容）
+	revokedAt    *time.Time // 撤销时间，非 nil 即失效
 }
 
 type proxyContext struct {
@@ -51,12 +54,13 @@ type proxyContext struct {
 }
 
 type Proxy struct {
-	db        *db.Client
-	logger    *slog.Logger
-	recorder  usageRecorder
-	billing   billingService
-	transport *http.Transport
-	proxy     *httputil.ReverseProxy
+	db         *db.Client
+	logger     *slog.Logger
+	recorder   usageRecorder
+	billing    billingService
+	autoRouter autoRouter
+	transport  *http.Transport
+	proxy      *httputil.ReverseProxy
 }
 
 type usageRecorder interface {
@@ -80,6 +84,13 @@ func WithUsageRecorder(recorder usageRecorder) Option {
 func WithBillingService(billing billingService) Option {
 	return func(p *Proxy) {
 		p.billing = billing
+	}
+}
+
+// WithAutoRouter injects the auto-router for model="auto" requests.
+func WithAutoRouter(r autoRouter) Option {
+	return func(p *Proxy) {
+		p.autoRouter = r
 	}
 }
 
@@ -147,7 +158,45 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	if reqMeta.Model != "" && reqMeta.Model != m.modelName {
+
+	// 加固校验：撤销 → 过期 → 客户端 HMAC 签名。验签绑 runtime key（用户凭证），
+	// 必须在 auto 路由之前——auto 只改写转发目标，不影响鉴权，复用同一把 key 的 device_secret。
+	if m.revokedAt != nil {
+		p.logger.WarnContext(r.Context(), "runtime key revoked", "user_id", m.userID)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	if m.expiresAt != nil && time.Now().After(*m.expiresAt) {
+		p.logger.WarnContext(r.Context(), "runtime key expired", "user_id", m.userID, "expires_at", *m.expiresAt)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	// 桌面端 key（vmID 为空）必须有 device_secret 并验签；老 key（device_secret 空）作废需重新签发。
+	// VM key（vmID 非空）是后端可信调度环境签发、不在用户配置文件，第一期豁免签名，留第二期统一加固。
+	if m.vmID == "" {
+		if err := verifySignature(r, body, m.deviceSecret, time.Now()); err != nil {
+			p.logger.WarnContext(r.Context(), "verify signature failed", "error", err, "user_id", m.userID)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+	}
+
+	// auto 模型路由：请求 model="auto" 时，由 autoRouter 选具体云端模型并改写请求体
+	if m.modelName == "auto" && p.autoRouter != nil {
+		target, routeErr := p.autoRouter.Resolve(r.Context(), m.userID, m.vmID, upstreamPath)
+		if routeErr != nil {
+			p.logger.WarnContext(r.Context(), "auto route failed", "error", routeErr, "user_id", m.userID)
+			http.Error(w, "无可用云端模型，请先在模型页配置一个可用模型", http.StatusServiceUnavailable)
+			return
+		}
+		if newBody, marshalErr := rewriteModelField(body, target.modelName); marshalErr == nil {
+			body = newBody
+			r.Body = io.NopCloser(bytes.NewReader(body))
+			r.ContentLength = int64(len(body))
+		}
+		p.logger.DebugContext(r.Context(), "auto route", "from", "auto", "to", target.modelName, "provider", target.provider)
+		m = target
+	} else if reqMeta.Model != "" && reqMeta.Model != m.modelName {
 		p.logger.WarnContext(r.Context(), "model mismatch", "request_model", reqMeta.Model, "expected_model", m.modelName)
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
@@ -178,7 +227,7 @@ func (p *Proxy) resolveModel(ctx context.Context, token string) (*modelContext, 
 	if key.Edges.Model == nil {
 		return nil, errors.New("model not found")
 	}
-	return &modelContext{
+	mc := &modelContext{
 		modelID:   key.Edges.Model.ID,
 		userID:    key.UserID,
 		vmID:      key.VirtualmachineID,
@@ -186,7 +235,18 @@ func (p *Proxy) resolveModel(ctx context.Context, token string) (*modelContext, 
 		modelName: key.Edges.Model.Model,
 		baseURL:   key.Edges.Model.BaseURL,
 		apiKey:    key.Edges.Model.APIKey,
-	}, nil
+	}
+	// 加固字段：device_secret/expires_at/revoked_at（均可能为零值，由 ServeHTTP 校验）
+	if key.DeviceSecret != "" {
+		mc.deviceSecret = key.DeviceSecret
+	}
+	if !key.ExpiresAt.IsZero() {
+		mc.expiresAt = &key.ExpiresAt
+	}
+	if !key.RevokedAt.IsZero() {
+		mc.revokedAt = &key.RevokedAt
+	}
+	return mc, nil
 }
 
 var LLMAllowPaths []string = []string{

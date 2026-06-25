@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -20,15 +21,20 @@ type ModelUsecase interface {
 	GetProviderModelList(ctx context.Context, req *GetProviderModelListReq) (*GetProviderModelListResp, error)
 	// IssueRuntimeKey 为当前用户签发访问指定模型的 runtime key（复用已有，避免泛滥）。
 	// 桌面端用此 key 作为 OpenClaw custom provider 的 api_key，请求经 Go 后端 llmproxy 转发+计费。
-	IssueRuntimeKey(ctx context.Context, uid, modelID uuid.UUID) (string, error)
+	// deviceSecret 为客户端 HMAC 签名密钥，绑 mclaw 客户端；返回 key 与其过期时间。
+	IssueRuntimeKey(ctx context.Context, uid, modelID uuid.UUID, deviceSecret string) (string, time.Time, error)
 }
 
 // ModelRepo 模型配置数据仓库接口
 type ModelRepo interface {
 	Get(ctx context.Context, uid, id uuid.UUID) (*db.Model, error)
-	CreateRuntimeAPIKey(ctx context.Context, uid, modelID uuid.UUID, vmID string) (string, error)
+	CreateRuntimeAPIKey(ctx context.Context, uid, modelID uuid.UUID, vmID string, deviceSecret string, expiresAt *time.Time) (string, error)
+	// RefreshRuntimeAPIKey 刷新现有 runtime key 的 device_secret + expires_at（同一把 UUID key 续签/换设备）。
+	RefreshRuntimeAPIKey(ctx context.Context, id uuid.UUID, deviceSecret string, expiresAt time.Time) error
 	// GetRuntimeAPIKeyByUserModel 查询用户对某模型已签发的、非 VM 绑定的 runtime key（复用，无则返回 NotFound）。
 	GetRuntimeAPIKeyByUserModel(ctx context.Context, uid, modelID uuid.UUID) (*db.ModelApiKey, error)
+	// GetByUserAndModelName 查询用户名下指定 model 名的模型记录（用于确保 auto 模型存在）。
+	GetByUserAndModelName(ctx context.Context, uid uuid.UUID, modelName string) (*db.Model, error)
 	List(ctx context.Context, uid uuid.UUID, cursor CursorReq) ([]*db.Model, *db.Cursor, error)
 	Create(ctx context.Context, uid uuid.UUID, req *CreateModelReq) (*db.Model, error)
 	Delete(ctx context.Context, uid, id uuid.UUID) error
@@ -232,9 +238,16 @@ type CheckModelReq struct {
 	ID uuid.UUID `param:"id" validate:"required"`
 }
 
+// IssueRuntimeKeyReq 签发 runtime key 请求（桌面端提交 device_secret 绑定客户端）
+type IssueRuntimeKeyReq struct {
+	ID           uuid.UUID `param:"id" validate:"required"`
+	DeviceSecret string    `json:"device_secret" validate:"required"`
+}
+
 // RuntimeKeyResp runtime key 签发响应（供桌面端经 llmproxy 转发对话使用）
 type RuntimeKeyResp struct {
-	Key string `json:"key"`
+	Key       string    `json:"key"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 // CheckByConfigReq 检查模型健康状态请求（通过配置）

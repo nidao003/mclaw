@@ -113,6 +113,66 @@ func (_u *ModelApiKeyUpdate) SetNillableAPIKey(v *string) *ModelApiKeyUpdate {
 	return _u
 }
 
+// SetDeviceSecret sets the "device_secret" field.
+func (_u *ModelApiKeyUpdate) SetDeviceSecret(v string) *ModelApiKeyUpdate {
+	_u.mutation.SetDeviceSecret(v)
+	return _u
+}
+
+// SetNillableDeviceSecret sets the "device_secret" field if the given value is not nil.
+func (_u *ModelApiKeyUpdate) SetNillableDeviceSecret(v *string) *ModelApiKeyUpdate {
+	if v != nil {
+		_u.SetDeviceSecret(*v)
+	}
+	return _u
+}
+
+// ClearDeviceSecret clears the value of the "device_secret" field.
+func (_u *ModelApiKeyUpdate) ClearDeviceSecret() *ModelApiKeyUpdate {
+	_u.mutation.ClearDeviceSecret()
+	return _u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_u *ModelApiKeyUpdate) SetExpiresAt(v time.Time) *ModelApiKeyUpdate {
+	_u.mutation.SetExpiresAt(v)
+	return _u
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_u *ModelApiKeyUpdate) SetNillableExpiresAt(v *time.Time) *ModelApiKeyUpdate {
+	if v != nil {
+		_u.SetExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (_u *ModelApiKeyUpdate) ClearExpiresAt() *ModelApiKeyUpdate {
+	_u.mutation.ClearExpiresAt()
+	return _u
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (_u *ModelApiKeyUpdate) SetRevokedAt(v time.Time) *ModelApiKeyUpdate {
+	_u.mutation.SetRevokedAt(v)
+	return _u
+}
+
+// SetNillableRevokedAt sets the "revoked_at" field if the given value is not nil.
+func (_u *ModelApiKeyUpdate) SetNillableRevokedAt(v *time.Time) *ModelApiKeyUpdate {
+	if v != nil {
+		_u.SetRevokedAt(*v)
+	}
+	return _u
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (_u *ModelApiKeyUpdate) ClearRevokedAt() *ModelApiKeyUpdate {
+	_u.mutation.ClearRevokedAt()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *ModelApiKeyUpdate) SetCreatedAt(v time.Time) *ModelApiKeyUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -218,6 +278,24 @@ func (_u *ModelApiKeyUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.APIKey(); ok {
 		_spec.SetField(modelapikey.FieldAPIKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DeviceSecret(); ok {
+		_spec.SetField(modelapikey.FieldDeviceSecret, field.TypeString, value)
+	}
+	if _u.mutation.DeviceSecretCleared() {
+		_spec.ClearField(modelapikey.FieldDeviceSecret, field.TypeString)
+	}
+	if value, ok := _u.mutation.ExpiresAt(); ok {
+		_spec.SetField(modelapikey.FieldExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.ExpiresAtCleared() {
+		_spec.ClearField(modelapikey.FieldExpiresAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.RevokedAt(); ok {
+		_spec.SetField(modelapikey.FieldRevokedAt, field.TypeTime, value)
+	}
+	if _u.mutation.RevokedAtCleared() {
+		_spec.ClearField(modelapikey.FieldRevokedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(modelapikey.FieldCreatedAt, field.TypeTime, value)
@@ -352,6 +430,66 @@ func (_u *ModelApiKeyUpdateOne) SetNillableAPIKey(v *string) *ModelApiKeyUpdateO
 	if v != nil {
 		_u.SetAPIKey(*v)
 	}
+	return _u
+}
+
+// SetDeviceSecret sets the "device_secret" field.
+func (_u *ModelApiKeyUpdateOne) SetDeviceSecret(v string) *ModelApiKeyUpdateOne {
+	_u.mutation.SetDeviceSecret(v)
+	return _u
+}
+
+// SetNillableDeviceSecret sets the "device_secret" field if the given value is not nil.
+func (_u *ModelApiKeyUpdateOne) SetNillableDeviceSecret(v *string) *ModelApiKeyUpdateOne {
+	if v != nil {
+		_u.SetDeviceSecret(*v)
+	}
+	return _u
+}
+
+// ClearDeviceSecret clears the value of the "device_secret" field.
+func (_u *ModelApiKeyUpdateOne) ClearDeviceSecret() *ModelApiKeyUpdateOne {
+	_u.mutation.ClearDeviceSecret()
+	return _u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_u *ModelApiKeyUpdateOne) SetExpiresAt(v time.Time) *ModelApiKeyUpdateOne {
+	_u.mutation.SetExpiresAt(v)
+	return _u
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_u *ModelApiKeyUpdateOne) SetNillableExpiresAt(v *time.Time) *ModelApiKeyUpdateOne {
+	if v != nil {
+		_u.SetExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (_u *ModelApiKeyUpdateOne) ClearExpiresAt() *ModelApiKeyUpdateOne {
+	_u.mutation.ClearExpiresAt()
+	return _u
+}
+
+// SetRevokedAt sets the "revoked_at" field.
+func (_u *ModelApiKeyUpdateOne) SetRevokedAt(v time.Time) *ModelApiKeyUpdateOne {
+	_u.mutation.SetRevokedAt(v)
+	return _u
+}
+
+// SetNillableRevokedAt sets the "revoked_at" field if the given value is not nil.
+func (_u *ModelApiKeyUpdateOne) SetNillableRevokedAt(v *time.Time) *ModelApiKeyUpdateOne {
+	if v != nil {
+		_u.SetRevokedAt(*v)
+	}
+	return _u
+}
+
+// ClearRevokedAt clears the value of the "revoked_at" field.
+func (_u *ModelApiKeyUpdateOne) ClearRevokedAt() *ModelApiKeyUpdateOne {
+	_u.mutation.ClearRevokedAt()
 	return _u
 }
 
@@ -490,6 +628,24 @@ func (_u *ModelApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *ModelApiKey
 	}
 	if value, ok := _u.mutation.APIKey(); ok {
 		_spec.SetField(modelapikey.FieldAPIKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DeviceSecret(); ok {
+		_spec.SetField(modelapikey.FieldDeviceSecret, field.TypeString, value)
+	}
+	if _u.mutation.DeviceSecretCleared() {
+		_spec.ClearField(modelapikey.FieldDeviceSecret, field.TypeString)
+	}
+	if value, ok := _u.mutation.ExpiresAt(); ok {
+		_spec.SetField(modelapikey.FieldExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.ExpiresAtCleared() {
+		_spec.ClearField(modelapikey.FieldExpiresAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.RevokedAt(); ok {
+		_spec.SetField(modelapikey.FieldRevokedAt, field.TypeTime, value)
+	}
+	if _u.mutation.RevokedAtCleared() {
+		_spec.ClearField(modelapikey.FieldRevokedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(modelapikey.FieldCreatedAt, field.TypeTime, value)
