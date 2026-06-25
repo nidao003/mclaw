@@ -357,7 +357,9 @@ jobs:
             release-artifacts/**/*.yml
           draft: false
           prerelease: true
-          make_latest: true
+          # prerelease 不能设为 latest（GitHub 校验：Latest release cannot be draft or prerelease），
+          # 否则 finalize 报错：资产虽上传成功但 release 发布失败。
+          make_latest: false
           generate_release_notes: true
           body: |
             ## 🚀 mclaw ${{ github.ref_name }} 首次公开发布
