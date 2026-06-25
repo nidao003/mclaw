@@ -1,2 +1,0 @@
-ALTER TABLE models DROP COLUMN IF EXISTS support_image;
-ALTER TABLE models DROP COLUMN IF EXISTS is_hidden;
