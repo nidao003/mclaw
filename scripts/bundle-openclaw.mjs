@@ -1180,12 +1180,17 @@ try {
   // 注意 tar 在 Windows 上也带了（bsdtar），不需要 PowerShell
   const parentDir = path.dirname(RUNTIME_BUNDLE_DIR);
   const bundleName = path.basename(RUNTIME_BUNDLE_DIR);
-  await $`tar -czf ${RUNTIME_TARBALL} -C ${parentDir} ${bundleName}`;
+  // Windows 上 zx 的 $ 模板会把反斜杠路径 quote 坏（D:\a\... → D\:\a\\... 被tar当远程主机），
+  // 统一转 posix 正斜杠；bsdtar 在所有平台都接受正斜杠路径，mac/linux 本就是正斜杠（no-op）。
+  const toPosix = (p) => p.split(path.sep).join('/');
+  await $`tar -czf ${toPosix(RUNTIME_TARBALL)} -C ${toPosix(parentDir)} ${bundleName}`;
 } catch (err) {
   echo(chalk.red`❌ tar failed: ${err.message}`);
-  // fallback：用 Node tar 包（脚本同目录的 node_modules/tar 由 bundle-tar-vendor.mjs 准备）
+  // fallback：用 Node tar 包（package.json 直接依赖 tar@^6）
   try {
-    const tar = await import(path.join(ROOT, 'node_modules', 'tar', 'lib', 'index.js'));
+    // bare specifier 让 Node 走 node_modules 解析（pnpm symlink 也能解析），
+    // 避免 Windows 上 import 绝对路径需 file:// URL 的问题。
+    const tar = await import('tar');
     await tar.create(
       { gzip: true, file: RUNTIME_TARBALL, cwd: path.dirname(RUNTIME_BUNDLE_DIR) },
       [path.basename(RUNTIME_BUNDLE_DIR)],
