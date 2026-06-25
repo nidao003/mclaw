@@ -38,14 +38,11 @@ function normWin(p) {
   return '\\\\?\\' + p.replace(/\//g, '\\');
 }
 
+// 首发仅打包真实存在的插件包。其余通道插件（wecom/discord/qqbot/whatsapp/lark/weixin）
+// 的包名在 mclaw 化时被改成 @mclaw/* 等编造名，npm 上不存在，pnpm install 装不上，
+// bundle 时会因 Missing dependency 失败。待对应真实包确定后再加回 PLUGINS。
 const PLUGINS = [
   { npmName: '@soimy/dingtalk', pluginId: 'dingtalk' },
-  { npmName: '@wecom/wecom-mclaw-plugin', pluginId: 'wecom' },
-  { npmName: '@larksuite/mclaw-lark', pluginId: 'feishu-mclaw-plugin' },
-  { npmName: '@mclaw/discord', pluginId: 'discord' },
-  { npmName: '@mclaw/qqbot', pluginId: 'qqbot' },
-  { npmName: '@mclaw/whatsapp', pluginId: 'whatsapp' },
-  { npmName: '@tencent-weixin/mclaw-weixin', pluginId: 'mclaw-weixin' },
 ];
 
 function getVirtualStoreNodeModules(realPkgPath) {
