@@ -31,6 +31,7 @@ jobs:
   release:
     needs: validate-release
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -63,7 +64,16 @@ jobs:
           git config --global --add "url.https://github.com/.insteadOf" "ssh://git@github.com/"
 
       - name: Install dependencies
-        run: pnpm install
+        # Windows 上 pnpm 扫描 apps/web/node_modules 偶发 EPERM（文件锁），
+        # 重试 3 次兜底；mac/Linux 直接一次过。
+        shell: bash
+        run: |
+          for i in 1 2 3; do
+            pnpm install && break
+            echo "Install attempt $i failed, retrying..."
+            sleep 5
+            if [ "$i" = "3" ]; then exit 1; fi
+          done
 
       - name: Download uv binaries for macOS
         if: matrix.platform == 'mac'
