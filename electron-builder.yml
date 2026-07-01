@@ -22,12 +22,14 @@ extraResources:
       - "!icons/*.svg"
       - "!screenshot/**"
   # ⭐ QClaw 模式：运行时解包
-  # mawruntime.tar.gz 包含整个 openclaw 包，首次启动时由 unpack-mclaw.cjs
+  # mclaw-runtime.tar.gz 包含整个 openclaw 包，首次启动时由 unpack-mclaw.cjs
   # 解包到 ~/Library/Application Support/mclaw/openclaw/，告别重打 app.asar
-  - from: build/mawruntime.tar.gz
-    to: mawruntime/mawruntime.tar.gz
-  - from: build/mawruntime-manifest.json
-    to: mawruntime/mawruntime-manifest.json
+  # 注意：文件名须与 scripts/bundle-openclaw.mjs 的 RUNTIME_TARBALL 输出一致，
+  # 否则 extraResources 源缺失会被静默跳过 → 包里没 tarball → unpack 失败 → gateway 起不来。
+  - from: build/mclaw-runtime.tar.gz
+    to: mawruntime/mclaw-runtime.tar.gz
+  - from: build/mclaw-runtime-manifest.json
+    to: mawruntime/mclaw-runtime-manifest.json
   # 解包脚本（独立 Node 跑，不依赖 Electron）
   - from: scripts/unpack-mclaw.cjs
     to: scripts/unpack-mclaw.cjs

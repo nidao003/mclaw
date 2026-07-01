@@ -144,7 +144,7 @@ function registerTypedHostHandlers(
 ): void {
   hostApiRegistry.registerCoreServices({
     app: createAppApi(),
-    mclaw: createOpenClawApi(),
+    openclaw: createOpenClawApi(),
     shell: createShellApi(),
     dialog: createDialogApi(),
     window: createWindowApi(mainWindow),

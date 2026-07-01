@@ -69,11 +69,11 @@ export class GatewayCapabilityMonitor {
   private lastCoreProbe: GatewayCoreProbe | undefined;
 
   recordOpenClawHealth(payload: GatewayRuntimePayload): void {
-    this.mclawHealth = capabilityFromPayload(payload);
+    this.openclawHealth = capabilityFromPayload(payload);
   }
 
   recordOpenClawStatus(payload: GatewayRuntimePayload): void {
-    this.mclawStatus = capabilityFromPayload(payload);
+    this.openclawStatus = capabilityFromPayload(payload);
   }
 
   recordPresence(payload: GatewayRuntimePayload): void {
@@ -117,8 +117,8 @@ export class GatewayCapabilityMonitor {
             : 'unknown',
         lastProbe: this.lastCoreProbe,
       },
-      openclawHealth: this.mclawHealth,
-      openclawStatus: this.mclawStatus,
+      openclawHealth: this.openclawHealth,
+      openclawStatus: this.openclawStatus,
       presence: this.presence,
       channels: this.channels,
       memory: this.memory,
@@ -129,9 +129,9 @@ export class GatewayCapabilityMonitor {
 
   private setCapability(name: GatewayCapabilityName, probe: GatewayCapabilityProbe): void {
     if (name === 'openclawHealth') {
-      this.mclawHealth = probe;
+      this.openclawHealth = probe;
     } else if (name === 'openclawStatus') {
-      this.mclawStatus = probe;
+      this.openclawStatus = probe;
     } else if (name === 'channels') {
       this.channels = probe;
     } else if (name === 'memory') {
