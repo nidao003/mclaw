@@ -14,7 +14,13 @@ export interface ApiError {
   message: string;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+// dev 模式（pnpm dev）：BASE_URL 留空，所有请求走 vite proxy 同源路径 /api/*，
+// 由 vite.config.ts 的 proxy 转发到 .env 中的 VITE_API_BASE_URL。
+// 这样 session cookie 才能在跨域 CORS 下被正确携带。
+// prod 构建（pnpm package）：渲染进程加载 file:// 或 app://，必须用绝对地址直连后端。
+const BASE_URL = import.meta.env.DEV
+  ? ''
+  : (import.meta.env.VITE_API_BASE_URL || '');
 
 // 统一的 API 请求函数，别tm到处写 fetch 了
 export async function apiRequest<T>(
