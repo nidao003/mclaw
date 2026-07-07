@@ -45,6 +45,25 @@ function getDevApiTarget(): string {
   return 'http://localhost:8888';
 }
 
+// 主进程构建期注入：从本地 .env 读 VITE_LLMPROXY_BASE_URL，供 Gateway fetch preload
+// 推导 X-Mclaw-Sig 签名命中的 llmproxy host。读不到则空（签名不注入，云端模型 401）。
+// 主进程是 CJS 输出、import.meta.env 不可用，故经 vite define 注入全局常量，
+// 与渲染进程 import.meta.env.VITE_LLMPROXY_BASE_URL 同源读 .env。
+function getLlmproxyBaseUrl(): string {
+  try {
+    const envPath = resolve(__dirname, '.env');
+    if (existsSync(envPath)) {
+      const match = readFileSync(envPath, 'utf-8')
+        .split('\n')
+        .find((l) => l.trim().startsWith('VITE_LLMPROXY_BASE_URL=') && !l.trim().startsWith('#'));
+      if (match) return match.split('=')[1].trim();
+    }
+  } catch {
+    /* ignore */
+  }
+  return '';
+}
+
 const alias = {
   '@': resolve(__dirname, 'src'),
   '@electron': resolve(__dirname, 'electron'),
@@ -81,6 +100,9 @@ export default defineConfig({
           options.startup();
         },
         vite: {
+          define: {
+            __MCLAW_LLMPROXY_BASE_URL__: JSON.stringify(getLlmproxyBaseUrl()),
+          },
           resolve: { alias },
           build: {
             outDir: 'dist-electron/main',

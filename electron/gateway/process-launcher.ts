@@ -89,6 +89,31 @@ const GATEWAY_FETCH_PRELOAD_SOURCE = `'use strict';
     return _f.call(globalThis, input, init);
   };
 
+  // openclaw 发 LLM 请求用的是 undici.fetch（undici@8 包导出），不走 globalThis.fetch，
+  // 故 patch globalThis.fetch 拦不住。这里 patch undici 包导出的 fetch，注入 X-Mclaw-Sig。
+  // preload 文件不在 openclaw 目录，须用 createRequire 从子进程 cwd（openclaw 目录）解析 undici。
+  // 不改 openclaw/undici 任何源文件，仅运行时改模块导出属性。
+  try {
+    var _createRequire = require('module').createRequire;
+    var _pathMod = require('path');
+    var _openclawReq = _createRequire(_pathMod.join(process.cwd(), '__mclaw_preload__.js'));
+    var _undiciMod = _openclawReq('undici');
+    if (_undiciMod && typeof _undiciMod.fetch === 'function' && !_undiciMod.__mclawPatched) {
+      _undiciMod.__mclawPatched = true;
+      var _origUF = _undiciMod.fetch;
+      _undiciMod.fetch = function mclawUndiciFetch(input, init) {
+        var u = typeof input === 'string' ? input : (input && typeof input === 'object' && typeof input.url === 'string') ? input.url : '';
+        if (u) {
+          init = init ? Object.assign({}, init) : {};
+          try { signLlmProxy(u, init); } catch (e) { /* 签名失败不阻断请求 */ }
+        }
+        return _origUF.call(this, input, init);
+      };
+    } else {
+      console.warn('[mclaw-preload] undici.fetch unavailable, cloud model sig not injected');
+    }
+  } catch (e) { console.warn('[mclaw-preload] undici patch fail: ' + (e && e.message)); }
+
   if (process.platform === 'win32') {
     try {
       var cp = require('child_process');
@@ -171,10 +196,27 @@ export async function launchGatewayProcess(options: {
 
   // 云端模型访问绑定加固：把 deviceSecret 经环境变量注入 Gateway 子进程，
   // 供 fetch preload 计算 X-Mclaw-Sig 签名（deviceSecret 本身不落 openclaw.json，只进 keychain）。
-  // MCLAW_LLMPROXY_HOST 用于 preload 判断哪些出站请求需要签名。
+  // MCLAW_LLMPROXY_HOST 用于 preload 判断哪些出站请求需要签名——从构建期注入的
+  // llmproxy baseUrl（vite.config.ts define，与渲染进程 import.meta.env 同源读 .env）解析 host。
+  // 主进程是 CJS 输出、import.meta.env 不可用，故走 define 全局常量；读不到时降级为空（签名不注入）。
   try {
     runtimeEnv.MCLAW_DEVICE_SECRET = getOrCreateDeviceSecret();
-    runtimeEnv.MCLAW_LLMPROXY_HOST = process.env.MCLAW_LLMPROXY_HOST || '';
+    const llmproxyBaseUrl =
+      typeof __MCLAW_LLMPROXY_BASE_URL__ !== 'undefined' ? __MCLAW_LLMPROXY_BASE_URL__ : '';
+    let llmproxyHost = '';
+    try {
+      llmproxyHost = llmproxyBaseUrl ? new URL(llmproxyBaseUrl).host : '';
+    } catch {
+      llmproxyHost = '';
+    }
+    if (!llmproxyHost) {
+      logger.warn(
+        '[gateway-launch] MCLAW_LLMPROXY_HOST is empty — VITE_LLMPROXY_BASE_URL missing in .env; cloud model requests will fail signature verification (401)',
+      );
+    } else {
+      logger.info(`[gateway-launch] MCLAW_LLMPROXY_HOST injected: ${llmproxyHost}`);
+    }
+    runtimeEnv.MCLAW_LLMPROXY_HOST = llmproxyHost;
   } catch (err) {
     logger.warn('[gateway-launch] failed to inject device secret env:', err);
   }
