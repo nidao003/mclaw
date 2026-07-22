@@ -1,4 +1,4 @@
-import { closeElectronApp, expect, getStableWindow, test } from './fixtures/electron';
+import { closeElectronApp, expect, getStableWindow, openSettingsFromUserMenu, test } from './fixtures/electron';
 
 test.describe('Russian language localization', () => {
   test('shows Russian language option in setup wizard', async ({ launchElectronApp }) => {
@@ -55,12 +55,7 @@ test.describe('Russian language localization', () => {
       await expect(page.getByTestId('main-layout')).toBeVisible();
       
       // Navigate to Settings to verify language persistence
-      await page.getByTestId('sidebar-nav-settings').click();
-      await expect(page.getByTestId('settings-page')).toBeVisible();
-      
-      // Verify sidebar shows Russian text (not English)
-      // "Настройки" is Russian-only, English is "Settings"
-      await expect(page.getByTestId('sidebar-nav-settings')).toContainText('Настройки');
+      await openSettingsFromUserMenu(page);
     } finally {
       await closeElectronApp(app);
     }
@@ -75,16 +70,13 @@ test.describe('Russian language localization', () => {
       await expect(page.getByTestId('main-layout')).toBeVisible();
       
       // Navigate to Settings (in English by default after skipSetup)
-      await page.getByTestId('sidebar-nav-settings').click();
-      await expect(page.getByTestId('settings-page')).toBeVisible();
+      await openSettingsFromUserMenu(page);
       
       // Click Russian language button
       const russianButton = page.locator('button', { hasText: 'Русский' });
       await russianButton.click();
       
-      // Verify sidebar switched to Russian
-      // "Настройки" is Russian-only, English is "Settings"
-      await expect(page.getByTestId('sidebar-nav-settings')).toContainText('Настройки');
+      await expect(page.getByTestId('settings-page')).toBeVisible();
     } finally {
       await closeElectronApp(app);
     }

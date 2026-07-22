@@ -1,5 +1,5 @@
 import type { ElectronApplication } from '@playwright/test';
-import { closeElectronApp, expect, getStableWindow, test } from './fixtures/electron';
+import { closeElectronApp, expect, getStableWindow, openSettingsFromUserMenu, test } from './fixtures/electron';
 
 async function readNativeMenuLabels(app: ElectronApplication) {
   return await app.evaluate(({ Menu }) => {
@@ -77,7 +77,7 @@ test.describe('mclaw main navigation without setup flow', () => {
     try {
       const page = await getStableWindow(app);
 
-      await page.getByTestId('sidebar-nav-settings').click();
+      await openSettingsFromUserMenu(page);
       await page.getByRole('button', { name: 'English' }).click();
       await page.getByRole('button', { name: '中文' }).click();
 

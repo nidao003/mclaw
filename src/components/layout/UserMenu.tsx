@@ -6,9 +6,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@mclaw/shared';
-import { ChevronDown, LogOut, Coins, Zap, Crown, Sparkles, RefreshCw } from 'lucide-react';
+import { ChevronDown, LogOut, Coins, Zap, Crown, Sparkles, RefreshCw, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useAccountStore, getPlanDisplayName, getPlanBadgeColor } from '@/stores/account';
+import { useSettingsStore } from '@/stores/settings';
 
 interface UserMenuProps {
   collapsed?: boolean;
@@ -16,8 +18,10 @@ interface UserMenuProps {
 
 export function UserMenu({ collapsed }: UserMenuProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const setSettingsSheetOpen = useSettingsStore((s) => s.setSettingsSheetOpen);
   const resetAccount = useAccountStore((s) => s.reset);
   const subscription = useAccountStore((s) => s.subscription);
   const wallet = useAccountStore((s) => s.wallet);
@@ -25,6 +29,13 @@ export function UserMenu({ collapsed }: UserMenuProps) {
 
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const userId = user?.id;
+
+  // 用户态可用后立即刷新账户摘要，避免启动后必须先打开菜单才显示最新订阅/积分。
+  useEffect(() => {
+    if (!userId) return;
+    void fetchAll();
+  }, [fetchAll, userId]);
 
   // 进入菜单时拉取账户信息
   useEffect(() => {
@@ -62,7 +73,7 @@ export function UserMenu({ collapsed }: UserMenuProps) {
 
   const handleOpenSettings = () => {
     setOpen(false);
-    navigate('/settings');
+    setSettingsSheetOpen(true);
   };
 
   const initials = (user.name || user.email || '?').charAt(0).toUpperCase();
@@ -125,11 +136,12 @@ export function UserMenu({ collapsed }: UserMenuProps) {
           {/* 账户摘要 */}
           <div className="px-3 py-2.5 border-b border-border/60">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-2xs font-medium text-muted-foreground">当前订阅</div>
+              <div className="text-2xs font-medium text-muted-foreground">{t('userMenu.currentSubscription')}</div>
               <button
                 onClick={handleRefresh}
                 className="text-muted-foreground hover:text-foreground"
-                title="刷新"
+                title={t('actions.refresh')}
+                aria-label={t('actions.refresh')}
               >
                 <RefreshCw className="h-3 w-3" />
               </button>
@@ -147,7 +159,7 @@ export function UserMenu({ collapsed }: UserMenuProps) {
               {subscription?.auto_renew && (
                 <span className="inline-flex items-center gap-0.5 rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-2xs font-medium text-emerald-700 dark:text-emerald-400">
                   <Sparkles className="h-2.5 w-2.5" />
-                  自动续费
+                  {t('userMenu.autoRenew')}
                 </span>
               )}
             </div>
@@ -157,7 +169,7 @@ export function UserMenu({ collapsed }: UserMenuProps) {
               <div className="rounded-lg bg-accent/40 p-2">
                 <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                   <Coins className="h-3 w-3" />
-                  <span>积分余额</span>
+                  <span>{t('userMenu.creditBalance')}</span>
                 </div>
                 <div className="mt-0.5 text-sm font-semibold tabular-nums">
                   {wallet ? formatNumber(wallet.balance) : '—'}
@@ -166,7 +178,7 @@ export function UserMenu({ collapsed }: UserMenuProps) {
               <div className="rounded-lg bg-accent/40 p-2">
                 <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                   <Zap className="h-3 w-3" />
-                  <span>今日 token</span>
+                  <span>{t('userMenu.todayTokens')}</span>
                 </div>
                 <div className="mt-0.5 text-sm font-semibold tabular-nums">
                   {wallet ? formatNumber(tokenRemaining(wallet)) : '—'}
@@ -179,19 +191,19 @@ export function UserMenu({ collapsed }: UserMenuProps) {
               <div className="mt-2 space-y-0.5 text-2xs text-muted-foreground">
                 {wallet.daily_basic_token_balance > 0 && (
                   <div className="flex justify-between">
-                    <span>基础模型</span>
+                    <span>{t('userMenu.basicModel')}</span>
                     <span className="tabular-nums">{formatNumber(wallet.daily_basic_token_balance)}</span>
                   </div>
                 )}
                 {wallet.daily_pro_token_balance > 0 && (
                   <div className="flex justify-between">
-                    <span>进阶模型</span>
+                    <span>{t('userMenu.proModel')}</span>
                     <span className="tabular-nums">{formatNumber(wallet.daily_pro_token_balance)}</span>
                   </div>
                 )}
                 {wallet.daily_ultra_token_balance > 0 && (
                   <div className="flex justify-between">
-                    <span>旗舰模型</span>
+                    <span>{t('userMenu.ultraModel')}</span>
                     <span className="tabular-nums">{formatNumber(wallet.daily_ultra_token_balance)}</span>
                   </div>
                 )}
@@ -203,9 +215,11 @@ export function UserMenu({ collapsed }: UserMenuProps) {
           <button
             type="button"
             onClick={handleOpenSettings}
+            data-testid="sidebar-nav-settings"
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-2xs font-medium hover:bg-accent transition-colors"
           >
-            管理订阅与账户
+            <Settings className="h-3.5 w-3.5" />
+            {t('sidebar.settings')}
           </button>
           <button
             type="button"
@@ -214,7 +228,7 @@ export function UserMenu({ collapsed }: UserMenuProps) {
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-2xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
           >
             <LogOut className="h-3.5 w-3.5" />
-            退出登录
+            {t('userMenu.logout')}
           </button>
         </div>
       )}

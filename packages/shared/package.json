@@ -10,6 +10,7 @@
     ".": "./src/index.ts",
     "./types/*": "./src/types/*",
     "./api/*": "./src/api/*",
+    "./stores/*": "./src/stores/*",
     "./utils/*": "./src/utils/*"
   },
   "peerDependencies": {

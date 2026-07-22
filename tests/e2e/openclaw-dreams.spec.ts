@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { completeSetup, expect, installIpcMocks, test } from './fixtures/electron';
+import { closeSettingsDialog, completeSetup, expect, installIpcMocks, openSettingsFromUserMenu, test } from './fixtures/electron';
 
 function stableStringify(value: unknown): string {
   if (value == null || typeof value !== 'object') return JSON.stringify(value);
@@ -27,13 +27,13 @@ function buildDreamingEnabledPatchRaw(enabled: boolean): string {
 }
 
 async function enableDeveloperMode(page: Page): Promise<void> {
-  await page.getByTestId('sidebar-nav-settings').click();
-  await expect(page.getByTestId('settings-page')).toBeVisible();
+  await openSettingsFromUserMenu(page);
   const devModeToggle = page.getByTestId('settings-dev-mode-switch');
   if ((await devModeToggle.getAttribute('data-state')) !== 'checked') {
     await devModeToggle.click();
   }
   await expect(devModeToggle).toHaveAttribute('data-state', 'checked');
+  await closeSettingsDialog(page);
 }
 
 test.describe('OpenClaw Dreams', () => {

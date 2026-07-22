@@ -1,15 +1,15 @@
-import { completeSetup, expect, test } from './fixtures/electron';
+import { closeSettingsDialog, completeSetup, expect, openSettingsFromUserMenu, test } from './fixtures/electron';
 
 test.describe('mclaw developer-mode gated UI', () => {
   test('keeps developer-only configuration hidden until dev mode is enabled', async ({ page }) => {
     await completeSetup(page);
 
-    await page.getByTestId('sidebar-nav-settings').click();
-    await expect(page.getByTestId('settings-page')).toBeVisible();
+    await openSettingsFromUserMenu(page);
     await expect(page.getByTestId('settings-developer-section')).toHaveCount(0);
     await expect(page.getByTestId('settings-dev-mode-switch')).toHaveAttribute('data-state', 'unchecked');
     await expect(page.getByTestId('sidebar-open-dev-console')).toHaveCount(0);
     await expect(page.getByTestId('sidebar-nav-dreams')).toHaveCount(0);
+    await closeSettingsDialog(page);
 
     await page.evaluate(() => {
       window.location.hash = '#/dreams';
@@ -27,13 +27,14 @@ test.describe('mclaw developer-mode gated UI', () => {
     await page.getByTestId('add-provider-close-button').click();
     await expect(page.getByTestId('add-provider-dialog')).toHaveCount(0);
 
-    await page.getByTestId('sidebar-nav-settings').click();
+    await openSettingsFromUserMenu(page);
     await page.getByTestId('settings-dev-mode-switch').click();
     await expect(page.getByTestId('settings-dev-mode-switch')).toHaveAttribute('data-state', 'checked');
     await expect(page.getByTestId('settings-developer-section')).toBeVisible();
     await expect(page.getByTestId('settings-developer-gateway-token')).toBeVisible();
     await expect(page.getByTestId('sidebar-open-dev-console')).toBeVisible();
     await expect(page.getByTestId('sidebar-nav-dreams')).toBeVisible();
+    await closeSettingsDialog(page);
 
     await page.getByTestId('sidebar-nav-models').click();
     await page.getByTestId('providers-add-button').click();

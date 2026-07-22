@@ -8,7 +8,12 @@ const subscribeHostEventMock = vi.fn();
 const fetchAgentsMock = vi.fn();
 const updateAgentMock = vi.fn();
 const updateAgentModelMock = vi.fn();
+const createAgentMock = vi.fn();
+const deleteAgentMock = vi.fn();
 const refreshProviderSnapshotMock = vi.fn();
+const switchSessionMock = vi.fn();
+const navigateMock = vi.fn();
+const expertListMock = vi.fn();
 
 const { gatewayState, agentsState, providersState } = vi.hoisted(() => ({
   gatewayState: {
@@ -32,23 +37,51 @@ vi.mock('@/stores/gateway', () => ({
   useGatewayStore: (selector: (state: typeof gatewayState) => unknown) => selector(gatewayState),
 }));
 
-vi.mock('@/stores/agents', () => ({
-  useAgentsStore: (selector?: (state: typeof agentsState & {
+vi.mock('@/stores/agents', () => {
+  const selectAgentsStore = (selector?: (state: typeof agentsState & {
     fetchAgents: typeof fetchAgentsMock;
     updateAgent: typeof updateAgentMock;
     updateAgentModel: typeof updateAgentModelMock;
-    createAgent: ReturnType<typeof vi.fn>;
-    deleteAgent: ReturnType<typeof vi.fn>;
+    createAgent: typeof createAgentMock;
+    deleteAgent: typeof deleteAgentMock;
   }) => unknown) => {
     const state = {
       ...agentsState,
       fetchAgents: fetchAgentsMock,
       updateAgent: updateAgentMock,
       updateAgentModel: updateAgentModelMock,
-      createAgent: vi.fn(),
-      deleteAgent: vi.fn(),
+      createAgent: createAgentMock,
+      deleteAgent: deleteAgentMock,
     };
     return typeof selector === 'function' ? selector(state) : state;
+  };
+  return {
+    useAgentsStore: Object.assign(selectAgentsStore, {
+    getState: () => ({
+      ...agentsState,
+      fetchAgents: fetchAgentsMock,
+      updateAgent: updateAgentMock,
+      updateAgentModel: updateAgentModelMock,
+      createAgent: createAgentMock,
+      deleteAgent: deleteAgentMock,
+    }),
+    }),
+  };
+});
+
+vi.mock('@/stores/chat', () => ({
+  useChatStore: (selector: (state: { switchSession: typeof switchSessionMock }) => unknown) => selector({
+    switchSession: switchSessionMock,
+  }),
+}));
+
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigateMock,
+}));
+
+vi.mock('@mclaw/shared/api/expert', () => ({
+  expertApi: {
+    list: (...args: unknown[]) => expertListMock(...args),
   },
 }));
 
@@ -105,7 +138,13 @@ describe('Agents page status refresh', () => {
     fetchAgentsMock.mockResolvedValue(undefined);
     updateAgentMock.mockResolvedValue(undefined);
     updateAgentModelMock.mockResolvedValue(undefined);
+    createAgentMock.mockResolvedValue(undefined);
+    deleteAgentMock.mockResolvedValue(undefined);
     refreshProviderSnapshotMock.mockResolvedValue(undefined);
+    switchSessionMock.mockReset();
+    navigateMock.mockReset();
+    expertListMock.mockResolvedValue([]);
+    window.localStorage.clear();
     channelsAccountsMock.mockResolvedValue({
       success: true,
       channels: [],
@@ -173,16 +212,16 @@ describe('Agents page status refresh', () => {
   it('uses "Use default model" as form fill only and disables it when already default', async () => {
     agentsState.agents = [
       {
-        id: 'main',
-        name: 'Main',
-        isDefault: true,
+        id: 'research',
+        name: 'Research',
+        isDefault: false,
         modelDisplay: 'claude-opus-4.6',
         modelRef: 'openrouter/anthropic/claude-opus-4.6',
         overrideModelRef: null,
-        inheritedModel: true,
-        workspace: '~/.mclaw/workspace',
-        agentDir: '~/.mclaw/agents/main/agent',
-        mainSessionKey: 'agent:main:desk',
+        inheritedModel: false,
+        workspace: '~/.mclaw/workspace-research',
+        agentDir: '~/.mclaw/agents/research/agent',
+        mainSessionKey: 'agent:research:desk',
         channelTypes: [],
       },
     ];
@@ -211,6 +250,7 @@ describe('Agents page status refresh', () => {
       expect(fetchAgentsMock).toHaveBeenCalledTimes(1);
     });
 
+    fireEvent.click(screen.getByRole('button', { name: '我的专家' }));
     fireEvent.click(screen.getByTitle('settings'));
     fireEvent.click(screen.getByText('settingsDialog.modelLabel').closest('button') as HTMLButtonElement);
 
@@ -234,30 +274,31 @@ describe('Agents page status refresh', () => {
   it('keeps the last agent snapshot visible while a refresh is in flight', async () => {
     agentsState.agents = [
       {
-        id: 'main',
-        name: 'Main',
-        isDefault: true,
+        id: 'research',
+        name: 'Research',
+        isDefault: false,
         modelDisplay: 'gpt-5',
         modelRef: 'openai/gpt-5',
         overrideModelRef: null,
-        inheritedModel: true,
-        workspace: '~/.mclaw/workspace',
-        agentDir: '~/.mclaw/agents/main/agent',
-        mainSessionKey: 'agent:main:main',
+        inheritedModel: false,
+        workspace: '~/.mclaw/workspace-research',
+        agentDir: '~/.mclaw/agents/research/agent',
+        mainSessionKey: 'agent:research:main',
         channelTypes: [],
       },
     ];
 
     const { rerender } = render(<Agents />);
 
-    expect(await screen.findByText('Main')).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: '我的专家' }));
+    expect(await screen.findByText('Research')).toBeInTheDocument();
 
     agentsState.loading = true;
     await act(async () => {
       rerender(<Agents />);
     });
 
-    expect(screen.getByText('Main')).toBeInTheDocument();
+    expect(screen.getByText('Research')).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 

@@ -217,6 +217,17 @@ export async function completeSetup(page: Page): Promise<void> {
   await expect(page.getByTestId('main-layout')).toBeVisible();
 }
 
+export async function openSettingsFromUserMenu(page: Page): Promise<void> {
+  await page.getByTestId('user-menu-trigger').click();
+  await page.getByTestId('sidebar-nav-settings').click();
+  await expect(page.getByTestId('settings-page')).toBeVisible();
+}
+
+export async function closeSettingsDialog(page: Page): Promise<void> {
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('settings-page')).toHaveCount(0);
+}
+
 export { closeElectronApp };
 export { getStableWindow };
 export { expect };

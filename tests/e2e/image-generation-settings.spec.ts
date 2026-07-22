@@ -1,10 +1,10 @@
-import { expect, installIpcMocks, test } from './fixtures/electron';
+import { closeSettingsDialog, expect, installIpcMocks, openSettingsFromUserMenu, test } from './fixtures/electron';
 
 test.describe('Image generation settings page', () => {
   async function unlockDeveloperMode(page: import('@playwright/test').Page) {
-    await page.getByTestId('sidebar-nav-settings').click();
-    await expect(page.getByTestId('settings-page')).toBeVisible();
+    await openSettingsFromUserMenu(page);
     await page.getByTestId('settings-dev-mode-switch').click();
+    await closeSettingsDialog(page);
     await expect(page.getByTestId('sidebar-nav-image-generation')).toBeVisible();
   }
 

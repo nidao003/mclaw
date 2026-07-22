@@ -11,7 +11,6 @@ import {
   Bot,
   Puzzle,
   Clock,
-  Settings as SettingsIcon,
   Trash2,
   Pencil,
   Check,
@@ -27,6 +26,11 @@ import {
   Brain,
   PanelLeftClose,
   PanelLeftOpen,
+  MoreHorizontal,
+  Pin,
+  FolderOpen,
+  UserRound,
+  ListChecks,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -43,6 +47,7 @@ import { useTranslation } from 'react-i18next';
 import logoSvg from '@/assets/logo.svg';
 import { useNewChatAction } from './use-new-chat-action';
 import { UserMenu } from './UserMenu';
+import type { AgentSummary } from '@/types/agent';
 
 // 三栏布局宽度（参考设计图）
 const ICON_RAIL_WIDTH = 140;    // 菜单列：固定 140px（图标+文字）
@@ -109,7 +114,6 @@ function getAgentIdFromSessionKey(sessionKey: string): string {
 export function Sidebar() {
   const isMac = window.electron?.platform === 'darwin';
   const devModeUnlocked = useSettingsStore((state) => state.devModeUnlocked);
-  const setSettingsSheetOpen = useSettingsStore((state) => state.setSettingsSheetOpen);
   const { t } = useTranslation(['common', 'chat']);
   const handleNewChat = useNewChatAction();
 
@@ -303,8 +307,6 @@ export function Sidebar() {
         />
       )}
 
-      {/* macOS traffic light 同步：图标列现在是固定宽度，不再需要同步 */}
-      {false && isMac && null}
       {/* ── 左列：菜单导航（固定 140px，显示图标+文字） ──────── */}
       <div
         data-testid="sidebar-icon-rail"
@@ -379,14 +381,6 @@ export function Sidebar() {
         <div className="px-1 pb-1">
           <UserMenu collapsed={sidebarCollapsed} />
         </div>
-
-        {/* 底部：仅设置（历史记录已合并到对话路由内的历史列） */}
-        <IconRailItem
-          icon={SettingsIcon}
-          label={t('sidebar.settings')}
-          onClick={() => setSettingsSheetOpen(true)}
-          testId="sidebar-nav-settings"
-        />
       </div>
 
       {/* ── 中间列：仅 / 路由显示，含搜索+新对话+历史列表（可拖宽） ── */}
@@ -405,6 +399,7 @@ export function Sidebar() {
           sessionBucketMap={sessionBucketMap}
           expandedBuckets={expandedSessionBuckets}
           toggleBucket={toggleSessionBucket}
+          agents={agents}
           agentNameById={agentNameById}
           getSessionLabel={getSessionLabel}
           editingSessionKey={editingSessionKey}
@@ -443,6 +438,7 @@ interface ChatSidebarPaneProps {
   sessionBucketMap: Record<SessionBucketKey, { key: SessionBucketKey; label: string; sessions: Array<{ key: string; displayName?: string; label?: string }> }>;
   expandedBuckets: Record<SessionBucketKey, boolean>;
   toggleBucket: (key: SessionBucketKey) => void;
+  agents: AgentSummary[];
   agentNameById: Record<string, string>;
   getSessionLabel: (key: string, displayName?: string, label?: string) => string;
   editingSessionKey: string | null;
@@ -476,6 +472,7 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
     sessionBucketMap,
     expandedBuckets,
     toggleBucket,
+    agents,
     agentNameById,
     getSessionLabel,
     editingSessionKey,
@@ -492,6 +489,22 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
     gatewayRestarting,
     gatewayLabel,
   } = props;
+  const [agentMenuId, setAgentMenuId] = useState<string | null>(null);
+  const selectedAgentId = getAgentIdFromSessionKey(currentSessionKey || 'agent:main:main');
+  const visibleAgents = agents.length > 0
+    ? [...agents].sort((a, b) => Number(a.isDefault) - Number(b.isDefault))
+    : [];
+
+  const handleSelectAgent = (agent: AgentSummary) => {
+    const nextKey = agent.mainSessionKey || `agent:${agent.id}:main`;
+    setAgentMenuId(null);
+    if (currentSessionKey === nextKey) {
+      void loadHistory(false);
+    } else {
+      switchSession(nextKey);
+    }
+    navigate('/');
+  };
 
   return (
     <div
@@ -539,22 +552,97 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
           </Tooltip>
 
           {/* 顶部：搜索框 + 新对话按钮（按设计图从上到下） */}
-          <div className="flex flex-col gap-2 p-2 border-b border-border/40 shrink-0">
+          <div className="flex flex-col gap-3 p-2 border-b border-border/40 shrink-0">
             <input
               type="text"
               placeholder="搜索"
-              className="w-full h-8 px-3 rounded-lg bg-sidebar-hover/60 border border-transparent text-meta text-sidebar-foreground placeholder:text-sidebar-muted focus:outline-none focus:bg-background focus:border-brand/40 focus:ring-2 focus:ring-brand/15 transition-all"
+              className="w-full h-12 px-4 rounded-2xl bg-sidebar-hover/70 border border-transparent text-base font-medium text-sidebar-foreground placeholder:text-sidebar-muted focus:outline-none focus:bg-background focus:border-brand/40 focus:ring-2 focus:ring-brand/15 transition-all"
             />
             <button
               type="button"
               onClick={onNewChat}
-              className="flex items-center justify-center gap-1.5 h-9 rounded-lg bg-gradient-to-r from-brand to-brand-hover text-white text-sm font-semibold shadow-sm hover:shadow-md hover:brightness-105 active:translate-y-px transition-all duration-200"
+              className="flex items-center justify-center gap-2 h-14 rounded-2xl bg-gradient-to-r from-brand to-brand-hover text-white text-lg font-semibold shadow-sm hover:shadow-md hover:brightness-105 active:translate-y-px transition-all duration-200"
             >
-              <Plus className="h-4 w-4" strokeWidth={2.5} />
+              <Plus className="h-5 w-5" strokeWidth={2.5} />
               <span>{newChatLabel}</span>
             </button>
           </div>
         </>
+      )}
+
+      {!collapsed && (
+        <div className="border-b border-border/40 px-2 py-3">
+          <div className="max-h-72 space-y-1 overflow-y-auto">
+            {visibleAgents.map((agent) => {
+              const selected = selectedAgentId === agent.id;
+              return (
+                <div key={agent.id} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectAgent(agent)}
+                    className={cn(
+                      'group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors',
+                      selected ? 'bg-sidebar-hover text-sidebar-foreground' : 'text-sidebar-foreground/85 hover:bg-sidebar-hover/70',
+                    )}
+                  >
+                    <span className={cn(
+                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+                      selected ? 'bg-brand/14 text-brand' : 'bg-sidebar-foreground/8 text-sidebar-muted',
+                    )}>
+                      {agent.isDefault ? 'M' : agent.name.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="truncate text-sm font-semibold">
+                          {agent.isDefault ? 'mclaw' : agent.name}
+                        </span>
+                        {agent.isDefault && (
+                          <span className="shrink-0 text-2xs font-semibold text-sidebar-muted">Main Agent</span>
+                        )}
+                      </span>
+                      <span className="block truncate text-xs text-sidebar-muted">
+                        {agent.modelDisplay || '默认专家'}
+                      </span>
+                    </span>
+                  </button>
+                  {selected && !agent.isDefault && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setAgentMenuId(agentMenuId === agent.id ? null : agent.id);
+                      }}
+                      className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-sidebar-foreground hover:bg-background/70"
+                      aria-label="专家菜单"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </button>
+                  )}
+                  {agentMenuId === agent.id && (
+                    <div className="absolute right-2 top-10 z-30 w-44 rounded-2xl border border-black/10 bg-surface-modal p-2 shadow-xl dark:border-white/10">
+                      {[
+                        { icon: Pin, label: '置顶' },
+                        { icon: UserRound, label: 'Agent详情' },
+                        { icon: FolderOpen, label: '打开工作间' },
+                        { icon: ListChecks, label: '批量删除' },
+                      ].map(({ icon: Icon, label }) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => setAgentMenuId(null)}
+                          className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm text-foreground hover:bg-accent"
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {sessions.length > 0 ? (
@@ -562,6 +650,7 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
           {(['today', 'withinWeek', 'withinMonth', 'older'] as SessionBucketKey[]).map((bk) => {
             const bucket = sessionBucketMap[bk];
             const isExpanded = expandedBuckets[bk] ?? false;
+            const visibleBucketSessions = bucket.sessions.filter((session) => getAgentIdFromSessionKey(session.key) === selectedAgentId);
             return (
               <div key={bk} data-testid={`session-bucket-${bk}`}>
                 <button
@@ -574,7 +663,7 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
                   <ChevronRight className={cn('h-3 w-3 shrink-0 transition-transform', isExpanded && 'rotate-90')} />
                   <span>{bucketLabel[bk] ?? bucket.label}</span>
                 </button>
-                {isExpanded && bucket.sessions.map((s) => {
+                {isExpanded && visibleBucketSessions.map((s) => {
                   const agentId = getAgentIdFromSessionKey(s.key);
                   const agentName = agentNameById[agentId] || agentId;
                   const isEditing = editingSessionKey === s.key;
@@ -617,7 +706,7 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
                             }}
                             onDoubleClick={() => handleStartRename(s.key, sessionLabel)}
                             className={cn(
-                              'w-full text-left rounded-lg px-2.5 py-1.5 text-meta transition-colors pr-14',
+                              'w-full text-left rounded-2xl px-4 py-2 text-sm transition-colors pr-14',
                               'hover:bg-sidebar-hover text-sidebar-foreground/85',
                               isOnChat && currentSessionKey === s.key
                                 ? 'bg-brand/10 text-brand font-semibold'
@@ -625,14 +714,11 @@ function ChatSidebarPane(props: ChatSidebarPaneProps) {
                             )}
                           >
                             <div className="flex min-w-0 items-center gap-2">
-                              <span className={cn(
-                                'shrink-0 rounded-full px-2 py-0.5 text-2xs font-medium',
-                                isOnChat && currentSessionKey === s.key
-                                  ? 'bg-brand/20 text-brand-hover'
-                                  : 'bg-sidebar-foreground/8 text-sidebar-muted',
-                              )}>
-                                {agentName}
-                              </span>
+                              {agentId !== selectedAgentId && (
+                                <span className="shrink-0 rounded-full bg-sidebar-foreground/8 px-2 py-0.5 text-2xs font-medium text-sidebar-muted">
+                                  {agentName}
+                                </span>
+                              )}
                               <span className="truncate">{sessionLabel}</span>
                             </div>
                           </button>

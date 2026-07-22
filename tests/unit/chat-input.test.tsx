@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ChatInput } from '@/pages/Chat/ChatInput';
 import { TooltipProvider } from '@/components/ui/tooltip';
 const hostApiFetchMock = vi.hoisted(() => vi.fn());
-const { agentsState, chatState, gatewayState, providersState, artifactPanelMocks } = vi.hoisted(() => ({
+const { agentsState, chatState, gatewayState, providersState, cloudModelState, artifactPanelMocks } = vi.hoisted(() => ({
   agentsState: {
     agents: [] as Array<Record<string, unknown>>,
     defaultModelRef: null as string | null,
@@ -20,6 +20,16 @@ const { agentsState, chatState, gatewayState, providersState, artifactPanelMocks
     statuses: [] as Array<Record<string, unknown>>,
     defaultAccountId: null as string | null,
     refreshProviderSnapshot: vi.fn(),
+  },
+  cloudModelState: {
+    cloudModels: [] as Array<Record<string, unknown>>,
+    defaultCloudModel: null as Record<string, unknown> | null,
+    userOverrideDefaultToLocal: false,
+    activeLocalAccountId: null as string | null,
+    fetchModels: vi.fn(),
+    setDefault: vi.fn(),
+    switchToLocal: vi.fn(),
+    clearLocalOverride: vi.fn(),
   },
   artifactPanelMocks: {
     openPreview: vi.fn(),
@@ -40,6 +50,13 @@ vi.mock('@/stores/gateway', () => ({
 
 vi.mock('@/stores/providers', () => ({
   useProviderStore: (selector: (state: typeof providersState) => unknown) => selector(providersState),
+}));
+
+vi.mock('@mclaw/shared/stores/cloudModelStore', () => ({
+  useCloudModelStore: Object.assign(
+    (selector: (state: typeof cloudModelState) => unknown) => selector(cloudModelState),
+    { getState: () => cloudModelState },
+  ),
 }));
 
 vi.mock('@/stores/artifact-panel', () => ({
@@ -138,6 +155,16 @@ describe('ChatInput agent targeting', () => {
     providersState.statuses = [];
     providersState.defaultAccountId = null;
     providersState.refreshProviderSnapshot.mockReset();
+    cloudModelState.cloudModels = [];
+    cloudModelState.defaultCloudModel = null;
+    cloudModelState.userOverrideDefaultToLocal = false;
+    cloudModelState.activeLocalAccountId = null;
+    cloudModelState.fetchModels.mockReset();
+    cloudModelState.fetchModels.mockResolvedValue(undefined);
+    cloudModelState.setDefault.mockReset();
+    cloudModelState.setDefault.mockResolvedValue(undefined);
+    cloudModelState.switchToLocal.mockReset();
+    cloudModelState.clearLocalOverride.mockReset();
     vi.mocked(hostApiFetchMock).mockReset();
     artifactPanelMocks.openPreview.mockReset();
   });
@@ -280,7 +307,8 @@ describe('ChatInput agent targeting', () => {
 
     expect(screen.getByTestId('chat-composer-input')).toBeDisabled();
     expect(screen.getByTestId('chat-composer-skill')).toBeDisabled();
-    expect(screen.getByTestId('chat-model-picker-button')).toBeDisabled();
+    expect(screen.queryByTestId('chat-model-picker-button')).not.toBeInTheDocument();
+    expect(screen.getByTestId('chat-global-model-indicator')).toBeInTheDocument();
   });
 
   it('shows starting status while gateway is running but not yet ready', () => {

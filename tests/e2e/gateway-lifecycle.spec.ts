@@ -1,4 +1,4 @@
-import { completeSetup, expect, installIpcMocks, test } from './fixtures/electron';
+import { closeSettingsDialog, completeSetup, expect, installIpcMocks, openSettingsFromUserMenu, test } from './fixtures/electron';
 
 function stableStringify(value: unknown): string {
   if (value == null || typeof value !== 'object') return JSON.stringify(value);
@@ -31,8 +31,8 @@ test.describe('mclaw gateway lifecycle resilience', () => {
     await page.getByTestId('sidebar-nav-channels').click();
     await expect(page.getByTestId('channels-page')).toBeVisible();
 
-    await page.getByTestId('sidebar-nav-settings').click();
-    await expect(page.getByTestId('settings-page')).toBeVisible();
+    await openSettingsFromUserMenu(page);
+    await closeSettingsDialog(page);
 
     // Navigate back to chat — the gateway status indicator should be visible
     await page.getByTestId('sidebar-new-chat').click();
@@ -117,8 +117,8 @@ test.describe('mclaw gateway lifecycle resilience', () => {
     await page.waitForTimeout(500);
 
     // Final navigation check to confirm app is still healthy after full lifecycle
-    await page.getByTestId('sidebar-nav-settings').click();
-    await expect(page.getByTestId('settings-page')).toBeVisible();
+    await openSettingsFromUserMenu(page);
+    await closeSettingsDialog(page);
     await page.getByTestId('sidebar-new-chat').click();
     await expect(page.getByTestId('main-layout')).toBeVisible();
   });

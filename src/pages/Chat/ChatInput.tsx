@@ -20,6 +20,7 @@ import { useArtifactPanel } from '@/stores/artifact-panel';
 import { buildPreviewTarget } from '@/components/file-preview/build-preview-target';
 import { useProviderStore } from '@/stores/providers';
 import { useCloudModelStore } from '@mclaw/shared/stores/cloudModelStore';
+import type { Model as CloudModel } from '@mclaw/shared/types/model';
 import { buildConfiguredModelOptions, formatModelRefLabel } from '@/lib/model-options';
 import type { AgentSummary } from '@/types/agent';
 import type { QuickAccessSkill } from '@/types/skill';
@@ -52,6 +53,16 @@ interface ChatInputProps {
 // ── Helpers ──────────────────────────────────────────────────────
 
 const DIRECTORY_MIME_TYPE = 'application/x-directory';
+
+function formatCloudModelName(model: CloudModel | null | undefined): string {
+  if (!model) return '未设置云端模型';
+  return (model.remark || model.model || model.provider || '云端模型').trim();
+}
+
+function formatLocalAccountName(account: { label?: string; model?: string; vendorId?: string } | null | undefined): string {
+  if (!account) return '本地模型';
+  return (account.label || account.model || account.vendorId || '本地模型').trim();
+}
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -241,6 +252,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
 
   // ── 全局模型（云端账号默认 / 本地服务商覆盖） ───────────────────────
   const cloudDefaultModel = useCloudModelStore((s) => s.defaultCloudModel);
+  const cloudModels = useCloudModelStore((s) => s.cloudModels);
   const userOverrideDefaultToLocal = useCloudModelStore((s) => s.userOverrideDefaultToLocal);
   const activeLocalAccountId = useCloudModelStore((s) => s.activeLocalAccountId);
   const localAccountsForChat = useMemo(
@@ -255,27 +267,28 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
       ?? null;
   }, [userOverrideDefaultToLocal, activeLocalAccountId, providerDefaultAccountId, localAccountsForChat]);
   const globalModelLabel = userOverrideDefaultToLocal
-    ? (activeLocalAccount?.label ?? '本地模型（未指定）')
-    : (cloudDefaultModel ? `${cloudDefaultModel.provider} ${cloudDefaultModel.model}` : '未设置云端默认');
-  const isGlobalModelCloud = !userOverrideDefaultToLocal;
-  const isGlobalModelLocal = userOverrideDefaultToLocal;
+    ? formatLocalAccountName(activeLocalAccount)
+    : formatCloudModelName(cloudDefaultModel);
+  const hasAgentModelOverride = Boolean(optimisticModelRef || currentAgent?.overrideModelRef);
+  const displayedModelLabel = hasAgentModelOverride ? currentModelLabel : globalModelLabel;
+  const displayedModelKind = hasAgentModelOverride ? '本地' : (userOverrideDefaultToLocal ? '本地' : '云端');
+  const isGlobalModelCloud = !userOverrideDefaultToLocal && !hasAgentModelOverride;
+  const isGlobalModelLocal = userOverrideDefaultToLocal || hasAgentModelOverride;
 
-  // 切换全局模型：云端默认
-  const handleUseCloudDefault = useCallback(async () => {
-    if (!cloudDefaultModel) return;
+  const handleUseCloudModel = useCallback(async (modelId: string) => {
     if (switchingGlobalModel) return;
     setSwitchingGlobalModel(true);
     try {
       const store = useCloudModelStore.getState();
       store.clearLocalOverride();
-      await store.setDefault(cloudDefaultModel.id);
+      await store.setDefault(modelId);
       setGlobalModelPickerOpen(false);
     } catch (error) {
       toast.error(`${t('composer.modelSwitchFailed', { error: String(error) })}`);
     } finally {
       setSwitchingGlobalModel(false);
     }
-  }, [cloudDefaultModel, switchingGlobalModel, t]);
+  }, [switchingGlobalModel, t]);
 
   // 切换全局模型：某个本地服务商
   const handleUseLocalAccount = useCallback((accountId: string) => {
@@ -310,6 +323,7 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
 
   useEffect(() => {
     void refreshProviderSnapshot();
+    void useCloudModelStore.getState().fetchModels();
   }, [refreshProviderSnapshot]);
 
   useEffect(() => {
@@ -898,43 +912,61 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
               ) : (
                 <Server className="h-3 w-3 shrink-0" />
               )}
-              <span className="shrink-0">{isGlobalModelCloud ? '云端' : '本地'}</span>
-              <span className="truncate font-mono">{globalModelLabel}</span>
+              <span className="shrink-0">{displayedModelKind}</span>
+              <span className="truncate font-mono">{displayedModelLabel}</span>
               <ChevronDown className={cn('h-3 w-3 shrink-0 transition-transform', globalModelPickerOpen && 'rotate-180')} />
             </button>
             {globalModelPickerOpen && (
               <div
-                className="absolute left-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl border border-black/10 bg-surface-modal p-1.5 shadow-xl dark:border-white/10"
+                className="absolute left-0 bottom-full z-40 mb-2 w-[360px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl border border-black/10 bg-surface-modal p-1.5 shadow-xl dark:border-white/10"
                 data-testid="chat-global-model-picker-menu"
               >
                 <div className="px-3 py-2 text-tiny font-medium text-muted-foreground/80">
                   {'切换当前对话使用的模型'}
                 </div>
 
-                {/* 云端默认 */}
+                {/* 云端模型 */}
                 <div className="px-3 pb-1 pt-1 text-tiny font-semibold text-muted-foreground">
-                  {'云端账号默认'}
+                  {'云端模型'}
                 </div>
-                {cloudDefaultModel ? (
-                  <button
-                    type="button"
-                    onClick={() => void handleUseCloudDefault()}
-                    disabled={switchingGlobalModel || isGlobalModelCloud}
-                    className={cn(
-                      'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors',
-                      isGlobalModelCloud ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50',
-                    )}
-                    data-testid="chat-global-model-option-cloud"
-                  >
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Cloud className="h-3.5 w-3.5 shrink-0 text-blue-500" />
-                      <span className="truncate font-medium">{cloudDefaultModel.id}</span>
-                    </span>
-                    {isGlobalModelCloud && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />}
-                  </button>
+                {cloudModels.length > 0 ? (
+                  <div className="max-h-48 overflow-y-auto">
+                    {cloudModels.map((model) => {
+                      const isActive = isGlobalModelCloud && model.id === cloudDefaultModel?.id;
+                      return (
+                        <button
+                          key={model.id}
+                          type="button"
+                          onClick={() => void handleUseCloudModel(model.id)}
+                          disabled={switchingGlobalModel || isActive}
+                          className={cn(
+                            'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors',
+                            isActive ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50',
+                          )}
+                          data-testid={`chat-global-model-option-cloud-${model.id}`}
+                        >
+                          <span className="flex min-w-0 items-center gap-2">
+                            <Cloud className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+                            <span className="min-w-0">
+                              <span className="block truncate font-medium">{formatCloudModelName(model)}</span>
+                              <span className="block truncate text-tiny text-muted-foreground">
+                                {[model.provider, model.model].filter(Boolean).join(' · ')}
+                              </span>
+                            </span>
+                          </span>
+                          <span className="flex shrink-0 items-center gap-2">
+                            <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-2xs font-medium text-blue-600 dark:text-blue-400">
+                              云端
+                            </span>
+                            {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 ) : (
                   <div className="px-3 py-2 text-meta text-muted-foreground">
-                    {'当前账号未配置云端默认模型'}
+                    {'当前账号未配置云端模型'}
                   </div>
                 )}
 
@@ -964,16 +996,66 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
                         >
                           <span className="flex min-w-0 items-center gap-2">
                             <Server className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                            <span className="truncate font-medium">{account.label}</span>
-                            <span className="truncate text-tiny text-muted-foreground">
-                              {[account.model, account.vendorId].filter(Boolean).join(' · ')}
+                            <span className="min-w-0">
+                              <span className="block truncate font-medium">{formatLocalAccountName(account)}</span>
+                              <span className="block truncate text-tiny text-muted-foreground">
+                                {[account.model, account.vendorId].filter(Boolean).join(' · ')}
+                              </span>
                             </span>
                           </span>
-                          {isActive && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />}
+                          <span className="flex shrink-0 items-center gap-2">
+                            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-2xs font-medium text-emerald-600 dark:text-emerald-400">
+                              本地
+                            </span>
+                            {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                          </span>
                         </button>
                       );
                     })}
                   </div>
+                )}
+
+                {showModelPicker && (
+                  <>
+                    <div className="mt-1 px-3 pb-1 pt-2 text-tiny font-semibold text-muted-foreground">
+                      {'当前专家覆盖'}
+                    </div>
+                    <div className="max-h-44 overflow-y-auto">
+                      {modelOptions.map((option) => (
+                        <button
+                          key={option.modelRef}
+                          type="button"
+                          onClick={() => void handleSelectModel(option.modelRef)}
+                          disabled={!currentAgent || !!switchingModelRef || option.modelRef === effectiveModelRef}
+                          className={cn(
+                            'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm transition-colors',
+                            option.modelRef === effectiveModelRef ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50',
+                          )}
+                          data-testid={`chat-model-picker-option-${option.label}`}
+                        >
+                          <span className="flex min-w-0 items-center gap-2">
+                            {switchingModelRef === option.modelRef ? (
+                              <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+                            ) : (
+                              <Server className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            )}
+                            <span className="min-w-0">
+                              <span className="block truncate font-medium">{option.label}</span>
+                              <span className="block truncate text-tiny text-muted-foreground">{currentModelLabel}</span>
+                            </span>
+                          </span>
+                          <span className="flex shrink-0 items-center gap-2">
+                            <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-2xs font-medium text-muted-foreground">
+                              专家
+                            </span>
+                            {option.modelRef === effectiveModelRef && (
+                              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                            )}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -1116,61 +1198,6 @@ export function ChatInput({ onSend, onStop, disabled = false, sending = false }:
                 </div>
               )}
             </div>
-
-            {showModelPicker && (
-              <div ref={modelPickerRef} className="relative shrink-0">
-                <button
-                  type="button"
-                  data-testid="chat-model-picker-button"
-                  className={cn(
-                    'inline-flex h-8 max-w-[220px] items-center gap-1 rounded-lg px-1.5 text-meta font-medium text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50',
-                    (modelPickerOpen || switchingModelRef) && 'text-foreground',
-                  )}
-                  onClick={() => {
-                    setPickerOpen(false);
-                    setSkillPickerOpen(false);
-                    setModelPickerOpen((open) => !open);
-                  }}
-                  disabled={inputDisabled || sending || !currentAgent || !!switchingModelRef}
-                  title={t('composer.pickModel')}
-                >
-                  {switchingModelRef ? (
-                    <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
-                  ) : null}
-                  <span className="truncate">{currentModelLabel}</span>
-                  <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', modelPickerOpen && 'rotate-180')} />
-                </button>
-                {modelPickerOpen && (
-                  <div
-                    className="absolute left-0 bottom-full z-20 mb-2 w-72 overflow-hidden rounded-2xl border border-black/10 bg-surface-modal p-1.5 shadow-xl dark:border-white/10"
-                    data-testid="chat-model-picker-menu"
-                  >
-                    <div className="px-3 py-2 text-tiny font-medium text-muted-foreground/80">
-                      {t('composer.modelPickerTitle')}
-                    </div>
-                    <div className="max-h-64 overflow-y-auto">
-                      {modelOptions.map((option) => (
-                        <button
-                          key={option.modelRef}
-                          type="button"
-                          onClick={() => void handleSelectModel(option.modelRef)}
-                          className={cn(
-                            'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors',
-                            option.modelRef === effectiveModelRef ? 'bg-primary/10 text-foreground' : 'hover:bg-accent/50'
-                          )}
-                          data-testid={`chat-model-picker-option-${option.label}`}
-                        >
-                          <span className="truncate">{option.label}</span>
-                          {option.modelRef === effectiveModelRef && (
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Send Button — pushed to the right */}
             <Button

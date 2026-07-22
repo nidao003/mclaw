@@ -64,6 +64,16 @@
         "restarting": "Gateway 重启中",
         "warning": "网关未运行。"
     },
+    "userMenu": {
+        "currentSubscription": "当前订阅",
+        "autoRenew": "自动续费",
+        "creditBalance": "积分余额",
+        "todayTokens": "今日 token",
+        "basicModel": "基础模型",
+        "proModel": "进阶模型",
+        "ultraModel": "旗舰模型",
+        "logout": "退出登录"
+    },
     "extensions": {
         "title": "扩展管理",
         "description": "管理 mclaw 扩展（预装 + 用户安装）",

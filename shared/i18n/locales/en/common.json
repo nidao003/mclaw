@@ -64,6 +64,16 @@
         "restarting": "Gateway restarting",
         "warning": "Gateway is not running."
     },
+    "userMenu": {
+        "currentSubscription": "Current subscription",
+        "autoRenew": "Auto renew",
+        "creditBalance": "Credits",
+        "todayTokens": "Today's tokens",
+        "basicModel": "Basic models",
+        "proModel": "Pro models",
+        "ultraModel": "Ultra models",
+        "logout": "Log out"
+    },
     "extensions": {
         "title": "Extensions",
         "description": "Manage mclaw extensions (built-in + user-installed)",
